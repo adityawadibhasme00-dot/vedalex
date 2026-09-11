@@ -25,6 +25,11 @@ backend/exports/
 backend/*.db
 backend/*.sqlite3
 
+# Local indices / stores (rebuilt at runtime)
+backend/app/rag/faiss_index/
+backend/app/rag/qdrant_local_data/
+*.tsbuildinfo
+
 # Model caches / downloaded models
 *.hf_cache/
 .huggingface/
