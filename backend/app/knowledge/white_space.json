@@ -1,0 +1,25 @@
+{
+  "title": "Formulation white-space opportunity grid",
+  "basis": "Patent-landscape density + TKDL classical exposure + dosage-form novelty (Nano/Liposomal/phytosome = least crowded) derived from the indexed WIPO metadata, Indian patent landscape and TKDL prior-art corpus.",
+  "herbs": ["Turmeric", "Neem", "Tulsi", "Ashwagandha"],
+  "forms": ["Capsule", "Gel", "Nano"],
+  "colors": {
+    "crowded": "#EF4444",
+    "medium": "#F59E0B",
+    "opportunity": "#22C55E"
+  },
+  "cells": [
+    { "herb": "Turmeric", "form": "Capsule", "value": "crowded", "rationale": "Near-saturated plain turmeric capsule patent space." },
+    { "herb": "Turmeric", "form": "Gel", "value": "medium", "rationale": "Topical curcumin gels present moderate window." },
+    { "herb": "Turmeric", "form": "Nano", "value": "opportunity", "rationale": "Nano/lyposomal curcumin bioenhancement is underexplored." },
+    { "herb": "Neem", "form": "Capsule", "value": "medium", "rationale": "Oral neem supplements exist but standardisation gaps remain." },
+    { "herb": "Neem", "form": "Gel", "value": "opportunity", "rationale": "Non-pesticidal neem gel formulations are sparsely patented." },
+    { "herb": "Neem", "form": "Nano", "value": "opportunity", "rationale": "Nano-neem delivery has high white-space — early-mover window." },
+    { "herb": "Tulsi", "form": "Capsule", "value": "opportunity", "rationale": "Tulsi extract capsule space is under-patented vs. classical fame." },
+    { "herb": "Tulsi", "form": "Gel", "value": "opportunity", "rationale": "Tulsi-based mucoadhesive gels show clear white space." },
+    { "herb": "Tulsi", "form": "Nano", "value": "opportunity", "rationale": "Nano-tulsi phytosome is a genuine blue-ocean zone." },
+    { "herb": "Ashwagandha", "form": "Capsule", "value": "crowded", "rationale": "Ashwagandha capsules are dense — differentiation needed." },
+    { "herb": "Ashwagandha", "form": "Gel", "value": "opportunity", "rationale": "Topical ashwagandha gels are minimal in the landscape." },
+    { "herb": "Ashwagandha", "form": "Nano", "value": "opportunity", "rationale": "Nano-ashwagandha (withanolide) delivery is a clear gap." }
+  ]
+}

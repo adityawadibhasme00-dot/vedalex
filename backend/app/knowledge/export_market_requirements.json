@@ -1,0 +1,53 @@
+[
+  {
+    "market": "India",
+    "flag": "🇮🇳",
+    "requirements": [
+      { "area": "Product pathway", "requirement": "Correct registration class — ASU drug licence (e-AUSHADHI) OR FSSAI Ayurveda Aahara / Nutraceutical registration", "source": "Drugs & Cosmetics Act 1940 · FSSAI Ayurveda Aahara Regulations 2022", "rule_key": "pathway_any" },
+      { "area": "ASU drug licence", "requirement": "If classified as an ASU drug: product & manufacturing licence via e-AUSHADHI (State Licensing Authority)", "source": "Drugs & Cosmetics Rules 1945 · e-AUSHADHI", "rule_key": "pathway_drug" },
+      { "area": "Food registration", "requirement": "If classified as Aahara/Nutraceutical: FSSAI registration / product approval with schedule compliance", "source": "FSSAI FSS (Ayurveda Aahara) Regulations 2022", "rule_key": "pathway_food" },
+      { "area": "GMP & hygiene", "requirement": "Schedule T GMP (drugs) or FSSAI licensing hygiene & HACCP (food)", "source": "Schedule T, Drugs & Cosmetics Rules · FSSAI", "rule_key": "requirement_missing" },
+      { "area": "Batch quality", "requirement": "Batch-level heavy-metal & microbial limit testing (NABL lab)", "source": "Schedule T / WHO-ASU limits", "rule_key": "quality_high" },
+      { "area": "Claim firewall", "requirement": "Label claims pass the claim firewall (no DMRA §3 / misleading claims)", "source": "Drugs & Magic Remedies Act 1954 · Ayush Suraksha 2023", "rule_key": "claims_safe" },
+      { "area": "Local labeling", "requirement": "Mandated language labeling and batch/lot markings for consignment", "source": "Legal Metrology 2009 & FSSAI labeling", "rule_key": "requirement_missing" },
+      { "area": "Evidence file", "requirement": "Evidence file supporting every claim on the label", "source": "CDSCO-ASU / FSSAI claim substantiation", "rule_key": "evidence_product_specific" }
+    ]
+  },
+  {
+    "market": "United States",
+    "flag": "🇺🇸",
+    "requirements": [
+      { "area": "S/F disclaimer", "requirement": "Structure/function disclaimer on label — 'not intended to diagnose, treat, cure or prevent any disease' (21 CFR 101.93)", "source": "21 CFR 101.93 / DSHEA 1994", "rule_key": "claims_safe" },
+      { "area": "30-day notification", "requirement": "FDA 30-day DSHEA notification before interstate marketing (structure/function claims)", "source": "DSHEA Section 6 / 21 CFR 101.93", "rule_key": "claims_structure_only" },
+      { "area": "cGMP", "requirement": "Dietary-supplement cGMP compliance (21 CFR 111)", "source": "21 CFR 111", "rule_key": "requirement_missing" },
+      { "area": "NDI status", "requirement": "Ingredients are 'old dietary ingredients' or NDI notification filed", "source": "FD&C Act §413 / NDI guidance", "rule_key": "ndi_old" },
+      { "area": "Botanical identity", "requirement": "Identity, purity, composition & strength documentation (21 CFR 111.75)", "source": "21 CFR 111", "rule_key": "quality_high" },
+      { "area": "Labeling & layout", "requirement": "Supplement Facts panel and general labeling compliance (21 CFR 101)", "source": "21 CFR 101", "rule_key": "requirement_partial" },
+      { "area": "Evidence substantiation", "requirement": "Adequate substantiation for each claim (FTC standard)", "source": "FTC Act §5", "rule_key": "evidence_product_specific" }
+    ]
+  },
+  {
+    "market": "European Union",
+    "flag": "🇪🇺",
+    "requirements": [
+      { "area": "Traditional herbal use", "requirement": "Well-established/traditional herbal use with EU monograph coverage (≥15 yrs) for THMPD route", "source": "Directive 2001/83/EC · EMA HMPC monographs", "rule_key": "monograph" },
+      { "area": "THMPD registration", "requirement": "Traditional Herbal Medicinal Product registration in a Member State (or Novel Food route if not qualifying)", "source": "Directive 2001/83/EC Art 16a", "rule_key": "requirement_missing" },
+      { "area": "Health-claim authorization", "requirement": "Any nutrition/health claim authorized via EFSA (Reg 1924/2006 art 10)", "source": "Regulation (EC) 1924/2006", "rule_key": "claims_structure_only" },
+      { "area": "Food-supplement compliance", "requirement": "If supplement route: compliance with Food Supplements Directive 2002/46/EC", "source": "Directive 2002/46/EC", "rule_key": "requirement_partial" },
+      { "area": "Contaminant limits", "requirement": "Heavy metals, pesticide & microbial limits for botanicals", "source": "Regulation (EC) 1881/2006 · 396/2005", "rule_key": "quality_high" },
+      { "area": "Labeling language", "requirement": "Local-language labeling and safety-notice requirements", "source": "Directive 2001/83/EC Art 54-59", "rule_key": "requirement_missing" }
+    ]
+  },
+  {
+    "market": "Canada",
+    "flag": "🇨🇦",
+    "requirements": [
+      { "area": "NHP licence", "requirement": "NHP product licence + site licence under Natural Health Products Regulations with monographic support", "source": "NHPR SOR/2003-196", "rule_key": "monograph" },
+      { "area": "Foreign-site GMP", "requirement": "Foreign manufacturing-site annex audit / GMP equivalence evidence", "source": "NHPR Part 3 · HC guidance", "rule_key": "requirement_missing" },
+      { "area": "Identity & purity", "requirement": "Compendial identity, potency, purity & non-medicinal-ingredient QA", "source": "Canadian guidance: Quality of NHP", "rule_key": "quality_high" },
+      { "area": "PV reporting", "requirement": "Adverse-reaction reporting procedure registered with Health Canada", "source": "NHPR Section 64-67", "rule_key": "requirement_partial" },
+      { "area": "Claim-license alignment", "requirement": "Label claims reflect only licensed Terms of Market Authorization", "source": "NHPR SOR/2003-196 Schedule A", "rule_key": "claims_structure_only" },
+      { "area": "Evidence file", "requirement": "Evidence dossier for each licensed health claim", "source": "NHPR / HC monographs", "rule_key": "evidence_product_specific" }
+    ]
+  }
+]

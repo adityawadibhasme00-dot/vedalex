@@ -1,0 +1,11 @@
+WIPO Patentscope
+WIPO Patentscope is the World Intellectual Property Organization's international patent database holding more than 100 million patent documents. It supports prior-art searching across national and regional collections including the Indian Patent Office, USPTO, EPO and China National Intellectual Property Administration.
+
+WIPO Traditional Knowledge work
+WIPO's Intergovernmental Committee on Intellectual Property and Genetic Resources, Traditional Knowledge and Folklore (IGC) negotiates protections for traditional knowledge and genetic resources. Its documentation distinguishes defensive protection (preventing patents over traditional knowledge) from positive protection (exclusive rights).
+
+WIPO Medicinal Plants and Biodiversity
+WIPO reports on medicinal plants cover benefit-sharing obligations — aligned with the Nagoya Protocol and India's Biological Diversity Act 2002 — which require prior informed consent and benefit-sharing (ABS/NBA clearance) before commercial use of biological resources obtained from the country.
+
+Using WIPO data in IP-SAKTI
+WIPO-derived records in the knowledge base let the Copilot answer cross-border questions: what national collections exist, which foreign offices hold neem or turmeric precedents, and what disclosure requirements apply for biodiversity-based inventions.

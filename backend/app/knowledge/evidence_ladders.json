@@ -1,0 +1,262 @@
+[
+  {
+    "canonical_id": "ING-ASHWAGANDHA",
+    "botanical_name": "Withania somnifera (L.) Dunal",
+    "api_monograph_id": "API-VOL1-008",
+    "ladder": [
+      {
+        "level": "traditional_use",
+        "level_label": "Traditional Use (Ayurveda & Pharmacopoeia)",
+        "support_status": "documented",
+        "support_pct": 90,
+        "sources": ["Ayurvedic Pharmacopoeia of India Vol I", "Classical texts - Charaka Samhita (Rasayana)"],
+        "note": "Classical Rasayana/Balya usage for weakness (Daurbalya), consumption (Kshaya) and sleeplessness (Anidra).",
+        "gap_reason": "None"
+      },
+      {
+        "level": "preclinical",
+        "level_label": "Preclinical (In-vitro / Animal)",
+        "support_status": "documented",
+        "support_pct": 85,
+        "sources": ["Neuro-adaptogenic in-vitro studies", "CDRI in-vivo stress studies", "sleep-architecture animal models"],
+        "note": "Multiple animal studies support GABAergic activity, adaptogenic and sleep-promoting effects.",
+        "gap_reason": "None"
+      },
+      {
+        "level": "clinical",
+        "level_label": "Clinical Evidence (Human RCTs)",
+        "support_status": "documented",
+        "support_pct": 80,
+        "sources": ["PSQI-based RCTs on sleep quality", "Stress/anxiety RCTs (KSM-66, Sensoril & generic extracts)"],
+        "note": "Moderate strength RCT evidence for sleep quality and stress reduction using standardized root extracts.",
+        "gap_reason": "None"
+      },
+      {
+        "level": "product_specific",
+        "level_label": "Product-Specific Evidence (Your Formulation)",
+        "support_status": "partially_documented",
+        "support_pct": 40,
+        "sources": ["Third-party extract certifications", "No in-house clinical dossier"],
+        "note": "No product-specific clinical trial for this exact combination ratio yet. Extract-level data must be bridged.",
+        "gap_reason": "Combination-specific clinical dossier not available"
+      },
+      {
+        "level": "safety",
+        "level_label": "Safety & Pharmacovigilance",
+        "support_status": "partially_documented",
+        "support_pct": 55,
+        "sources": ["AYUSH pharmacovigilance literature", "Rare hepatotoxicity case reports (2022-2023)"],
+        "note": "Generally safe at daily limits but rare hepatotoxicity signals and symptomatic-source variability require batch-level heavy-metal & microbial controls.",
+        "gap_reason": "Post-marketing surveillance data for combination product unavailable"
+      }
+    ]
+  },
+  {
+    "canonical_id": "ING-BRAHMI",
+    "botanical_name": "Bacopa monnieri (L.) Wettst.",
+    "api_monograph_id": "API-VOL2-014",
+    "ladder": [
+      {
+        "level": "traditional_use",
+        "level_label": "Traditional Use (Ayurveda & Pharmacopoeia)",
+        "support_status": "documented",
+        "support_pct": 90,
+        "sources": ["Ayurvedic Pharmacopoeia of India Vol II", "Medhya Rasayana classical tradition"],
+        "note": "Classical Medhya (intellect-promoting) usage documented for memory and mental disorders.",
+        "gap_reason": "None"
+      },
+      {
+        "level": "preclinical",
+        "level_label": "Preclinical (In-vitro / Animal)",
+        "support_status": "documented",
+        "support_pct": 80,
+        "sources": ["Cognitive improvement rodent models", "Bacosides neuroprotection studies"],
+        "note": "Bacosides A & B linked to synaptic activity and memory enhancement in animal models.",
+        "gap_reason": "None"
+      },
+      {
+        "level": "clinical",
+        "level_label": "Clinical Evidence (Human RCTs)",
+        "support_status": "documented",
+        "support_pct": 75,
+        "sources": ["RCTs on memory retention & attention", "Cochrane-style reviews of Bacopa trials"],
+        "note": "Positive but modest RCT evidence for cognitive endpoints; effect sizes moderate at 12-week timelines.",
+        "gap_reason": "None"
+      },
+      {
+        "level": "product_specific",
+        "level_label": "Product-Specific Evidence (Your Formulation)",
+        "support_status": "insufficient",
+        "support_pct": 20,
+        "sources": ["Ingredient-level datasets only"],
+        "note": "Combination with ashwagandha for a sleep claim lacks a dedicated product-specific study.",
+        "gap_reason": "No formulation-level RCT"
+      },
+      {
+        "level": "safety",
+        "level_label": "Safety & Pharmacovigilance",
+        "support_status": "partially_documented",
+        "support_pct": 60,
+        "sources": ["AYUSH pharmacovigilance literature", "Clinical trial adverse event logs"],
+        "note": "Reported GI intolerance and rare bradycardia; avoid in pregnancy and with anticholinergics.",
+        "gap_reason": "Limited long-term PV data in combination products"
+      }
+    ]
+  },
+  {
+    "canonical_id": "ING-SHANKHAPUSHPI",
+    "botanical_name": "Convolvulus pluricaulis Choisy",
+    "api_monograph_id": "API-VOL2-068",
+    "ladder": [
+      {
+        "level": "traditional_use",
+        "level_label": "Traditional Use (Ayurveda & Pharmacopoeia)",
+        "support_status": "documented",
+        "support_pct": 85,
+        "sources": ["Ayurvedic Pharmacopoeia of India Vol II", "Classical Nidrakari tradition"],
+        "note": "Classical Medhya/Nidrakari usage for mental disorders and sleeplessness (Anidra).",
+        "gap_reason": "None"
+      },
+      {
+        "level": "preclinical",
+        "level_label": "Preclinical (In-vitro / Animal)",
+        "support_status": "partially_documented",
+        "support_pct": 50,
+        "sources": ["Limited CNS depression animal studies"],
+        "note": "Some anxiolytic/sedative activity seen in animal models but study volume is thin.",
+        "gap_reason": "Reproducibility studies limited"
+      },
+      {
+        "level": "clinical",
+        "level_label": "Clinical Evidence (Human RCTs)",
+        "support_status": "insufficient",
+        "support_pct": 25,
+        "sources": ["Small open-label studies only"],
+        "note": "No large placebo-controlled RCTs establish efficacy for memory or sleep endpoints.",
+        "gap_reason": "No Phase II/III quality clinical data"
+      },
+      {
+        "level": "product_specific",
+        "level_label": "Product-Specific Evidence (Your Formulation)",
+        "support_status": "insufficient",
+        "support_pct": 15,
+        "sources": ["No formulation data"],
+        "note": "Combination contribution to sleep claim is not independently evidenced.",
+        "gap_reason": "No product-specific study"
+      },
+      {
+        "level": "safety",
+        "level_label": "Safety & Pharmacovigilance",
+        "support_status": "partially_documented",
+        "support_pct": 45,
+        "sources": ["Single bradycardia case report", "AYUSH ADR literature"],
+        "note": "One reported bradycardia case; avoid with brady-arrhythmia medications; PV coverage weak.",
+        "gap_reason": "Low spontaneous ADR reporting volume"
+      }
+    ]
+  },
+  {
+    "canonical_id": "ING-HARIDRA",
+    "botanical_name": "Curcuma longa L.",
+    "api_monograph_id": "API-VOL1-030",
+    "ladder": [
+      {
+        "level": "traditional_use",
+        "level_label": "Traditional Use (Ayurveda & Pharmacopoeia)",
+        "support_status": "documented",
+        "support_pct": 90,
+        "sources": ["Ayurvedic Pharmacopoeia of India Vol I", "Antiseptic & wound-healing tradition"],
+        "note": "Classical uses for Kushtha, Vrana, Shotha; widely documented.",
+        "gap_reason": "None"
+      },
+      {
+        "level": "preclinical",
+        "level_label": "Preclinical (In-vitro / Animal)",
+        "support_status": "documented",
+        "support_pct": 85,
+        "sources": ["Curcumin anti-inflammatory studies", "Antioxidant & hepatoprotective models"],
+        "note": "Extensive mechanistic literature on curcumin's anti-inflammatory pathway (NF-kB, COX-2).",
+        "gap_reason": "None"
+      },
+      {
+        "level": "clinical",
+        "level_label": "Clinical Evidence (Human RCTs)",
+        "support_status": "documented",
+        "support_pct": 75,
+        "sources": ["Curcumin RCTs on joint & metabolic health"],
+        "note": "RCT evidence strongest for inflammation-related endpoints using standardized curcuminoids.",
+        "gap_reason": "None"
+      },
+      {
+        "level": "product_specific",
+        "level_label": "Product-Specific Evidence (Your Formulation)",
+        "support_status": "insufficient",
+        "support_pct": 20,
+        "sources": ["No formulation-level data"],
+        "note": "Curcumin is not the primary claim driver here (sleep); contribution unverified.",
+        "gap_reason": "No product-specific study"
+      },
+      {
+        "level": "safety",
+        "level_label": "Safety & Pharmacovigilance",
+        "support_status": "documented",
+        "support_pct": 70,
+        "sources": ["Curcumin safety reviews", "Drug-interaction literature"],
+        "note": "Avoid in biliary obstruction; may potentiate anticoagulants; high-dose curcumin may alter bleeding risk.",
+        "gap_reason": "None"
+      }
+    ]
+  },
+  {
+    "canonical_id": "ING-TULSI",
+    "botanical_name": "Ocimum sanctum / Ocimum tenuiflorum L.",
+    "api_monograph_id": "API-VOL2-079",
+    "ladder": [
+      {
+        "level": "traditional_use",
+        "level_label": "Traditional Use (Ayurveda & Pharmacopoeia)",
+        "support_status": "documented",
+        "support_pct": 85,
+        "sources": ["Ayurvedic Pharmacopoeia of India Vol II", "Classical Kasa/Shvasa usage"],
+        "note": "Classical usage for respiratory conditions and as an adaptogen-adjacent herb.",
+        "gap_reason": "None"
+      },
+      {
+        "level": "preclinical",
+        "level_label": "Preclinical (In-vitro / Animal)",
+        "support_status": "documented",
+        "support_pct": 75,
+        "sources": ["Adaptogenic & immunomodulatory animal studies"],
+        "note": "Eugenol & ursolic acid mediated stress-marker modulation reported in animal studies.",
+        "gap_reason": "None"
+      },
+      {
+        "level": "clinical",
+        "level_label": "Clinical Evidence (Human RCTs)",
+        "support_status": "partially_documented",
+        "support_pct": 45,
+        "sources": ["Small human trials on stress volunteers"],
+        "note": "Pilot-scale human data only; insufficient for a primary stress/sleep indication.",
+        "gap_reason": "No large confirmatory RCTs"
+      },
+      {
+        "level": "product_specific",
+        "level_label": "Product-Specific Evidence (Your Formulation)",
+        "support_status": "insufficient",
+        "support_pct": 15,
+        "sources": ["No formulation data"],
+        "note": "Combination contribution to sleep claim is not independently evidenced.",
+        "gap_reason": "No product-specific study"
+      },
+      {
+        "level": "safety",
+        "level_label": "Safety & Pharmacovigilance",
+        "support_status": "partially_documented",
+        "support_pct": 50,
+        "sources": ["Animal fertility studies", "Hypoglycemia interaction reports"],
+        "note": "May lower blood glucose and has reported fertility-modulating effects in animal studies; caution peri-operatively.",
+        "gap_reason": "Human PV data sparse"
+      }
+    ]
+  }
+]

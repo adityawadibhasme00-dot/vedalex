@@ -1,0 +1,23 @@
+rule_pack_id: "RULE-IN-PATENT-SEC3P"
+jurisdiction: "India"
+authority: "Indian Patent Office (CGPDTM)"
+governing_act: "The Patents Act, 1970 (Section 3(p))"
+version: "1.0.0"
+rules:
+  - id: "RULE_PATENT_SEC3P_OBJECTION"
+    name: "Section 3(p) Traditional Knowledge Aggregation Bar"
+    statute_ref: "Section 3(p) & TK Guidelines"
+    conditions:
+      - fact_key: "ingredients_have_documented_tk_use"
+        operator: "equals"
+        expected_value: true
+      - fact_key: "synergistic_empirical_data_present"
+        operator: "equals"
+        expected_value: false
+    consequence:
+      category: "High Risk of Section 3(p) Rejection"
+      requirements:
+        - "Conduct quantitative combination-index / isobologram assay proving synergistic efficacy"
+        - "Demonstrate unexpected technical effect exceeding additive individual properties"
+        - "Mandatory disclosure of source/geographical origin of biological material under Sec 10(4)(d)(ii)"
+        - "NBA (National Biodiversity Authority) approval prior to patent grant under Section 6 of Biological Diversity Act"

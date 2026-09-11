@@ -1,0 +1,74 @@
+[
+  {
+    "id": "ACT-IN-AYUSH-1940-158B",
+    "jurisdiction": "India",
+    "authority": "Ministry of AYUSH / Central Drugs Standard Control Organisation (CDSCO)",
+    "act_title": "Drugs and Cosmetics Act, 1940 & Rules, 1945",
+    "section_reference": "Rule 158-B & Schedule T (ASU GMP)",
+    "effective_date": "1945-12-21 (amended 2022)",
+    "authority_rank": 1,
+    "keywords": ["ASU drug", "Ayurvedic medicine", "Rule 158-B", "Schedule T", "proprietary medicine", "classical formulation"],
+    "exact_passage": "Rule 158-B specifies guidelines for issue of license with respect to Ayurveda, Siddha or Unani drugs. Classical formulations listed in First Schedule authoritative books require proof of reference. ASU Proprietary Medicines require documented safety data, pilot clinical trial evidence, and compliance with Good Manufacturing Practices (GMP) under Schedule T.",
+    "source_url": "https://ayush.gov.in/acts-rules/drugs-and-cosmetics-act-1940"
+  },
+  {
+    "id": "ACT-IN-FSSAI-2022-AAHARA",
+    "jurisdiction": "India",
+    "authority": "Food Safety and Standards Authority of India (FSSAI)",
+    "act_title": "Food Safety and Standards (Ayurveda Aahara) Regulations, 2022",
+    "section_reference": "Regulation 4 & Schedule I (Permitted Positive List)",
+    "effective_date": "2022-05-05",
+    "authority_rank": 1,
+    "keywords": ["Ayurveda Aahara", "FSSAI", "food supplement", "traditional diet", "prohibited therapeutic claims"],
+    "exact_passage": "Regulation 4: Ayurveda Aahara means food prepared in accordance with the recipes or books specified in Schedule A to these regulations. It shall not include Ayurvedic drugs or synthetic extracts. No manufacturing unit shall make claims regarding treatment, cure, or prevention of any human disease under the Ayurveda Aahara license.",
+    "source_url": "https://www.fssai.gov.in/upload/notifications/2022/05/6274b7c6c0e5aGazette_Notification_Ayurveda_Aahara_05_05_2022.pdf"
+  },
+  {
+    "id": "ACT-IN-PATENT-1970-SEC3P",
+    "jurisdiction": "India",
+    "authority": "Indian Patent Office (CGPDTM)",
+    "act_title": "The Patents Act, 1970 (as amended)",
+    "section_reference": "Section 3(p) & Guidelines for Examination of TK Patent Applications",
+    "effective_date": "1970-09-19 (amended 2005)",
+    "authority_rank": 1,
+    "keywords": ["Section 3(p)", "traditional knowledge", "patentability", "aggregation", "synergism", "TKDL"],
+    "exact_passage": "Section 3(p): An invention which, in effect, is traditional knowledge or which is an aggregation or duplication of known properties of traditionally known component or components is not patentable. A composition comprising known Ayurvedic botanicals is non-patentable unless a surprising synergistic therapeutic effect is conclusively demonstrated by comparative quantitative empirical data.",
+    "source_url": "https://ipindia.gov.in/patents.htm"
+  },
+  {
+    "id": "ACT-US-FDA-1994-DSHEA",
+    "jurisdiction": "United States",
+    "authority": "United States Food and Drug Administration (US FDA)",
+    "act_title": "Dietary Supplement Health and Education Act of 1994 (DSHEA)",
+    "section_reference": "21 U.S.C. 343(r)(6) & 21 CFR 101.93",
+    "effective_date": "1994-10-25",
+    "authority_rank": 1,
+    "keywords": ["DSHEA", "dietary supplement", "structure function", "FDA disclaimer", "21 CFR 101.93", "NDI"],
+    "exact_passage": "A dietary supplement manufacturer may make structure/function statements describing the general role of a botanical in maintaining bodily function, provided the label contains the prominent disclaimer: 'This statement has not been evaluated by the FDA. This product is not intended to diagnose, treat, cure, or prevent any disease.' Notification must be submitted within 30 days of first marketing.",
+    "source_url": "https://www.fda.gov/food/dietary-supplements"
+  },
+  {
+    "id": "ACT-US-FDA-FDCA-DRUG",
+    "jurisdiction": "United States",
+    "authority": "US FDA / Center for Drug Evaluation and Research (CDER)",
+    "act_title": "Federal Food, Drug, and Cosmetic Act (FD&C Act)",
+    "section_reference": "21 U.S.C. 321(g)(1)(B) & 21 U.S.C. 355 (NDA)",
+    "effective_date": "1938-06-25",
+    "authority_rank": 1,
+    "keywords": ["new drug", "disease claim", "unapproved drug", "NDA", "IND", "insomnia cure"],
+    "exact_passage": "Articles intended for use in the diagnosis, cure, mitigation, treatment, or prevention of disease in man or other animals are classified as drugs. Selling a botanical product with disease-treatment claims without an approved New Drug Application (NDA) constitutes distribution of an unapproved new drug in interstate commerce.",
+    "source_url": "https://www.fda.gov/drugs"
+  },
+  {
+    "id": "ACT-CA-HC-2004-NHPR",
+    "jurisdiction": "Canada",
+    "authority": "Health Canada (Natural and Non-prescription Health Products Directorate - NNHPD)",
+    "act_title": "Natural Health Products Regulations (NHPR)",
+    "section_reference": "SOR/2003-196 & NHPID Compendium of Monographs",
+    "effective_date": "2004-01-01",
+    "authority_rank": 1,
+    "keywords": ["Natural Health Product", "NPN", "Health Canada", "NHPID", "product licensing", "site licensing"],
+    "exact_passage": "SOR/2003-196 Part 1: No person shall sell a natural health product unless a product licence is issued for it (yielding an 8-digit NPN). Formulations conforming to published NHPID Monographs qualify for expedited Class I assessment. Importers must hold a Canadian Site Licence demonstrating Foreign Site GMP compliance.",
+    "source_url": "https://www.canada.ca/en/health-canada/services/drugs-health-products/natural-non-prescription.html"
+  }
+]

@@ -1,0 +1,36 @@
+rule_pack_id: "RULE-US-FDA-DSHEA"
+jurisdiction: "United States"
+authority: "US Food and Drug Administration (FDA)"
+governing_act: "Dietary Supplement Health and Education Act of 1994 (DSHEA) & 21 CFR 101.93"
+version: "1.0.0"
+rules:
+  - id: "RULE_US_DSHEA_COMPLIANT"
+    name: "DSHEA Structure/Function Dietary Supplement"
+    statute_ref: "21 U.S.C. 343(r)(6) & 21 CFR 101.93"
+    conditions:
+      - fact_key: "claim_contains_disease_treatment"
+        operator: "equals"
+        expected_value: false
+      - fact_key: "ingredients_are_dietary_botanicals"
+        operator: "equals"
+        expected_value: true
+    consequence:
+      category: "Dietary Supplement (DSHEA)"
+      requirements:
+        - "Prominent FDA statutory disclaimer on product label"
+        - "Submit 30-Day Structure/Function Claim Notification to FDA after marketing"
+        - "Compliance with 21 CFR 111 Dietary Supplement cGMP regulations"
+        - "Safety substantiation dossier maintained on file by manufacturer"
+
+  - id: "RULE_US_UNAPPROVED_NEW_DRUG"
+    name: "FDA Unapproved New Drug Classification"
+    statute_ref: "21 U.S.C. 321(g)(1)(B) & 21 U.S.C. 355"
+    conditions:
+      - fact_key: "claim_contains_disease_treatment"
+        operator: "equals"
+        expected_value: true
+    consequence:
+      category: "Unapproved New Drug (FDA Enforcement Risk)"
+      requirements:
+        - "Must reformulate claims to structure/function statements or file Investigational New Drug (IND)"
+        - "Submitting an NDA requires Phase I, II, and III clinical safety/efficacy trials"

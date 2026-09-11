@@ -1,0 +1,128 @@
+[
+  {
+    "canonical_id": "ING-ASHWAGANDHA",
+    "ingredient": "Ashwagandha",
+    "signals": [
+      {
+        "signal": "Rare hepatotoxicity reported in post-marketing case reports",
+        "severity": "HIGH",
+        "evidence_source": "AYUSH pharmacovigilance & provider case reports (2022-2023)",
+        "precaution": "Monitor liver function markers for sensitive consumers; batch-level contamination controls (heavy metals, aflatoxin) recommended."
+      },
+      {
+        "signal": "Sedative potentiation",
+        "severity": "MEDIUM",
+        "evidence_source": "Pharmacological interaction literature",
+        "precaution": "Warn against co-use with alcohol, sedatives and driving immediately after intake."
+      },
+      {
+        "signal": "Low-dose hormonal effects (T3/T4 & testosterone shifts)",
+        "severity": "LOW",
+        "evidence_source": "Clinical trial thyroid panel data",
+        "precaution": "Advise professional monitoring for thyroid or reproductive-hormone sensitive users."
+      },
+      {
+        "signal": "Use in pregnancy / breastfeeding",
+        "severity": "MEDIUM",
+        "evidence_source": "Traditional contraindication & recent spontaneous-abortion reports",
+        "precaution": "Contraindicated in pregnancy unless under qualified AYUSH practitioner guidance."
+      }
+    ]
+  },
+  {
+    "canonical_id": "ING-BRAHMI",
+    "ingredient": "Brahmi",
+    "signals": [
+      {
+        "signal": "GI irritation / gastro-intolerance at high doses",
+        "severity": "LOW",
+        "evidence_source": "Clinical trial adverse-event logs",
+        "precaution": "Take with meals; reduce dose if nausea or cramping reported."
+      },
+      {
+        "signal": "Bradycardia (slow heart rate)",
+        "severity": "MEDIUM",
+        "evidence_source": "Pharmacogovigilance case reports",
+        "precaution": "Avoid in users on anti-arrhythmic or brady-inducing medication."
+      },
+      {
+        "signal": "Anticholinergic-type interaction",
+        "severity": "MEDIUM",
+        "evidence_source": "Receptor pharmacology literature",
+        "precaution": "Avoid with anti-cholinergic drugs; caution in the elderly."
+      },
+      {
+        "signal": "Use in pregnancy",
+        "severity": "MEDIUM",
+        "evidence_source": "Classical contraindication",
+        "precaution": "Contraindicated in pregnancy."
+      }
+    ]
+  },
+  {
+    "canonical_id": "ING-SHANKHAPUSHPI",
+    "ingredient": "Shankhapushpi",
+    "signals": [
+      {
+        "signal": "Rare bradycardia case report",
+        "severity": "MEDIUM",
+        "evidence_source": "AYUSH ADR literature",
+        "precaution": "Avoid with beta-blockers and heart-rate-lowering drugs."
+      },
+      {
+        "signal": "Drug-herb sedative interaction",
+        "severity": "MEDIUM",
+        "evidence_source": "Potential CNS depressant activity",
+        "precaution": "Warn against co-use with sedatives or hypnotics."
+      }
+    ]
+  },
+  {
+    "canonical_id": "ING-HARIDRA",
+    "ingredient": "Haridra (Turmeric)",
+    "signals": [
+      {
+        "signal": "Increased bleeding risk / anticoagulant potentiation",
+        "severity": "MEDIUM",
+        "evidence_source": "Drug-interaction literature",
+        "precaution": "Avoid with warfarin/antiplatelets; stop before surgery."
+      },
+      {
+        "signal": "Biliary obstruction / gallstones aggravator",
+        "severity": "HIGH",
+        "evidence_source": "Curcumin clinical guidance",
+        "precaution": "Contraindicated in biliary obstruction; caution in gallstone disease."
+      },
+      {
+        "signal": "High-dose liver concern",
+        "severity": "LOW",
+        "evidence_source": "Ingredient safety reviews",
+        "precaution": "Keep within monograph daily limits."
+      }
+    ]
+  },
+  {
+    "canonical_id": "ING-TULSI",
+    "ingredient": "Tulsi",
+    "signals": [
+      {
+        "signal": "Blood-glucose-lowering effect",
+        "severity": "MEDIUM",
+        "evidence_source": "Hypoglycemia interaction reports",
+        "precaution": "Caution in diabetics on hypoglycemic agents; monitor glucose."
+      },
+      {
+        "signal": "Fertility-modulating effects (animal data)",
+        "severity": "MEDIUM",
+        "evidence_source": "Animal reproductive studies",
+        "precaution": "Caution for use when trying to conceive; contraindicated in pregnancy."
+      },
+      {
+        "signal": "Peri-operative caution",
+        "severity": "LOW",
+        "evidence_source": "Herb-drug interaction guidance",
+        "precaution": "Discontinue 2 weeks before scheduled surgery."
+      }
+    ]
+  }
+]

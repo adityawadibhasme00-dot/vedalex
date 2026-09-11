@@ -1,0 +1,23 @@
+rule_pack_id: "RULE-CA-NHPD-2004"
+jurisdiction: "Canada"
+authority: "Health Canada (NNHPD)"
+governing_act: "Natural Health Products Regulations (NHPR / SOR/2003-196)"
+version: "1.0.0"
+rules:
+  - id: "RULE_CA_NHP_MONOGRAPH"
+    name: "Health Canada Class I / II NHP License"
+    statute_ref: "SOR/2003-196 Part 1"
+    conditions:
+      - fact_key: "ingredients_on_nhpid_list"
+        operator: "equals"
+        expected_value: true
+      - fact_key: "dosage_within_nhpid_monograph_limits"
+        operator: "equals"
+        expected_value: true
+    consequence:
+      category: "Natural Health Product (NHP - Class I / II)"
+      requirements:
+        - "Obtain 8-digit Natural Product Number (NPN) prior to commercial sale"
+        - "Canadian Site Licence for importer / distributor"
+        - "Foreign Site Annex demonstrating GMP equivalence for Indian manufacturing facility"
+        - "Bilingual English/French compliant Canadian labeling"

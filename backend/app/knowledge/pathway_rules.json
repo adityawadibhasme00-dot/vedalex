@@ -1,0 +1,74 @@
+[
+  {
+    "id": "DRUG_CURATIVE_CLAIM",
+    "pathway_key": "ayurvedic_drug",
+    "weight": 30,
+    "conditions": { "claim_curative": true },
+    "reason": "Curative/therapeutic claim wording maps to a drug intent under Drugs & Cosmetics Act 1940 (ASU rules).",
+    "source": "Drugs and Cosmetics Act, 1940 & Rules 1945 (ASU)"
+  },
+  {
+    "id": "DRUG_SOLVENT_THERAPY",
+    "pathway_key": "ayurvedic_drug",
+    "weight": 12,
+    "conditions": { "prep_solvent": true, "therapeutic_purpose": true },
+    "reason": "Solvent/hydroalcoholic extraction combined with therapeutic purpose suggests a concentrated medicinal product rather than food.",
+    "source": "CDSCO ASU division classification guidance"
+  },
+  {
+    "id": "Aahara_DAILY_DIET",
+    "pathway_key": "ayurveda_aahara",
+    "weight": 20,
+    "conditions": { "claim_structure_or_wellness": true, "intent_dietary": true, "prep_aqueous": true },
+    "reason": "Daily-dietary purpose + structure-function claims + classical aqueous preparation aligns with the Ayurveda Aahara food frame.",
+    "source": "FSSAI Food Safety and Standards (Ayurveda Aahara) Regulations, 2022"
+  },
+  {
+    "id": "Aahara_NONTHERAP",
+    "pathway_key": "ayurveda_aahara",
+    "weight": 10,
+    "conditions": { "claim_structure_or_wellness": true, "form_food": true },
+    "reason": "Wellness-only claims in food-type dosage forms fit the Aahara category.",
+    "source": "FSSAI Ayurveda Aahara Regulations, 2022"
+  },
+  {
+    "id": "DRUG_TRADITIONAL_FORM",
+    "pathway_key": "ayurvedic_drug",
+    "weight": 14,
+    "conditions": { "form_classical_medicine": true, "therapeutic_purpose": true, "claim_structure_or_wellness": false },
+    "reason": "Classical dosage forms (Vati, Kwatha, Churna, Taila, Asava-Arishtha) with medicinal intent default to the ASU drug frame; the same form carrying only wellness claims moves to the Aahara/nutraceutical pathway.",
+    "source": "Drugs and Cosmetics Act, 1940 (ASU schedules)"
+  },
+  {
+    "id": "PROP_MED_ENCAPSULATED",
+    "pathway_key": "proprietary_ayurveda",
+    "weight": 16,
+    "conditions": { "form_encapsulated": true, "therapeutic_purpose": true },
+    "reason": "Capsule/tablet form carrying a health claim points to a proprietary Ayurvedic medicine product licence path.",
+    "source": "Drugs and Cosmetics Act (Schedule Z proprietary Ayurveda medicines)"
+  },
+  {
+    "id": "NUTRACEUTICAL_ENCAPSULATED",
+    "pathway_key": "nutraceutical",
+    "weight": 14,
+    "conditions": { "form_encapsulated": true, "claim_structure_or_wellness": true, "not_therapeutic": true },
+    "reason": "Encapsulated wellness product without curative claims fits the FSSAI Health Supplements / Nutraceuticals frame.",
+    "source": "FSSAI (Health Supplements, Nutraceuticals, Food for Special Dietary Use...) Regulations, 2022"
+  },
+  {
+    "id": "COSMETIC_TOPICAL",
+    "pathway_key": "cosmetic",
+    "weight": 24,
+    "conditions": { "topical": true },
+    "reason": "Topical form with skin/hair care connotation maps to the Cosmetics Rules pathway.",
+    "source": "Cosmetics Rules, 2020 (CDSCO)"
+  },
+  {
+    "id": "DRUG_ABSENT_DISCLAIMER",
+    "pathway_key": "ayurvedic_drug",
+    "weight": 6,
+    "conditions": { "claim_curative": true, "no_disclaimer": true },
+    "reason": "Curative claims without a disclaimer signal an unregistered drug intent that must move to e-AUSHADHI licensing.",
+    "source": "e-AUSHADHI licensing portal / CDSCO ASU-CC"
+  }
+]

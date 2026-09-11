@@ -1,0 +1,121 @@
+[
+  {
+    "pattern": "\\b(cures?|cured|curing|heals?|healed|eliminates?|eliminated|eradicates)\\b",
+    "claim_category": "curative",
+    "risk_level": "HIGH_RISK",
+    "suggested_alternative": null,
+    "note": "Curative/absolute-effect wording may classify the product as an unapproved drug (India: Drugs & Magic Remedies Act / CDSCO; US: FD&C Act drug definition). Revise to a structure/function or wellness frame."
+  },
+  {
+    "pattern": "\\b(treats?|cures?|relieves?|remedy|fixes?)\\b[^.;]{0,40}\\b(insomnia|sleeplessness|sleep disorde[rrs]?|anidra)\\b",
+    "claim_category": "curative",
+    "risk_level": "HIGH_RISK",
+    "suggested_alternative": "Supports healthy sleep",
+    "note": "'Treat' + disease directionally claims efficacy in treating a condition. Use structure/function language with a DSHEA disclaimer in the US and FSSAI-compliant framing in India."
+  },
+  {
+    "pattern": "\\b(insomnia|sleeplessness|anidra)\\b",
+    "claim_category": "curative",
+    "risk_level": "WARNING",
+    "suggested_alternative": "Supports healthy sleep",
+    "note": "Mentions a specific condition verbatim. Reframe as a structure/function statement and keep evidence on file."
+  },
+  {
+    "pattern": "\\b(treats?|cures?|relieves?)\\b[^.;]{0,40}\\b(anxiet\\w*|depressi\\w*)\\b",
+    "claim_category": "curative",
+    "risk_level": "HIGH_RISK",
+    "suggested_alternative": "Supports mental relaxation and emotional balance",
+    "note": "Mental-health conditions trigger Drugs & Magic Remedies Act §3 scrutiny in India and drug claims in the US."
+  },
+  {
+    "pattern": "\\banxiet\\w*\\b|\\bdepressi\\w*\\b",
+    "claim_category": "curative",
+    "risk_level": "WARNING",
+    "suggested_alternative": "Supports emotional balance",
+    "note": "Condition-specific wording detected. Reframe as structure/function language."
+  },
+  {
+    "pattern": "\\b(treats?|cures?|relieves?)\\b[^.;]{0,40}\\b(diabet\\w*|blood sugar)\\b",
+    "claim_category": "curative",
+    "risk_level": "HIGH_RISK",
+    "suggested_alternative": "Supports healthy blood-sugar regulation",
+    "note": "Diabetes is a per se prohibited disease for advertising under Drugs & Magic Remedies Act 1954 §3 Schedule."
+  },
+  {
+    "pattern": "\\b(cures?|treats?|heals?)\\b[^.;]{0,40}\\b(cancer|tumou?rs?)\\b",
+    "claim_category": "curative",
+    "risk_level": "HIGH_RISK",
+    "suggested_alternative": null,
+    "note": "Cancer cure claims are prohibited and high-risk across all target markets. Do not make disease-cure claims."
+  },
+  {
+    "pattern": "\\b(treats?|cures?|relieves?)\\b[^.;]{0,40}\\b(arthrit\\w*|joint pain|\\bpain\\b)\\b",
+    "claim_category": "curative",
+    "risk_level": "HIGH_RISK",
+    "suggested_alternative": "Supports joint comfort and mobility",
+    "note": "Pain/disease treatment wording requires drug approval; use symptom-comfort language."
+  },
+  {
+    "pattern": "\\b(epilepsy|leukoderma|leucoderma|impotenc\\w*|frigidity|insanity)\\b",
+    "claim_category": "curative",
+    "risk_level": "CRITICAL",
+    "suggested_alternative": null,
+    "note": "Per se prohibited diseases for advertising under Drugs & Magic Remedies Act 1954 §3 Schedule; immediate removal required."
+  },
+  {
+    "pattern": "\\bno (side )?effects?\\b|zero side effects|completely safe|100% safe",
+    "claim_category": "safety",
+    "risk_level": "HIGH_RISK",
+    "suggested_alternative": "Use in accordance with monograph daily limits",
+    "note": "Absolute 'no side effects' claims are misleading under Ayush Suraksha 2023 and can never be supported."
+  },
+  {
+    "pattern": "miracle|wonder|magical|certified cure|guaranteed|overnight|instant",
+    "claim_category": "safety",
+    "risk_level": "HIGH_RISK",
+    "suggested_alternative": null,
+    "note": "Superlative/miracle wording triggers misleading-advertising action under Ayush Suraksha 2023 and consumer-protection law."
+  },
+  {
+    "pattern": "clinical(ly)?\\b[^.;]{0,25}\\b(proved|proven|tested|studies?)\\b",
+    "claim_category": "curative",
+    "risk_level": "WARNING",
+    "suggested_alternative": "Suggested by clinical evidence",
+    "note": "'Clinically proven' implies formal proof. Use 'suggested by clinical evidence' unless a registered product-specific clinical trial exists."
+  },
+  {
+    "pattern": "\\bboost\\w*\\b[^.;]{0,25}immune\\b|\\bimmune\\b[^.;]{0,25}boost\\w*\\b",
+    "claim_category": "structure_function",
+    "risk_level": "WARNING",
+    "suggested_alternative": "Supports immune function",
+    "note": "'Boost' is an absolute-effect verb; 'supports' is the permitted structure/function frame."
+  },
+  {
+    "pattern": "\\bdetox\\w*\\b[^.;]{0,30}\\bthe body\\b",
+    "claim_category": "curative",
+    "risk_level": "WARNING",
+    "suggested_alternative": "Supports the body's natural detoxification processes",
+    "note": "Direct 'detox the body' wording overstates effect. Frame as supporting natural processes."
+  },
+  {
+    "pattern": "\\bsupport\\w*\\b[^.;]{0,30}\\b(sleep|rest)\\b|\\bpromote\\w*\\b[^.;]{0,30}\\b(sleep|rest|relaxation)\\b",
+    "claim_category": "structure_function",
+    "risk_level": "SAFE",
+    "suggested_alternative": null,
+    "note": "Permissible structure/function wording with a proper disclaimer (US 21 CFR 101.93 / FSSAI-compliant in India)."
+  },
+  {
+    "pattern": "\\btraditional(ly)?\\b[^.;]{0,40}\\b(use|uses|used|usage)\\b|\\bclassical\\b[^.;]{0,40}\\b(use|uses|usage)\\b",
+    "claim_category": "traditional_use",
+    "risk_level": "SAFE",
+    "suggested_alternative": null,
+    "note": "Traditional-use claims are permissible when grounded in classical references, without implying therapeutic cure."
+  },
+  {
+    "pattern": "moisturiz\\w*|skin hygiene|nourish\\w*|hydrates\\b",
+    "claim_category": "cosmetic",
+    "risk_level": "SAFE",
+    "suggested_alternative": null,
+    "note": "Cosmetic/self-care wording is permissible under cosmetics rules when non-therapeutic."
+  }
+]

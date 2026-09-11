@@ -1,0 +1,72 @@
+[
+  {
+    "case_id": "GOLD-CASE-001-EN",
+    "language": "en",
+    "title": "Ashwagandha and Brahmi Restful Sleep Formulation",
+    "intake_text": "Ashwagandha + Brahmi formulation, claim: supports healthy sleep, target markets: India, USA, Canada",
+    "ingredients": ["Ashwagandha", "Brahmi"],
+    "claims": ["Supports healthy sleep"],
+    "expected_india_pathway": "Ayurveda Aahara (FSSAI 2022) / Wellness ASU",
+    "expected_us_pathway": "Dietary Supplement (DSHEA 1994)",
+    "expected_canada_pathway": "Natural Health Product (NHP - Class I/II)",
+    "expected_sec3p_risk": true,
+    "expected_confidence": "HIGH",
+    "expected_primary_act": "Food Safety and Standards (Ayurveda Aahara) Regulations, 2022"
+  },
+  {
+    "case_id": "GOLD-CASE-001-MR",
+    "language": "mr",
+    "title": "अश्वगंधा आणि ब्राह्मी झोप सुधारणा फॉर्म्युलेशन",
+    "intake_text": "अश्वगंधा आणि ब्राह्मी फॉर्म्युलेशन, दावा: शांत झोपेसाठी उपयुक्त, लक्ष्य बाजार: भारत, अमेरिका, कॅनडा",
+    "ingredients": ["अश्वगंधा", "ब्राह्मी"],
+    "claims": ["शांत झोपेसाठी उपयुक्त"],
+    "expected_india_pathway": "Ayurveda Aahara (FSSAI 2022) / Wellness ASU",
+    "expected_us_pathway": "Dietary Supplement (DSHEA 1994)",
+    "expected_canada_pathway": "Natural Health Product (NHP - Class I/II)",
+    "expected_sec3p_risk": true,
+    "expected_confidence": "HIGH",
+    "expected_primary_act": "Food Safety and Standards (Ayurveda Aahara) Regulations, 2022"
+  },
+  {
+    "case_id": "GOLD-CASE-001-HI",
+    "language": "hi",
+    "title": "अश्वगंधा और ब्राह्मी प्राकृतिक नींद फॉर्मूलेशन",
+    "intake_text": "अश्वगंधा और ब्राह्मी फॉर्मूलेशन, दावा: प्राकृतिक नींद में सहायक, लक्षित बाजार: भारत, अमेरिका, कनाडा",
+    "ingredients": ["अश्वगंधा", "ब्राह्मी"],
+    "claims": ["प्राकृतिक नींद में सहायक"],
+    "expected_india_pathway": "Ayurveda Aahara (FSSAI 2022) / Wellness ASU",
+    "expected_us_pathway": "Dietary Supplement (DSHEA 1994)",
+    "expected_canada_pathway": "Natural Health Product (NHP - Class I/II)",
+    "expected_sec3p_risk": true,
+    "expected_confidence": "HIGH",
+    "expected_primary_act": "Food Safety and Standards (Ayurveda Aahara) Regulations, 2022"
+  },
+  {
+    "case_id": "GOLD-CASE-002-DISEASE-EN",
+    "language": "en",
+    "title": "Ashwagandha and Brahmi Insomnia Cure",
+    "intake_text": "Ashwagandha + Brahmi tablet, claim: treats chronic insomnia, target markets: India, USA, Canada",
+    "ingredients": ["Ashwagandha", "Brahmi"],
+    "claims": ["Treats chronic insomnia"],
+    "expected_india_pathway": "ASU Patent / Proprietary Medicine (Rule 158-B)",
+    "expected_us_pathway": "Unapproved New Drug (21 U.S.C. 321(g) / High Risk)",
+    "expected_canada_pathway": "Natural Health Product (NHP - Class I/II)",
+    "expected_sec3p_risk": true,
+    "expected_confidence": "HIGH",
+    "expected_primary_act": "Drugs and Cosmetics Act, 1940 & Rules, 1945"
+  },
+  {
+    "case_id": "GOLD-CASE-003-HARIDRA-EN",
+    "language": "en",
+    "title": "Turmeric and Tulsi Immunity Booster",
+    "intake_text": "Turmeric + Tulsi herbal drops, claim: supports natural immune function, target markets: India, USA",
+    "ingredients": ["Turmeric", "Tulsi"],
+    "claims": ["Supports natural immune function"],
+    "expected_india_pathway": "Ayurveda Aahara (FSSAI 2022) / Wellness ASU",
+    "expected_us_pathway": "Dietary Supplement (DSHEA 1994)",
+    "expected_canada_pathway": "Natural Health Product (NHP - Class I/II)",
+    "expected_sec3p_risk": true,
+    "expected_confidence": "HIGH",
+    "expected_primary_act": "Food Safety and Standards (Ayurveda Aahara) Regulations, 2022"
+  }
+]

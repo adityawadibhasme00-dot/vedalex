@@ -1,0 +1,72 @@
+{
+  "ING-ASHWAGANDHA": {
+    "canonical_id": "ING-ASHWAGANDHA",
+    "botanical_name": "Withania somnifera (L.) Dunal",
+    "sanskrit": ["अश्वगन्धा", "हयगन्धा", "वराहकर्णी", "बाजिगन्धा", "Ashwagandha"],
+    "hindi": ["अश्वगंधा", "असगन्ध", "नागौरी असगन्ध", "Asgandh"],
+    "marathi": ["अश्वगंधा", "आस्कंद", "डोरगुंज", "Ashwagandha", "Askand"],
+    "tamil": ["அமுக்கரா", "அமுக்கிரங்கிழங்கு", "Amukkara", "Amukkuram"],
+    "telugu": ["అశ్వగంధ", "పెన్నేరు", "Penneru", "Aswagandhi"],
+    "kannada": ["ಅಶ್ವಗಂಧ", "ಹಿರೇಮದ್ದಿನ ಗಿಡ", "Hiremaddina gida"],
+    "bengali": ["অশ্বগন্ধা", "Ashvagandha"],
+    "gujarati": ["અશ્વગંધા", "આસંધ", "Asandh"],
+    "malayalam": ["അമുക്കുരം", "Amukkiram"],
+    "english": ["Ashwagandha", "Indian Ginseng", "Winter Cherry", "Poison Gooseberry"]
+  },
+  "ING-BRAHMI": {
+    "canonical_id": "ING-BRAHMI",
+    "botanical_name": "Bacopa monnieri (L.) Wettst.",
+    "sanskrit": ["ब्राह्मी", "ऐन्द्री", "सारस्वती", "Brahmi"],
+    "hindi": ["ब्राह्मी", "जलनीम", "Brahmi", "Jalneem"],
+    "marathi": ["ब्राह्मी", "बाम", "Jalaneem", "Brahmi"],
+    "tamil": ["பிராமி", "நீர் பிராமி", "Neerbrahmi", "Brahmi"],
+    "telugu": ["సాంబ్రాణి చెట్టు", "బ్రాహ్మి", "Sambrani chettu", "Brahmi"],
+    "kannada": ["ಬ್ರಾಹ್ಮಿ", "ಜಲಬ್ರಾಹ್ಮಿ", "Jalabrahmi"],
+    "bengali": ["ব্রাহ্মী শাক", "Brahmi shak"],
+    "gujarati": ["બ્રાહ્મી", "જલનેવરી", "Jalanevari"],
+    "malayalam": ["ബ്രഹ്മി", "Brahmi"],
+    "english": ["Brahmi", "Water Hyssop", "Thyme-leaved Gratiola", "Herb of Grace"]
+  },
+  "ING-SHANKHAPUSHPI": {
+    "canonical_id": "ING-SHANKHAPUSHPI",
+    "botanical_name": "Convolvulus pluricaulis Choisy",
+    "sanskrit": ["शङ्खपुष्पी", "शङ्खह्वा", "माङ्गल्यकुसुमा", "Shankhapushpi"],
+    "hindi": ["शंखपुष्पी", "शंखाहुली", "Shankhapushpi", "Shankhahuli"],
+    "marathi": ["शंखपुष्पी", "शंखावली", "Shankhapushpi", "Shankhavali"],
+    "tamil": ["சங்குபுஷ்பி", "விஷ்ணுகிராந்தி", "Sangu pushpi"],
+    "telugu": ["శంఖపుష్పి", "విష్ణుక్రాంత", "Shankhapushpi"],
+    "kannada": ["ಶಂಖಪುಷ್ಪಿ", "Shankhapushpi"],
+    "bengali": ["শঙ্খপুষ্পী", "Shankhapushpi"],
+    "gujarati": ["શંખાવલી", "Shankhavali"],
+    "malayalam": ["ശ Shankhapushpi", "Vishnukranthi"],
+    "english": ["Shankhapushpi", "Speedwheel", "Morning Glory"]
+  },
+  "ING-HARIDRA": {
+    "canonical_id": "ING-HARIDRA",
+    "botanical_name": "Curcuma longa L.",
+    "sanskrit": ["हरिद्रा", "गौरी", "काञ्चनी", "निशा", "Haridra"],
+    "hindi": ["हल्दी", "Haldi"],
+    "marathi": ["हळद", "Halad"],
+    "tamil": ["மஞ்சள்", "Manjal"],
+    "telugu": ["పసుపు", "Pasupu"],
+    "kannada": ["ಅರಿಶಿನ", "Arishina"],
+    "bengali": ["হলুদ", "Holud"],
+    "gujarati": ["હળદર", "Haldar"],
+    "malayalam": ["മഞ്ഞൾ", "Manjal"],
+    "english": ["Turmeric", "Curcumin", "Indian Saffron"]
+  },
+  "ING-TULSI": {
+    "canonical_id": "ING-TULSI",
+    "botanical_name": "Ocimum sanctum L.",
+    "sanskrit": ["तुलसी", "सुरसा", "अपराधिनी", "वृन्दा", "Tulsi"],
+    "hindi": ["तुलसी", "Tulsi"],
+    "marathi": ["तुळस", "Tulas"],
+    "tamil": ["துளசி", "Thulasi"],
+    "telugu": ["తులసి", "Tulasi"],
+    "kannada": ["ತುಳಸಿ", "Tulasi"],
+    "bengali": ["তুলসী", "Tulsi"],
+    "gujarati": ["તુલસી", "Tulsi"],
+    "malayalam": ["തുളസി", "Thulasi"],
+    "english": ["Holy Basil", "Sacred Basil", "Tulsi"]
+  }
+}

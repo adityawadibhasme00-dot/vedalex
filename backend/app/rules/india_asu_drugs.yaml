@@ -1,0 +1,39 @@
+rule_pack_id: "RULE-IN-ASU-2024"
+jurisdiction: "India"
+authority: "Ministry of AYUSH"
+governing_act: "Drugs and Cosmetics Act, 1940 & Rules, 1945"
+version: "1.2.0"
+rules:
+  - id: "RULE_ASU_CLASSICAL"
+    name: "Classical ASU Drug Classification"
+    statute_ref: "Rule 158-B(a)"
+    conditions:
+      - fact_key: "ingredients_conform_to_first_schedule"
+        operator: "equals"
+        expected_value: true
+      - fact_key: "process_conforms_to_classical_text"
+        operator: "equals"
+        expected_value: true
+    consequence:
+      category: "ASU Classical Medicine"
+      requirements:
+        - "Reference to specific First Schedule classical text on product label"
+        - "Schedule T GMP compliance certification"
+        - "State AYUSH Manufacturing License"
+
+  - id: "RULE_ASU_PROPRIETARY"
+    name: "ASU Patent / Proprietary Medicine"
+    statute_ref: "Rule 158-B(b)"
+    conditions:
+      - fact_key: "contains_only_permitted_ayush_ingredients"
+        operator: "equals"
+        expected_value: true
+      - fact_key: "is_novel_ratio_or_form"
+        operator: "equals"
+        expected_value: true
+    consequence:
+      category: "ASU Patent / Proprietary Medicine"
+      requirements:
+        - "Published safety / acute toxicity study or authoritative safety literature"
+        - "Proof of effectiveness / pilot clinical trial data"
+        - "Schedule T GMP manufacturing compliance"

@@ -1,0 +1,98 @@
+[
+  {
+    "state": "Maharashtra",
+    "code": "MH",
+    "ingredient": "Turmeric (Haldi)",
+    "botanical": "Curcuma longa",
+    "status": "verified",
+    "status_label": "Verified",
+    "note": "Major turmeric cultivation belt; API monograph 'Haridra'.",
+    "x_norm": 0.5,
+    "y_norm": 0.52,
+    "source": "Ayurvedic Pharmacopoeia of India · State agricultural records"
+  },
+  {
+    "state": "Karnataka",
+    "code": "KA",
+    "ingredient": "Tulsi (Holy Basil)",
+    "botanical": "Ocimum sanctum",
+    "status": "verified",
+    "status_label": "Verified",
+    "note": "Certified organic tulsi farms; TKDL classical-use references.",
+    "x_norm": 0.42,
+    "y_norm": 0.68,
+    "source": "Ministry of AYUSH · FSSAI Registration base"
+  },
+  {
+    "state": "Gujarat",
+    "code": "GJ",
+    "ingredient": "Aloe Vera",
+    "botanical": "Aloe barbadensis",
+    "status": "supplier_confirmed",
+    "status_label": "Supplier Confirmed",
+    "note": "Kutch aloe cultivation belt — supplier documents pending ABS verification.",
+    "x_norm": 0.32,
+    "y_norm": 0.48,
+    "source": "Supplier declaration · NBA ABS checkpoint"
+  },
+  {
+    "state": "Uttarakhand",
+    "code": "UK",
+    "ingredient": "Brahmi",
+    "botanical": "Bacopa monnieri",
+    "status": "verified",
+    "status_label": "Verified",
+    "note": "NAB-certified Brahmi source; monographed under API Medhya Rasyanas.",
+    "x_norm": 0.56,
+    "y_norm": 0.38,
+    "source": "Ayurvedic Pharmacopoeia of India"
+  },
+  {
+    "state": "Rajasthan",
+    "code": "RJ",
+    "ingredient": "Ashwagandha",
+    "botanical": "Withania somnifera",
+    "status": "verified",
+    "status_label": "Verified",
+    "note": "Nagauri ashwagandha geographical indication belt.",
+    "x_norm": 0.42,
+    "y_norm": 0.42,
+    "source": "GI registry · API monograph 'Ashwagandha'"
+  },
+  {
+    "state": "Kerala",
+    "code": "KL",
+    "ingredient": "Shatavari",
+    "botanical": "Asparagus racemosus",
+    "status": "verified",
+    "status_label": "Verified",
+    "note": "Western Ghats wildcrafted source; ABS benefit-sharing documented.",
+    "x_norm": 0.46,
+    "y_norm": 0.78,
+    "source": "NBA ABS agreement · State biodiversity board"
+  },
+  {
+    "state": "Tamil Nadu",
+    "code": "TN",
+    "ingredient": "Neem",
+    "botanical": "Azadirachta indica",
+    "status": "verified",
+    "status_label": "Verified",
+    "note": "Widely cultivated; heavy prior-art exposure — FTO scan recommended.",
+    "x_norm": 0.54,
+    "y_norm": 0.74,
+    "source": "WIPO PATENTSCOPE metadata · TKDL"
+  },
+  {
+    "state": "Madhya Pradesh",
+    "code": "MP",
+    "ingredient": "Amla",
+    "botanical": "Phyllanthus emblica",
+    "status": "supplier_confirmed",
+    "status_label": "Supplier Confirmed",
+    "note": "Amla belts across MP — supplier traceability record pending final audit.",
+    "x_norm": 0.5,
+    "y_norm": 0.46,
+    "source": "Supplier declaration · FSSAI traceability"
+  }
+]

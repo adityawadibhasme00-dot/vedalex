@@ -1,0 +1,135 @@
+[
+  {
+    "canonical_id": "ING-ASHWAGANDHA",
+    "botanical_name": "Withania somnifera (L.) Dunal",
+    "family": "Solanaceae",
+    "api_monograph_id": "API-VOL1-008",
+    "plant_parts": ["Root (Mula)"],
+    "geography": [
+      { "state": "Rajasthan", "status": "verified", "note": "Nagauri ashwagandha geographical-indication belt.", "source": "GI registry · API monograph 'Ashwagandha'" },
+      { "state": "Madhya Pradesh", "status": "supplier_confirmed", "note": "Cultivation belts across MP; supplier traceability pending final audit.", "source": "Supplier declaration" },
+      { "state": "Karnataka", "status": "pending", "note": "Scattered cultivation; source documents not yet verified.", "source": "Trade surveys" }
+    ],
+    "conservation_status": "Not listed as threatened; high-trade-demand industrial crop with expanding cultivation.",
+    "trade_demand_class": "Very High (NMPB high-demand list)",
+    "price_trend_note": "Root price trend stable-to-rising with demand growth from sleep/stress market; quality (withanolide content) drives premium.",
+    "provenance_options": ["Domestic Cultivated", "Contract farming", "Wild-collected (not recommended — inconsistent quality)"],
+    "abs_considerations": [
+      "Biological Diversity Act, 2002 (as amended 2023) applies when Indian biological resources are accessed and used commercially.",
+      "Cultivated, notified 'normally traded commodities' may be exempt from benefit-sharing; verify current NBA exempted list.",
+      "Rajasthan GI belt sourcing strengthens provenance claims and ABS documentation."
+    ],
+    "tk_considerations": [
+      "Classical Rasayana (Charaka Samhita) usage is documented in TKDL — expect dense prior-art on traditional indications.",
+      "Standard traditional uses are not patentable; novelty must target specific combinations, ratios or extraction markers."
+    ],
+    "ip_considerations": [
+      "Wide prior-art surface for root extracts; FTO scan recommended before filing.",
+      "Marker standardization (withanolide A / withaferin A) may support process claims."
+    ]
+  },
+  {
+    "canonical_id": "ING-BRAHMI",
+    "botanical_name": "Bacopa monnieri (L.) Wettst.",
+    "family": "Scrophulariaceae",
+    "api_monograph_id": "API-VOL2-014",
+    "plant_parts": ["Whole Plant (Pancanga)"],
+    "geography": [
+      { "state": "Uttarakhand", "status": "verified", "note": "NAB-certified Brahmi source; monographed under API Medhya Rasayana.", "source": "Ayurvedic Pharmacopoeia of India" },
+      { "state": "Maharashtra", "status": "supplier_confirmed", "note": "Wetland cultivation; supplier confirmed with pending ABS documentation.", "source": "Supplier declaration · NBA ABS checkpoint" }
+    ],
+    "conservation_status": "Wetland-habitat decline noted; cultivated supply encouraged over wildcrafting.",
+    "trade_demand_class": "Very High (NMPB high-demand list)",
+    "price_trend_note": "Whole-herb prices rising with cognition-market demand; competition from dried-leaf and standardized bacoside extracts.",
+    "provenance_options": ["Domestic Cultivated (wetland)", "Hydro-aquaculture", "Wildcrafted (discouraged)"],
+    "abs_considerations": [
+      "Wild-collected material triggers ABS benefit-sharing with the concerned State Biodiversity Board and NBA intimation.",
+      "Cultivated, notified exempt commodities avoid benefit-sharing — verify current NBA exempted list before sourcing strategy is locked."
+    ],
+    "tk_considerations": [
+      "Medhya Rasayana classical use documented; TKDL contains Brahmi references.",
+      "Composition claims combining Brahmi with adaptogens require synergy evidence under Indian Patents Act §3(p)."
+    ],
+    "ip_considerations": [
+      "Standard memory-enhancement claims are crowded prior art; novel bacoside ratio/processing may clear inventive-step bar."
+    ]
+  },
+  {
+    "canonical_id": "ING-SHANKHAPUSHPI",
+    "botanical_name": "Convolvulus pluricaulis Choisy",
+    "family": "Convolvulaceae",
+    "api_monograph_id": "API-VOL2-068",
+    "plant_parts": ["Whole Plant (Pancanga)"],
+    "geography": [
+      { "state": "Madhya Pradesh", "status": "supplier_confirmed", "note": "Collected from MP belt; supply-chain documentation partial.", "source": "Supplier declaration" },
+      { "state": "Uttarakhand", "status": "pending", "note": "Mountain-source collection reports; provenance unverified.", "source": "Trade surveys" }
+    ],
+    "conservation_status": "Habitat-pressure concern due to wild collection; cultivation scale-up recommended.",
+    "trade_demand_class": "High (cognitive-demand ingredient)",
+    "price_trend_note": "Price volatile with wild-availability; dried whole-herb standardization still lacking — quality gap is the market lever.",
+    "provenance_options": ["Domestic Cultivated", "Wildcrafted (controlled)", "Contract cultivation"],
+    "abs_considerations": [
+      "Wild-collected access requires SBB/NBA compliance and benefit-sharing documentation.",
+      "Little evidence of licensed wild-harvest permits — prioritize cultivated provenance for compliant sourcing."
+    ],
+    "tk_considerations": [
+      "Classical Nidrakari (sleep-promoting) and Medhya usage documented; TKDL coverage expected.",
+      "Modern clinical evidence is weak — traditional-use frame only for now."
+    ],
+    "ip_considerations": [
+      "Very thin modern clinical literature makes evidence-based patent claims difficult; focus on cultivation/extraction-process innovation."
+    ]
+  },
+  {
+    "canonical_id": "ING-HARIDRA",
+    "botanical_name": "Curcuma longa L.",
+    "family": "Zingiberaceae",
+    "api_monograph_id": "API-VOL1-030",
+    "plant_parts": ["Rhizome (Kanda)"],
+    "geography": [
+      { "state": "Maharashtra", "status": "verified", "note": "Major turmeric cultivation belt; API monograph 'Haridra'.", "source": "Ayurvedic Pharmacopoeia of India · State agricultural records" },
+      { "state": "Tamil Nadu", "status": "verified", "note": "Traditional cultivation stronghold (Erode belt heritage).", "source": "State agricultural records" }
+    ],
+    "conservation_status": "Extensively cultivated; no conservation concern.",
+    "trade_demand_class": "Very High (NMPB high-demand list)",
+    "price_trend_note": "Raw turmeric prices cyclical; curcumin-standardized extracts command structural premium.",
+    "provenance_options": ["Domestic Cultivated", "Organic certified", "Contract farming"],
+    "abs_considerations": [
+      "Widely notified/cultivated commodity — generally on exempted lists; confirm current NBA exempted commodities notice.",
+      "Organic certification adds provenance value without ABS burden."
+    ],
+    "tk_considerations": [
+      "Turmeric patents (e.g., wound-healing) form landmark prior-art history — novelty threshold is strict.",
+      "TKDL and classical texts (Charaka) document Kushta/Vrana uses."
+    ],
+    "ip_considerations": [
+      "Heavy patent clutter around curcumin formulations; FTO and inventive-step analysis mandatory before filing."
+    ]
+  },
+  {
+    "canonical_id": "ING-TULSI",
+    "botanical_name": "Ocimum sanctum / Ocimum tenuiflorum L.",
+    "family": "Lamiaceae",
+    "api_monograph_id": "API-VOL2-079",
+    "plant_parts": ["Leaf (Patra)"],
+    "geography": [
+      { "state": "Karnataka", "status": "verified", "note": "Certified organic tulsi farms; TKDL classical-use references.", "source": "Ministry of AYUSH · FSSAI registration base" },
+      { "state": "Uttar Pradesh", "status": "supplier_confirmed", "note": "Cultivation and collection across UP; supplier documentation partial.", "source": "Supplier declaration" }
+    ],
+    "conservation_status": "Widely cultivated; no conservation concern.",
+    "trade_demand_class": "High (leaf & extract demand, compounded by food/wellness use)",
+    "price_trend_note": "Leaf prices stable; eugenol-standardized extracts priced at premium.",
+    "provenance_options": ["Domestic Cultivated", "Organic certified", "Home/bulk farming"],
+    "abs_considerations": [
+      "Cultivated commodity use generally within ABS-exempted holdings; keep feedstock declarations on file.",
+      "Sacred status (not a legal exemption) should inform responsible sourcing narratives."
+    ],
+    "tk_considerations": [
+      "Classical Kasa/Shvasa usage documented; TKDL coverage expected.",
+      "Sacred-basil cultural association must not be confused with regulatory status."
+    ],
+    "ip_considerations": [
+      "Eugenol/ursolic-acid extracts are crowded market space; combination synergy or process claims remain the filing path."
+    ]
+  }
+]

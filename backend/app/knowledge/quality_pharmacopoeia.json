@@ -1,0 +1,87 @@
+[
+  {
+    "canonical_id": "ING-ASHWAGANDHA",
+    "api_monograph_id": "API-VOL1-008",
+    "parameters": [
+      { "param_name": "Botanical Identity (Macroscopic & Microscopic)", "spec": "Root morphology per API monograph", "test_method": "Organoleptic / Microscope", "available": true },
+      { "param_name": "Foreign Matter", "spec": "Not exceeding 2% w/w", "test_method": "API General Test", "available": true },
+      { "param_name": "Total Ash", "spec": "Not exceeding 6% w/w", "test_method": "API General Test", "available": true },
+      { "param_name": "Acid-Insoluble Ash", "spec": "Not exceeding 1.5% w/w", "test_method": "API General Test", "available": true },
+      { "param_name": "Alcohol-Soluble Extractive", "spec": "Not less than 5% w/w", "test_method": "API General Test", "available": true },
+      { "param_name": "Water-Soluble Extractive", "spec": "Not less than 18% w/w", "test_method": "API General Test", "available": true },
+      { "param_name": "Marker Compounds (Withaferin A / Withanolide A)", "spec": "Chromatographic fingerprint match", "test_method": "HPTLC", "available": true },
+      { "param_name": "Heavy Metals (Pb ≤10, Cd ≤0.3, As ≤3, Hg ≤1 ppm)", "spec": "WHO/ASU limits", "test_method": "ICP-MS / AAS", "available": true },
+      { "param_name": "Microbial Limits (Total Plate ≤1e5 cfu/g)", "spec": "Schedule T / BP Limits", "test_method": "Culture Plating", "available": false },
+      { "param_name": "Aflatoxins (B1 ≤5, Total ≤10 µg/kg)", "spec": "API/WHO limits", "test_method": "LC-MS / HPLC", "available": false },
+      { "param_name": "Pesticide Residues", "spec": "Within permissible limits", "test_method": "GC-MS/MS", "available": false }
+    ]
+  },
+  {
+    "canonical_id": "ING-BRAHMI",
+    "api_monograph_id": "API-VOL2-014",
+    "parameters": [
+      { "param_name": "Botanical Identity (Macroscopic & Microscopic)", "spec": "Whole plant per API monograph", "test_method": "Organoleptic / Microscope", "available": true },
+      { "param_name": "Foreign Matter", "spec": "Not exceeding 2% w/w", "test_method": "API General Test", "available": true },
+      { "param_name": "Total Ash", "spec": "Not exceeding 14% w/w", "test_method": "API General Test", "available": false },
+      { "param_name": "Acid-Insoluble Ash", "spec": "Not exceeding 6% w/w", "test_method": "API General Test", "available": false },
+      { "param_name": "Alcohol-Soluble Extractive", "spec": "Not less than 20% w/w", "test_method": "API General Test", "available": false },
+      { "param_name": "Water-Soluble Extractive", "spec": "Not less than 10% w/w", "test_method": "API General Test", "available": false },
+      { "param_name": "Marker Compounds (Bacoside A)", "spec": "Bacosides content per monograph", "test_method": "HPTLC", "available": true },
+      { "param_name": "Heavy Metals (Pb ≤10, Cd ≤0.3, As ≤3, Hg ≤1 ppm)", "spec": "WHO/ASU limits", "test_method": "ICP-MS / AAS", "available": true },
+      { "param_name": "Microbial Limits (Total Plate ≤1e5 cfu/g)", "spec": "Schedule T / BP Limits", "test_method": "Culture Plating", "available": false },
+      { "param_name": "Aflatoxins (B1 ≤5, Total ≤10 µg/kg)", "spec": "API/WHO limits", "test_method": "LC-MS / HPLC", "available": false },
+      { "param_name": "Pesticide Residues", "spec": "Within permissible limits", "test_method": "GC-MS/MS", "available": false }
+    ]
+  },
+  {
+    "canonical_id": "ING-SHANKHAPUSHPI",
+    "api_monograph_id": "API-VOL2-068",
+    "parameters": [
+      { "param_name": "Botanical Identity (Macroscopic & Microscopic)", "spec": "Whole plant per API monograph", "test_method": "Organoleptic / Microscope", "available": true },
+      { "param_name": "Foreign Matter", "spec": "Not exceeding 2% w/w", "test_method": "API General Test", "available": true },
+      { "param_name": "Total Ash", "spec": "Not exceeding 12% w/w", "test_method": "API General Test", "available": false },
+      { "param_name": "Acid-Insoluble Ash", "spec": "Not exceeding 5% w/w", "test_method": "API General Test", "available": false },
+      { "param_name": "Alcohol-Soluble Extractive", "spec": "Not less than 15% w/w", "test_method": "API General Test", "available": false },
+      { "param_name": "Water-Soluble Extractive", "spec": "Not less than 20% w/w", "test_method": "API General Test", "available": false },
+      { "param_name": "Marker Compounds (Scopoletin / Convolvine)", "spec": "Chromatographic fingerprint match", "test_method": "HPTLC", "available": false },
+      { "param_name": "Heavy Metals (Pb ≤10, Cd ≤0.3, As ≤3, Hg ≤1 ppm)", "spec": "WHO/ASU limits", "test_method": "ICP-MS / AAS", "available": true },
+      { "param_name": "Microbial Limits (Total Plate ≤1e5 cfu/g)", "spec": "Schedule T / BP Limits", "test_method": "Culture Plating", "available": false },
+      { "param_name": "Aflatoxins (B1 ≤5, Total ≤10 µg/kg)", "spec": "API/WHO limits", "test_method": "LC-MS / HPLC", "available": false },
+      { "param_name": "Pesticide Residues", "spec": "Within permissible limits", "test_method": "GC-MS/MS", "available": false }
+    ]
+  },
+  {
+    "canonical_id": "ING-HARIDRA",
+    "api_monograph_id": "API-VOL1-030",
+    "parameters": [
+      { "param_name": "Botanical Identity (Macroscopic & Microscopic)", "spec": "Rhizome per API monograph", "test_method": "Organoleptic / Microscope", "available": true },
+      { "param_name": "Foreign Matter", "spec": "Not exceeding 2% w/w", "test_method": "API General Test", "available": true },
+      { "param_name": "Total Ash", "spec": "Not exceeding 8% w/w", "test_method": "API General Test", "available": true },
+      { "param_name": "Acid-Insoluble Ash", "spec": "Not exceeding 1% w/w", "test_method": "API General Test", "available": true },
+      { "param_name": "Alcohol-Soluble Extractive", "spec": "Not less than 8% w/w", "test_method": "API General Test", "available": true },
+      { "param_name": "Water-Soluble Extractive", "spec": "Not less than 14% w/w", "test_method": "API General Test", "available": false },
+      { "param_name": "Marker Compounds (Curcumin ≥2%)", "spec": "Curcumin content assay", "test_method": "HPTLC / UV-Vis", "available": true },
+      { "param_name": "Heavy Metals (Pb ≤10, Cd ≤0.3, As ≤3, Hg ≤1 ppm)", "spec": "WHO/ASU limits", "test_method": "ICP-MS / AAS", "available": true },
+      { "param_name": "Microbial Limits (Total Plate ≤1e5 cfu/g)", "spec": "Schedule T / BP Limits", "test_method": "Culture Plating", "available": false },
+      { "param_name": "Aflatoxins (B1 ≤5, Total ≤10 µg/kg)", "spec": "API/WHO limits", "test_method": "LC-MS / HPLC", "available": false },
+      { "param_name": "Pesticide Residues", "spec": "Within permissible limits", "test_method": "GC-MS/MS", "available": false }
+    ]
+  },
+  {
+    "canonical_id": "ING-TULSI",
+    "api_monograph_id": "API-VOL2-079",
+    "parameters": [
+      { "param_name": "Botanical Identity (Macroscopic & Microscopic)", "spec": "Leaf per API monograph", "test_method": "Organoleptic / Microscope", "available": true },
+      { "param_name": "Foreign Matter", "spec": "Not exceeding 2% w/w", "test_method": "API General Test", "available": true },
+      { "param_name": "Total Ash", "spec": "Not exceeding 13% w/w", "test_method": "API General Test", "available": false },
+      { "param_name": "Acid-Insoluble Ash", "spec": "Not exceeding 2% w/w", "test_method": "API General Test", "available": false },
+      { "param_name": "Alcohol-Soluble Extractive", "spec": "Not less than 15% w/w", "test_method": "API General Test", "available": false },
+      { "param_name": "Water-Soluble Extractive", "spec": "Not less than 22% w/w", "test_method": "API General Test", "available": false },
+      { "param_name": "Marker Compounds (Eugenol)", "spec": "Eugenol content per monograph", "test_method": "HPTLC / GC", "available": false },
+      { "param_name": "Heavy Metals (Pb ≤10, Cd ≤0.3, As ≤3, Hg ≤1 ppm)", "spec": "WHO/ASU limits", "test_method": "ICP-MS / AAS", "available": true },
+      { "param_name": "Microbial Limits (Total Plate ≤1e5 cfu/g)", "spec": "Schedule T / BP Limits", "test_method": "Culture Plating", "available": false },
+      { "param_name": "Aflatoxins (B1 ≤5, Total ≤10 µg/kg)", "spec": "API/WHO limits", "test_method": "LC-MS / HPLC", "available": false },
+      { "param_name": "Pesticide Residues", "spec": "Within permissible limits", "test_method": "GC-MS/MS", "available": false }
+    ]
+  }
+]

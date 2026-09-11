@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ipsakti_postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=ipsakti
+      - POSTGRES_PASSWORD=ipsakti_secret
+      - POSTGRES_DB=ipsakti
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ipsakti"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.1
+    container_name: ipsakti_qdrant
+    restart: always
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__SERVICE__HTTP_PORT=6333
+    volumes:
+      - qdrant_data:/qdrant/storage
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:6333/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ipsakti_backend
+    restart: always
+    environment:
+      - ENVIRONMENT=production
+      - HOST=0.0.0.0
+      - PORT=8000
+      - CORS_ORIGINS=http://localhost:3000,https://ipsakti.in
+      - DATABASE_URL=postgresql://ipsakti:ipsakti_secret@postgres:5432/ipsakti
+      - QDRANT_URL=http://qdrant:6333
+      - IPSAKTI_USE_BGE_M3=1
+      - IPSAKTI_USE_RERANKER=1
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/exports:/app/exports
+      - ./backend/uploads:/app/uploads
+      - ./backend/data:/app/data
+      - ./backend/app/rag/faiss_index:/app/app/rag/faiss_index
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ipsakti_frontend
+    restart: always
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1
+      - NODE_ENV=production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  qdrant_data:

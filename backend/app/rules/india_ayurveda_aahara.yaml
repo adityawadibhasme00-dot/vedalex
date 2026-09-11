@@ -1,0 +1,38 @@
+rule_pack_id: "RULE-IN-AAHARA-2022"
+jurisdiction: "India"
+authority: "Food Safety and Standards Authority of India (FSSAI)"
+governing_act: "Food Safety and Standards (Ayurveda Aahara) Regulations, 2022"
+version: "1.0.0"
+rules:
+  - id: "RULE_AYURVEDA_AAHARA_ELIGIBLE"
+    name: "Ayurveda Aahara Eligible Pathway"
+    statute_ref: "Regulation 4 & Schedule I"
+    conditions:
+      - fact_key: "ingredients_on_aahara_positive_list"
+        operator: "equals"
+        expected_value: true
+      - fact_key: "claim_contains_disease_treatment"
+        operator: "equals"
+        expected_value: false
+      - fact_key: "form_is_dietary_food"
+        operator: "equals"
+        expected_value: true
+    consequence:
+      category: "Ayurveda Aahara (FSSAI Food Category)"
+      requirements:
+        - "FSSAI Central Licensing under Ayurveda Aahara category"
+        - "Prominent display of official Ayurveda Aahara logo on label"
+        - "Heavy metal, pesticide and microbiological purity lab report"
+        - "Mandatory text: 'For dietary use only, not for medicinal use'"
+
+  - id: "RULE_AAHARA_PROHIBITED_CLAIM"
+    name: "Ayurveda Aahara Claim Violation"
+    statute_ref: "Regulation 4(2)"
+    conditions:
+      - fact_key: "claim_contains_disease_treatment"
+        operator: "equals"
+        expected_value: true
+    consequence:
+      category: "Disqualified from Ayurveda Aahara (Requires ASU Drug License)"
+      requirements:
+        - "Must remove disease cure/treatment claims or apply for AYUSH Drug License"

@@ -1,0 +1,18 @@
+[
+  {
+    "tk_reference_id": "TK-CLASSIC-CHARAKA-01",
+    "source_text": "Charaka Samhita, Chikitsa Sthana, Chapter 1 (Rasayana Adhyaya)",
+    "canonical_ingredients": ["ING-ASHWAGANDHA", "ING-BRAHMI"],
+    "traditional_indication": "Nidrajanana, Balya, Medhya Rasayana (Promotes sleep and cognitive revitalization)",
+    "traditional_processing": "Aqueous decoction (Kwatha) boiled with cow's milk (Ksheerapaka)",
+    "relevance_under_sec3p": "Demonstrates prior traditional use of Ashwagandha + Brahmi for calming and sleep enhancement. Patent claims lacking surprising synergy are non-patentable under Section 3(p)."
+  },
+  {
+    "tk_reference_id": "TK-CLASSIC-SUSHRUTA-04",
+    "source_text": "Sushruta Samhita, Sutra Sthana, Chapter 38",
+    "canonical_ingredients": ["ING-HARIDRA", "ING-TULSI"],
+    "traditional_indication": "Krimighna, Shothahara, Vranashodhana",
+    "traditional_processing": "Fine powder (Choorna) or fresh juice (Svarasa)",
+    "relevance_under_sec3p": "Established classical prior art for anti-inflammatory and antiseptic topical formulations."
+  }
+]

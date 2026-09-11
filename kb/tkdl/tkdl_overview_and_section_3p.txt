@@ -1,0 +1,11 @@
+TKDL overview
+The Traditional Knowledge Digital Library (TKDL) is a collaborative project between the Council of Scientific and Industrial Research (CSIR) and the Department of Ayurveda, Yoga & Naturopathy, Unani, Siddha and Homoeopathy (AYUSH) of the Government of India. TKDL converts ancient traditional medical knowledge contained in Ayurveda, Unani, Siddha and Yoga into modern searchable digitised formats. It was established to protect traditional knowledge from being mis-appropriated in foreign patent applications.
+
+TKDL as prior art
+TKDL records are structured as prior art in five languages (English, French, German, Japanese, Spanish) and are accessible to patent offices worldwide under TKDL Access Agreements. When an examiner finds a TKDL reference in a patent search, it mounts a defensive disclosure against the pending application, preventing grants for traditional-knowledge aggregations.
+
+TKDL and Section 3(p)
+Indian Patents Act 1970, Section 3(p) excludes "an invention which in effect, is traditional knowledge or which is an aggregation or duplication of known properties of traditionally known component or components" from patentability. TKDL documentation of a formulation or use acts as the evidentiary base for examiners applying Section 3(p).
+
+How the IP-SAKTI system uses TKDL data
+When a user asks about a traditional formulation, the RAG engine searches TKDL-derived records in the knowledge base and cites the TKDL source file with exact passages, giving the confidence that the answer is grounded in documented prior art rather than generated from memory.
