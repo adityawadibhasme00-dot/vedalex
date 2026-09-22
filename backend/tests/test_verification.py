@@ -84,7 +84,7 @@ def test_evidence_confidence_bands():
     )
     assert ec.overall >= 0.5
     assert ec.band in ("HIGH", "MEDIUM", "LOW", "INSUFFICIENT")
-    assert len(ec.signals) == 6
+    assert len(ec.signals) == 7
 
 
 def test_unsupported_claims_removed_from_final_answer():

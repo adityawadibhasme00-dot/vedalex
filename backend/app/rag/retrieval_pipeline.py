@@ -83,7 +83,9 @@ class HybridRetriever:
         logger.info(f"BM25 index built: {len(corpus)} documents")
 
     @classmethod
-    def bm25_search(cls, query: str, top_k: int = 20) -> List[Dict[str, Any]]:
+    def bm25_search(
+        cls, query: str, top_k: int = 20, domains: Optional[List[str]] = None
+    ) -> List[Dict[str, Any]]:
         """Keyword search using BM25 scoring."""
         if cls._bm25_index is None:
             # Auto-build index from Qdrant if available (or KB files)
@@ -109,17 +111,28 @@ class HybridRetriever:
         query_tokens = re.findall(r'\w+', query.lower())
         scores = cls._bm25_index.get_scores(query_tokens)
 
-        scored_indices = sorted(
-            range(len(scores)), key=lambda i: scores[i], reverse=True
-        )
+        if domains:
+            domain_set = set(domains)
+            scored = [
+                (i, float(scores[i]))
+                for i in range(len(scores))
+                if scores[i] > 0
+                and cls._bm25_corpus[i].get("collection") in domain_set
+            ]
+        else:
+            scored = [
+                (i, float(scores[i]))
+                for i in range(len(scores))
+                if scores[i] > 0
+            ]
+        scored.sort(key=lambda x: x[1], reverse=True)
 
         results = []
-        for idx in scored_indices[:top_k]:
-            if scores[idx] > 0:
-                doc = cls._bm25_corpus[idx].copy()
-                doc["bm25_score"] = float(scores[idx])
-                doc["bm25_rank"] = len(results) + 1
-                results.append(doc)
+        for idx, score in scored[:top_k]:
+            doc = cls._bm25_corpus[idx].copy()
+            doc["bm25_score"] = score
+            doc["bm25_rank"] = len(results) + 1
+            results.append(doc)
 
         return results
 
@@ -133,11 +146,12 @@ class HybridRetriever:
         query: str,
         top_k: int = 20,
         filters: Optional[Dict[str, Any]] = None,
+        domains: Optional[List[str]] = None,
     ) -> List[Dict[str, Any]]:
-        """Semantic search via Qdrant."""
+        """Semantic search via Qdrant restricted to intent-relevant domains."""
         from app.rag.qdrant_store import QdrantVectorStore
         store = QdrantVectorStore()
-        return store.hybrid_search(query, top_k=top_k, filters=filters)
+        return store.hybrid_search(query, top_k=top_k, filters=filters, domains=domains)
 
     # ------------------------------------------------------------------
     # BM25 Keyword Search (legacy fallback via retrieval_engine)
@@ -173,8 +187,26 @@ class HybridRetriever:
         return results
 
     # ------------------------------------------------------------------
-    # Merge + Deduplicate
+    # Merge + Deduplicate (Reciprocal Rank Fusion)
     # ------------------------------------------------------------------
+
+    RRF_K = 60.0
+
+    @staticmethod
+    def _rrf_score(rank: int) -> float:
+        """Reciprocal Rank Fusion contribution for a document at 1-based rank."""
+        return 1.0 / (HybridRetriever.RRF_K + rank)
+
+    @staticmethod
+    def _doc_merge_key(doc: Dict[str, Any]) -> str:
+        """Stable dedup identity across retrieval strategies."""
+        doc_id = doc.get("doc_id") or doc.get("id") or ""
+        source = doc.get("source") or ""
+        act_title = doc.get("act_title") or ""
+        content_snip = (doc.get("content") or "")[:100]
+        if act_title:
+            return f"stat:{act_title}|{source}|{content_snip[:60]}"
+        return f"{doc_id}|{source}|{content_snip}"
 
     @classmethod
     def _merge_results(
@@ -183,65 +215,55 @@ class HybridRetriever:
         bm25_results: List[Dict[str, Any]],
         statutory_results: List[Dict[str, Any]],
     ) -> List[Dict[str, Any]]:
-        """Merge results from all sources, deduplicate, and normalize scores."""
-        seen = set()
-        merged = []
+        """Fuse all retrieval lists with Reciprocal Rank Fusion, dedupe, and
+        normalise per-source scores. Statutory sources keep a small authority
+        tiebreak so binding law surfaces first when RRF scores are equal."""
+        merged: Dict[str, Dict[str, Any]] = {}
 
-        # Semantic results (highest priority)
-        for i, doc in enumerate(semantic_results):
-            key = (doc.get("doc_id", ""), doc.get("source", ""), doc.get("content", "")[:80])
-            if key in seen:
-                continue
-            seen.add(key)
-            doc["retrieval_method"] = "semantic"
-            doc["semantic_rank"] = i + 1
-            doc["semantic_score"] = doc.get("score", 0)
-            merged.append(doc)
+        for i, doc in enumerate(semantic_results, start=1):
+            key = cls._doc_merge_key(doc)
+            entry = merged.setdefault(key, {**doc, "retrieval_methods": set()})
+            entry.setdefault("semantic_rank", i)
+            entry.setdefault("semantic_score", doc.get("score", 0))
+            entry["retrieval_methods"].add("semantic")
 
-        # BM25 results (complementary)
-        for i, doc in enumerate(bm25_results):
-            key = (doc.get("doc_id", ""), doc.get("source", ""), doc.get("content", "")[:80])
-            if key in seen:
-                # Boost existing entry
-                for m in merged:
-                    if (m.get("doc_id", "") == doc.get("doc_id", "") and
-                            m.get("source", "") == doc.get("source", "")):
-                        m["bm25_score"] = doc.get("bm25_score", 0)
-                        m["bm25_rank"] = i + 1
-                        m["retrieval_method"] = "hybrid"
-                        break
-                continue
-            seen.add(key)
-            doc["retrieval_method"] = "keyword"
-            doc["bm25_rank"] = i + 1
-            merged.append(doc)
+        for i, doc in enumerate(bm25_results, start=1):
+            key = cls._doc_merge_key(doc)
+            entry = merged.setdefault(key, {**doc, "retrieval_methods": set()})
+            entry.setdefault("bm25_rank", i)
+            entry.setdefault("bm25_score", doc.get("bm25_score", 0))
+            entry["retrieval_methods"].add("keyword")
 
-        # Statutory results (authoritative override)
-        for i, doc in enumerate(statutory_results):
-            key = (doc.get("act_title", ""), doc.get("source", ""), doc.get("content", "")[:80])
-            if key in seen:
-                continue
-            seen.add(key)
-            doc["retrieval_method"] = "statutory"
-            doc["statutory_rank"] = i + 1
-            merged.append(doc)
+        for i, doc in enumerate(statutory_results, start=1):
+            key = cls._doc_merge_key(doc)
+            entry = merged.setdefault(key, {**doc, "retrieval_methods": set()})
+            entry.setdefault("statutory_rank", i)
+            entry["retrieval_methods"].add("statutory")
 
-        # Compute combined score
-        for doc in merged:
-            semantic_s = doc.get("semantic_score", 0)
-            bm25_s = doc.get("bm25_score", 0)
-            authority = 1.0 / max(1, int(doc.get("authority_level", 3)))
-            is_statutory = 1.5 if doc.get("retrieval_method") == "statutory" else 1.0
+        for entry in merged.values():
+            rrf = 0.0
+            if "semantic" in entry["retrieval_methods"]:
+                rrf += cls._rrf_score(entry["semantic_rank"])
+            if "keyword" in entry["retrieval_methods"]:
+                rrf += cls._rrf_score(entry["bm25_rank"])
+            if "statutory" in entry["retrieval_methods"]:
+                rrf += cls._rrf_score(entry["statutory_rank"])
 
-            doc["combined_score"] = (
-                semantic_s * 0.45 +
-                min(bm25_s / 10.0, 1.0) * 0.25 +
-                authority * 0.20 +
-                is_statutory * 0.10
+            # Authority/Fusion tiebreak (secondary, keeps statutes on top).
+            authority = 1.0 / max(1, int(entry.get("authority_level", 3)))
+            is_statutory = 1.0 if "statutory" in entry["retrieval_methods"] else 0.0
+            entry["rrf_score"] = round(rrf, 6)
+            entry["combined_score"] = round(rrf + authority * 0.05 + is_statutory * 0.03, 6)
+            entry["retrieval_method"] = (
+                "hybrid" if len(entry["retrieval_methods"]) > 1
+                else next(iter(entry["retrieval_methods"]))
             )
+            entry["retrieval_methods"] = sorted(entry["retrieval_methods"])
 
-        merged.sort(key=lambda x: x.get("combined_score", 0), reverse=True)
-        return merged
+        out = sorted(merged.values(), key=lambda x: x.get("combined_score", 0), reverse=True)
+        for i, doc in enumerate(out, start=1):
+            doc["final_rank"] = i
+        return out
 
     # ------------------------------------------------------------------
     # Metadata Filtering
@@ -363,9 +385,14 @@ class HybridRetriever:
         filters: Optional[Dict[str, Any]] = None,
         jurisdiction: Optional[str] = None,
         category: Optional[str] = None,
+        domains: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
         Full hybrid retrieval pipeline.
+
+        Args:
+            domains: Intent-relevant curated collections to restrict the search
+                to. None searches every available collection.
 
         Returns:
             {
@@ -387,12 +414,14 @@ class HybridRetriever:
             effective_filters["jurisdiction"] = jurisdiction
 
         # Step 1: Qdrant semantic search
-        semantic_results = cls.qdrant_search(query, top_k=20, filters=effective_filters)
+        semantic_results = cls.qdrant_search(
+            query, top_k=20, filters=effective_filters, domains=domains
+        )
         semantic_time = time.time() - start
 
         # Step 2: BM25 keyword search
         bm25_start = time.time()
-        bm25_results = cls.bm25_search(query, top_k=20)
+        bm25_results = cls.bm25_search(query, top_k=20, domains=domains)
         bm25_time = time.time() - bm25_start
 
         # Step 3: Statutory search
@@ -446,6 +475,7 @@ class HybridRetriever:
                 "statutory_results": len(statutory_results),
                 "merged_count": len(merged),
                 "final_count": len(reranked),
+                "domains_filtered": domains,
                 "semantic_time_ms": round(semantic_time * 1000, 1),
                 "bm25_time_ms": round(bm25_time * 1000, 1),
                 "statutory_time_ms": round(stat_time * 1000, 1),
@@ -521,6 +551,7 @@ class HybridRetriever:
             "reranker": {
                 "available": _is_reranker_available(),
             },
+            "live_web": _get_official_web_status(),
         }
 
 
@@ -560,6 +591,14 @@ def _is_qdrant_available() -> bool:
         return False
 
 
+def _get_official_web_status() -> Dict[str, Any]:
+    try:
+        from app.rag.official_web_retriever import get_status
+        return get_status()
+    except Exception:
+        return {"enabled": False, "reason": "unavailable"}
+
+
 def _warmup_rag_pipeline() -> None:
     """Preload BGE-M3 embeddings and build the BM25 index so the first
     /rag/* request responds without the model-loading penalty."""
@@ -581,6 +620,15 @@ def _warmup_rag_pipeline() -> None:
     except Exception as e:
         import logging
         logging.getLogger(__name__).warning(f"RAG warm-up status/index failed: {e}")
+
+    # Pre-load the fast entailment embedder in the background thread
+    # so its load doesn't compete with the first user request.
+    try:
+        from app.rag.semantic_entailment import _init_fast_embedder
+        _init_fast_embedder()
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"RAG warm-up fast embedder failed: {e}")
 
     # Pre-touch the reranker so its (possibly failed) load attempt happens
     # in the background thread instead of on the first user request.

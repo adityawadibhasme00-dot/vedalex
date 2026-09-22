@@ -8,6 +8,7 @@ import { Button } from './ui/Button';
 import { StatCard } from './ui/StatCard';
 import { useLang } from '../lib/LangContext';
 import { t } from '../lib/i18n';
+import Text3D from './landing/Text3D';
 
 interface DashboardOverviewProps {
   passport: InnovationPassport | null;
@@ -45,15 +46,19 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
     <div className="space-y-6 animate-slide-up">
       {/* Hero */}
       <GlassCard padding="lg" className="relative overflow-hidden">
-        <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-blue-500/[0.12] blur-3xl" />
-        <div className="absolute -bottom-24 -left-16 w-64 h-64 rounded-full bg-violet-500/[0.1] blur-3xl" />
+        <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-amber-500/[0.12] blur-3xl" />
+        <div className="absolute -bottom-24 -left-16 w-64 h-64 rounded-full bg-emerald-800/[0.12] blur-3xl" />
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
             <p className="text-sm text-slate-500 mb-2 font-display">{t('welcome_back', lang)} <span className="text-slate-900 font-semibold">Aditya</span></p>
-            <h1 className="text-3xl md:text-4xl font-bold font-display text-slate-900 tracking-tight leading-tight">
-              <span className="text-gradient">{t('transform_ayurveda', lang)}</span>
-            </h1>
-            <div className="flex items-center gap-2 mt-3 text-xs text-emerald-700">
+            <Text3D
+              as="h1"
+              style="typewriter"
+              gradient
+              text={t('transform_ayurveda', lang)}
+              className="text-3xl md:text-4xl font-bold font-display tracking-tight leading-tight"
+            />
+            <div className="flex items-center gap-2 mt-3 text-xs text-amber-700">
               <ShieldCheck className="w-4 h-4" />
               <span>RAG-grounded · Source-cited · DPDP compliant</span>
             </div>

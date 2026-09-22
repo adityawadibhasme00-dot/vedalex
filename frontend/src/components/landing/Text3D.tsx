@@ -59,7 +59,7 @@ function TypewriterText({ text, className, delay = 0 }: { text: string; classNam
     <span ref={ref as any} className={className}>
       {text.slice(0, count)}
       {count < text.length && visible && (
-        <span className="inline-block w-[3px] h-[0.85em] bg-emerald-600 ml-0.5 animate-pulse align-middle" />
+        <span className="inline-block w-[3px] h-[0.85em] bg-amber-600 ml-0.5 animate-pulse align-middle" />
       )}
     </span>
   );

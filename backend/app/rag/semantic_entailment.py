@@ -21,6 +21,7 @@ rather than:
 
 import re
 import math
+import os
 from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
@@ -138,40 +139,94 @@ def _cosine_similarity(vec_a: List[float], vec_b: List[float]) -> float:
 # In-memory evidence vector cache: content text -> embedding vector.
 # Sources repeat across claims and across requests; re-embedding the same
 # passage for every claim is the dominant CPU cost on the BGE-M3 model.
+#
+# Entailment does NOT need the heavy multilingual BGE-M3 model; a small
+# sentence encoder (default: all-MiniLM-L6-v2) gives ~10x faster embedding
+# on CPU with comparable short-text cosine similarity. The cache is
+# keyed per model so mixed-model runs never corrupt each other.
 _EVIDENCE_VECTOR_CACHE: Dict[str, Any] = {}
 _EVIDENCE_CACHE_MAX = 512
 
 
-def _cache_evidence_vector(text: str, vector: Any) -> Any:
+def _cache_evidence_vector(text: str, vector: Any, model_key: str) -> Any:
     if len(_EVIDENCE_VECTOR_CACHE) >= _EVIDENCE_CACHE_MAX:
         _EVIDENCE_VECTOR_CACHE.clear()
-    _EVIDENCE_VECTOR_CACHE[text] = vector
+    _EVIDENCE_VECTOR_CACHE[f"{model_key}:{text}"] = vector
     return vector
 
 
 def _get_evidence_vectors(
     engine: Any,
     evidence_texts: List[str],
+    model_key: str,
 ) -> List[Any]:
     """Return cached (or freshly embedded) vectors for the evidence texts."""
     vectors: List[Any] = [None] * len(evidence_texts)
     missing_idx: List[int] = []
     missing_texts: List[str] = []
     for i, text in enumerate(evidence_texts):
-        if text in _EVIDENCE_VECTOR_CACHE:
-            vectors[i] = _EVIDENCE_VECTOR_CACHE[text]
+        cache_key = f"{model_key}:{text}"
+        if cache_key in _EVIDENCE_VECTOR_CACHE:
+            vectors[i] = _EVIDENCE_VECTOR_CACHE[cache_key]
         else:
             missing_idx.append(i)
             missing_texts.append(text)
 
     if missing_texts:
-        new_vecs = engine.embed(missing_texts)
+        new_vecs = engine(missing_texts)
         for j, text in enumerate(missing_texts):
             vec = new_vecs[j]
-            _cache_evidence_vector(text, vec)
+            _cache_evidence_vector(text, vec, model_key)
             vectors[missing_idx[j]] = vec
 
     return vectors
+
+
+_FAST_MODEL_INSTANCE: Any = None
+_FAST_MODEL_NAME: Optional[str] = None
+
+
+def _init_fast_embedder() -> str:
+    """
+    Lazily load the lightweight entailment embedder.
+
+    Returns the model key used for the evidence cache:
+      "fast:<model>" when the light model loaded
+      "primary"      otherwise (falls back to the main EmbeddingEngine)
+    """
+    global _FAST_MODEL_INSTANCE, _FAST_MODEL_NAME
+    if _FAST_MODEL_NAME is not None:
+        return _FAST_MODEL_INSTANCE is not None and f"fast:{_FAST_MODEL_NAME}" or "primary"
+
+    if os.environ.get("IPSAKTI_FAST_ENTAILMENT", "1").lower() == "0":
+        _FAST_MODEL_NAME = ""
+        return "primary"
+
+    try:
+        from sentence_transformers import SentenceTransformer
+        model_name = os.environ.get(
+            "IPSAKTI_ENTAILMENT_MODEL",
+            "sentence-transformers/all-MiniLM-L6-v2",
+        )
+        logger.info(f"Loading fast entailment embedder: {model_name}")
+        _FAST_MODEL_INSTANCE = SentenceTransformer(model_name)
+        _FAST_MODEL_NAME = model_name
+        return f"fast:{model_name}"
+    except Exception as e:
+        logger.warning(
+            f"Fast entailment embedder unavailable ({e}); using primary engine"
+        )
+        _FAST_MODEL_NAME = ""
+        return "primary"
+
+
+def _fast_embed(texts: List[str]):
+    return _FAST_MODEL_INSTANCE.encode(
+        texts,
+        normalize_embeddings=True,
+        show_progress_bar=False,
+        batch_size=32,
+    )
 
 
 def check_entailments_batch(
@@ -192,14 +247,18 @@ def check_entailments_batch(
         return []
 
     claim_emb_scores: Optional[List[List[float]]] = None
+    model_key = _init_fast_embedder()
     try:
-        from app.rag.embeddings import EmbeddingEngine
-        engine = EmbeddingEngine()
+        if model_key.startswith("fast:"):
+            embed_fn = _fast_embed
+        else:
+            from app.rag.embeddings import EmbeddingEngine
+            embed_fn = EmbeddingEngine().embed
 
         evidence_texts = [c.get("content", "") for c in evidence_chunks]
-        evidence_vecs = _get_evidence_vectors(engine, evidence_texts)
+        evidence_vecs = _get_evidence_vectors(embed_fn, evidence_texts, model_key)
 
-        claim_vecs = engine.embed(claims)
+        claim_vecs = embed_fn(claims)
         claim_emb_scores = [
             [_cosine_similarity(cv, ev) for ev in evidence_vecs]
             for cv in claim_vecs

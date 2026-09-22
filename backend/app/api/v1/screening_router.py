@@ -1,6 +1,6 @@
 import json
 import os
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from app.services.passport_engine import PassportEngine
@@ -16,7 +16,7 @@ class ScreeningRequest(BaseModel):
 async def screen_ip_tk(req: ScreeningRequest):
     passport = PassportEngine.get_passport(req.passport_id)
     if not passport:
-        passport = PassportEngine.create_from_intake("Ashwagandha + Brahmi")
+        raise HTTPException(status_code=404, detail="Passport not found")
 
     # Formulation fingerprint
     ingredients_data = [ing.model_dump() for ing in passport.ingredients]

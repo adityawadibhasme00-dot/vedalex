@@ -1,4 +1,5 @@
 import os
+import secrets
 from pydantic_settings import BaseSettings
 from typing import List
 
@@ -10,12 +11,13 @@ class Settings(BaseSettings):
     PORT: int = 8000
     HOST: str = "0.0.0.0"
     
-    # CORS
+    # CORS — wildcard "*" is removed; it defeats allow_credentials and the
+    # origin allow-list.  Set CORS_ORIGINS as a comma-separated env var for
+    # production deployments.
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "https://ipsakti.in",
-        "*"
     ]
     
     # Latency & Cost SLOs (Section 7.2.3)
@@ -30,8 +32,15 @@ class Settings(BaseSettings):
     GRIEVANCE_OFFICER_EMAIL: str = "grievance@ipsakti.in"
     DATA_LOCALIZATION_REGION: str = "ap-south-1 (Mumbai, India)"
     
-    # Backend API Secret (never sent to frontend)
-    BACKEND_API_KEY_SECRET: str = "ipsakti_secure_production_secret_key_2026"
+    # Backend API Secret — must be overridden via BACKEND_API_KEY_SECRET env var
+    # in production.  A random value is generated per-process if unset so that
+    # committed defaults can never be used as a shared secret.
+    BACKEND_API_KEY_SECRET: str = ""
+
+    def __init__(self, **values):
+        super().__init__(**values)
+        if not self.BACKEND_API_KEY_SECRET:
+            self.BACKEND_API_KEY_SECRET = secrets.token_hex(32)
     
     class Config:
         env_file = ".env"

@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any
 from app.services.passport_engine import PassportEngine
@@ -13,6 +13,6 @@ class RedTeamRequest(BaseModel):
 async def challenge_innovation(req: RedTeamRequest):
     passport = PassportEngine.get_passport(req.passport_id)
     if not passport:
-        passport = PassportEngine.create_from_intake("Ashwagandha + Brahmi formulation")
+        raise HTTPException(status_code=404, detail="Passport not found")
 
     return RedTeamModule.challenge_innovation(passport)

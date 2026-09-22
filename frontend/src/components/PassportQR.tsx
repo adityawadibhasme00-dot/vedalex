@@ -71,11 +71,10 @@ export default function PassportQR({ passport }: PassportQRProps) {
         <span className="text-xs font-bold text-slate-900">{Hi('Scan to download passport', 'पासपोर्ट डाउनलोड करने के लिए स्कैन करें')}</span>
       </div>
 
-      <div className="rounded-xl border-2 border-emerald-900/10 bg-white p-2">
-        {qr ? (
-          <canvas ref={canvasRef} className="block" />
-        ) : (
-          <div className="w-[168px] h-[168px] flex items-center justify-center text-[11px] text-slate-400">
+      <div className="relative rounded-xl border-2 border-emerald-900/10 bg-white p-2">
+        <canvas ref={canvasRef} className={`block ${qr ? '' : 'invisible'}`} />
+        {!qr && (
+          <div className="absolute inset-0 flex items-center justify-center text-[11px] text-slate-400">
             {Hi('Generating QR…', 'QR बन रहा है…')}
           </div>
         )}

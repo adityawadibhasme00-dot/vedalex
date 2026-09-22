@@ -230,6 +230,73 @@ export interface CopilotAnalysisCard {
   executive_summary: string;
 }
 
+export interface CopilotDecisionRule {
+  rule: string;
+  status: string;
+  detail?: string;
+}
+
+export interface CopilotDecisionTrace {
+  question: string;
+  jurisdiction: { detected: string; cue?: string; applied_filters?: string[] };
+  intent?: { id: string; label: string };
+  retrieval?: {
+    method: string;
+    source_count: number;
+    candidate_count?: number;
+    llm_draft?: boolean;
+    llm_provider?: string;
+  };
+  rules_applied: CopilotDecisionRule[];
+  confidence?: number;
+  verification_badge?: string;
+  answer_preview?: string;
+}
+
+export interface CopilotEscalation {
+  recommended: boolean;
+  type: string;
+  type_label?: string;
+  type_label_hi?: string;
+  urgency: string;
+  urgency_label?: string;
+  urgency_label_hi?: string;
+  reason_en?: string;
+  reason_hi?: string;
+  organization?: string;
+  website?: string;
+  confidence_below_threshold?: boolean;
+}
+
+export interface CopilotResponseSections {
+  direct_answer?: string;
+  key_requirements?: string[];
+  why_this_matters?: string;
+  official_sources_used?: {
+    source?: string;
+    category?: string;
+    authority?: string;
+    collection?: string;
+    vote?: string;
+    quote?: string;
+  }[];
+  confidence?: number;
+  next_recommended_action?: string[];
+  jurisdiction?: string;
+  disclaimer?: string;
+}
+
+export interface CopilotProductClassification {
+  category?: string;
+  category_label?: string;
+  category_label_hi?: string;
+  pathway_category?: string;
+  pathway_confidence?: string;
+  risk_level?: string;
+  reasons?: string[];
+  [key: string]: unknown;
+}
+
 export interface CopilotResponse {
   answer: string;
   sources: CopilotSource[];
@@ -241,6 +308,14 @@ export interface CopilotResponse {
   analysis_card?: CopilotAnalysisCard;
   evidence_used?: { name: string; type: string }[];
   next_actions?: string[];
+  jurisdiction?: { detected: string; cue?: string; applied_filters?: string[] };
+  decision_trace?: CopilotDecisionTrace;
+  verification?: Record<string, unknown>;
+  detected_language?: string;
+  response_sections?: CopilotResponseSections | null;
+  product_classification?: CopilotProductClassification | null;
+  product_classification_bilingual?: CopilotProductClassification | null;
+  escalation?: CopilotEscalation | null;
 }
 
 // ─── Patent Analysis ────────────────────────────────────────────────────────────
@@ -425,11 +500,13 @@ export interface ParsedIngredient {
   family?: string;
   plant_part?: string;
   confidence: number;
+  status?: 'resolved' | 'unresolved';
 }
 
 export interface FormulationParseResponse {
   detected_language: string;
   ingredients: ParsedIngredient[];
+  unresolved: string[];
   raw_text: string;
 }
 
@@ -574,6 +651,50 @@ export interface BioResourceGraphResponse {
   disclaimer: string;
 }
 
+// ─── Dynamic Bio-Resource Knowledge Graph ──────────────────────────────────
+export interface KnowledgeGraphNode {
+  id: string;
+  label: string;
+  category: string;
+  x: number;
+  y: number;
+  details: string;
+  sourceAuthority?: string;
+  collection?: string;
+  sourceUrl?: string;
+}
+
+export interface KnowledgeGraphEdge {
+  from: string;
+  to: string;
+  label: string;
+  color?: string;
+}
+
+export interface InnovationGraphIngredient {
+  raw_name: string;
+  canonical_id: string;
+  botanical_name: string;
+  api_monograph_id: string;
+  monographed: boolean;
+}
+
+export interface SelectedInnovationInfo {
+  title: string;
+  kind: 'Single Herb' | 'Polyherbal Formulation' | string;
+  ingredients: InnovationGraphIngredient[];
+}
+
+export interface InnovationKnowledgeGraphResponse {
+  selected_innovation: SelectedInnovationInfo;
+  nodes: KnowledgeGraphNode[];
+  edges: KnowledgeGraphEdge[];
+  collections_used: string[];
+  evidence_found: boolean;
+  evidence_note: string;
+  disclaimer: string;
+}
+
 // ─── Product Classifier ─────────────────────────────────────────────────────
 export interface PathwayScore {
   pathway: string;
@@ -581,13 +702,32 @@ export interface PathwayScore {
   match_reasons: string[];
 }
 
+export interface ClassifierEvidence {
+  collection: string;
+  title: string;
+  passage: string;
+  source: string;
+  authority: string;
+  source_url: string;
+}
+
+export interface RuleValidationCheck {
+  rule: string;
+  status: 'SATISFIED' | 'NOT_SATISFIED' | 'INSUFFICIENT';
+  verdict: 'Compliant' | 'Attention needed' | 'Information required';
+  reason: string;
+  source: string;
+}
+
 export interface ProductClassifierResponse {
   passport_id?: string;
+  product_name: string;
   product_form: string;
   dosage_form: string;
   intended_use: string;
   claims: string[];
   ingredients: string[];
+  intent_detected: string;
   likely_pathway: string;
   pathway_category: string;
   pathway_confidence: 'HIGH' | 'MEDIUM' | 'LOW';
@@ -596,6 +736,49 @@ export interface ProductClassifierResponse {
   applicable_authority: string;
   applicable_sources: string[];
   next_actions: string[];
+  evidence: ClassifierEvidence[];
+  rule_validation: RuleValidationCheck[];
+  regulatory_pathway: string;
+  ip_readiness: string;
+  abs_status: string;
+  risk_level: 'LOW' | 'MODERATE' | 'HIGH';
+  recommended_next_step: string;
+  disclaimer: string;
+  decision_path?: string[];
+  classification_mode?: 'form_based' | 'wizard_based';
+  abs_assessment?: ABSComplianceResponse | null;
+}
+
+// ─── ABS / NBA Compliance ───────────────────────────────────────────────────
+export interface ABSObligation {
+  obligation: string;
+  status: 'required' | 'applicable' | 'exempt' | 'not_applicable' | 'info_required';
+  citation: string;
+  note: string;
+}
+
+export interface ABSBenefitSharing {
+  applicable: boolean;
+  slab: string;
+  rate_pct: number;
+  amount_inr?: number;
+  basis: string;
+  citation: string;
+}
+
+export interface ABSComplianceResponse {
+  status: 'exempt' | 'compliance_required' | 'info_required' | 'not_applicable';
+  user_type: string;
+  turnover_inr?: number;
+  codified_tk?: boolean;
+  wild_collected?: boolean;
+  commercial_use: boolean;
+  exemption_reason: string;
+  benefit_sharing: ABSBenefitSharing;
+  obligations: ABSObligation[];
+  required_approvals: string[];
+  citations: string[];
+  decision_path: string[];
   disclaimer: string;
 }
 
@@ -642,4 +825,108 @@ export interface TerminologyMapResponse {
   nearest_possible: string[];
   rag_hint: string;
   source: string;
+}
+
+// ─── White Space Navigator ──────────────────────────────────────────────────
+export interface WhiteSpaceDimension {
+  label: string;
+  value: number;
+  weight: number;
+}
+
+export interface WhiteSpaceCell {
+  herb: string;
+  form: string;
+  value: number;
+  label: 'opportunity' | 'medium' | 'crowded';
+  rationale: string;
+}
+
+export interface WhiteSpaceHeatmap {
+  title: string;
+  herbs: string[];
+  forms: string[];
+  colors: Record<string, string>;
+  cells: WhiteSpaceCell[];
+}
+
+export interface WhiteSpaceRadar {
+  labels: string[];
+  values: number[];
+}
+
+export interface WhiteSpaceLandscapeNode {
+  id: string;
+  label: string;
+  type: string;
+  group: number;
+}
+
+export interface WhiteSpaceLandscapeLink {
+  source: string;
+  target: string;
+  weight?: number;
+  strength?: number;
+}
+
+export interface WhiteSpaceLandscape {
+  nodes: WhiteSpaceLandscapeNode[];
+  links: WhiteSpaceLandscapeLink[];
+}
+
+export interface WhiteSpaceEvidence {
+  source: string;
+  snippet: string;
+}
+
+export interface WhiteSpaceTKReference {
+  tk_reference_id: string;
+  source_text: string;
+  relevance_under_sec3p?: string;
+}
+
+export interface WhiteSpaceCard {
+  title: string;
+  score: number;
+  badge: 'opportunity' | 'medium' | 'crowded';
+  why: string;
+  patent_density: string;
+  next_action: string;
+  xai: {
+    patent_evidence: WhiteSpaceEvidence[];
+    tkdl_overlap: string;
+    section3p: string;
+    confidence: number;
+    rationale: string;
+    insufficient: boolean;
+  };
+}
+
+export interface WhiteSpaceMutation {
+  product_form?: string;
+  dosage_form?: string;
+  process_description?: string;
+  claimed_innovation?: string;
+  intended_use?: string;
+  ingredients?: Array<string | Record<string, unknown>>;
+}
+
+export interface WhiteSpaceResponse {
+  passport_id: string;
+  case_title: string;
+  overall_score: number;
+  status: string;
+  tk_risk: number;
+  patent_readiness: number;
+  section3p: string;
+  dimensions: WhiteSpaceDimension[];
+  heatmap: WhiteSpaceHeatmap;
+  radar: WhiteSpaceRadar;
+  landscape: WhiteSpaceLandscape;
+  cards: WhiteSpaceCard[];
+  recommendations: string[];
+  filters: Record<string, string[]>;
+  confidence: number;
+  generated_at: string;
+  mutated: boolean;
 }

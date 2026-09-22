@@ -126,9 +126,15 @@ async def ask_query(
         "label": raw_intent.get("label", "General RAG"),
     }
 
-    # Step 3: Generate answer (using existing orchestrator logic)
+    # Step 3: Generate answer (using existing orchestrator logic). The sources
+    # retrieved above are passed in so the orchestrator does NOT re-run the
+    # (embedding + rerank) hybrid pipeline a second time.
     from app.services.copilot_orchestrator import AICopilotOrchestrator
-    orchestrator_result = AICopilotOrchestrator.run(req.query, req.passport_id)
+    orchestrator_result = AICopilotOrchestrator.run(
+        req.query,
+        req.passport_id,
+        retrieved_sources=sources,
+    )
 
     answer = orchestrator_result.get("answer", "")
     charts = orchestrator_result.get("charts", [])

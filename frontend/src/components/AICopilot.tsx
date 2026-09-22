@@ -1,9 +1,10 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, Loader2, ChevronDown, Copy, Check, Library, Mic, Volume2, VolumeX, AudioLines, Lightbulb, ShieldCheck, ShieldAlert, AlertTriangle, ListChecks, Target, BarChart3, PieChart as PieChartIcon, Radar as RadarIcon, Gauge, GitBranch, MapPin, ShieldQuestion, Table2 } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Loader2, ChevronDown, Copy, Check, Library, Mic, Volume2, VolumeX, AudioLines, Lightbulb, ShieldCheck, ShieldAlert, AlertTriangle, ListChecks, Target, BarChart3, PieChart as PieChartIcon, Radar as RadarIcon, Gauge, GitBranch, MapPin, ShieldQuestion, Table2, Compass, Scale, Hash, UserCheck } from 'lucide-react';
 import { askCopilot, getSuggestedQuestions } from '../lib/api';
-import { CopilotResponse, CopilotChart } from '../types';
+import { CopilotResponse, CopilotChart, CopilotSource, CopilotDecisionTrace, CopilotProductClassification } from '../types';
 import { HerbSprig, TulsiLeaf, TurmericRoot, MortarPestle } from './BotanicalDecor';
+import ExpertHandoffModal from './ExpertHandoffModal';
 import { BarChart as RCBarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, RadarChart, Radar, PolarGrid, PolarAngleAxis } from 'recharts';
 import { GlassCard } from './ui/GlassCard';
 import { Button } from './ui/Button';
@@ -24,11 +25,21 @@ const DEFAULT_SUGGESTIONS = [
 ];
 
 const RAG_SOURCES = [
-  { name: 'Ayurvedic Pharmacopoeia of India', category: 'Verified', color: 'emerald' },
-  { name: 'Charaka Samhita', category: 'Classical Text', color: 'blue' },
-  { name: 'PubMed', category: 'Peer-Reviewed', color: 'violet' },
-  { name: 'WIPO Metadata', category: 'Patent Data', color: 'amber' },
+  { name: 'Ayurvedic Pharmacopoeia of India', category: 'Verified', color: 'emerald', snippet: '' },
+  { name: 'Charaka Samhita', category: 'Classical Text', color: 'blue', snippet: '' },
+  { name: 'PubMed', category: 'Peer-Reviewed', color: 'violet', snippet: '' },
+  { name: 'WIPO Metadata', category: 'Patent Data', color: 'amber', snippet: '' },
 ];
+
+interface PanelSource {
+  name: string;
+  category: string;
+  snippet: string;
+}
+
+function isPositiveBadge(badge?: string): boolean {
+  return /^(Verified|Grounded|Regenerated)/i.test(badge || '');
+}
 
 interface Message {
   role: 'user' | 'assistant';
@@ -41,7 +52,137 @@ interface Message {
   evidenceUsed?: CopilotResponse['evidence_used'];
   nextActions?: CopilotResponse['next_actions'];
   intent?: CopilotResponse['intent'];
+  jurisdiction?: CopilotResponse['jurisdiction'];
+  decisionTrace?: CopilotDecisionTrace;
+  detectedLanguage?: string;
+  responseSections?: CopilotResponse['response_sections'];
+  escalation?: CopilotResponse['escalation'];
+  productClassification?: CopilotProductClassification;
+  verification?: Record<string, unknown>;
   timestamp: number;
+}
+
+function VerificationBadges({ verification }: { verification: Record<string, unknown> }) {
+  const band = typeof verification.band === 'string' ? verification.band : '';
+  const ratio = typeof verification.supported_ratio === 'number' ? verification.supported_ratio : null;
+  if (!band && ratio === null) return null;
+  return (
+    <div className="mt-2 flex items-center gap-2 flex-wrap">
+      {band && (
+        <Badge variant={band === 'HIGH' ? 'success' : band === 'MEDIUM' ? 'warning' : 'danger'} dot>
+          Verified {band}
+        </Badge>
+      )}
+      {ratio !== null && (
+        <span className="text-[10px] text-slate-500">{Math.round(ratio * 100)}% claims supported</span>
+      )}
+    </div>
+  );
+}
+
+const JURISDICTIONS = [
+  { id: 'India', hint: 'D&C Act · AYUSH · FSSAI · IP India · Patent Act' },
+  { id: 'International', hint: 'WIPO · PCT · Madrid · WHO · cross-border export' },
+] as const;
+
+function DecisionTracePanel({ trace }: { trace: CopilotDecisionTrace }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white/80">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center gap-1.5 px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-indigo-600 transition"
+        aria-expanded={open}
+      >
+        <GitBranch className="w-3.5 h-3.5 text-indigo-500" />
+        How was this determined?
+        <span className={`ml-auto inline-flex items-center gap-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${
+          trace.jurisdiction?.detected === 'International'
+            ? 'bg-sky-100 text-sky-700'
+            : 'bg-emerald-100 text-emerald-700'
+        }`}>
+          <Compass className="w-2.5 h-2.5" /> {trace.jurisdiction?.detected ?? 'India'} scope
+        </span>
+        <ChevronDown className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="px-3 pb-3 space-y-2.5 animate-slide-up">
+          <div className="rounded-lg bg-[#0D1425] px-3 py-2.5 space-y-2">
+            {trace.jurisdiction?.detected && (
+              <div className="flex items-start gap-2 text-[10px] text-slate-300">
+                <Scale className="w-3.5 h-3.5 text-amber-300 mt-0.5 flex-shrink-0" />
+                <div>
+                  <span className="text-slate-400 font-semibold">Jurisdiction routing: </span>
+                  {trace.jurisdiction.detected}
+                  {trace.jurisdiction.cue && (
+                    <span className="text-slate-500"> · cue “{trace.jurisdiction.cue}”</span>
+                  )}
+                  {trace.jurisdiction.applied_filters && trace.jurisdiction.applied_filters.length > 0 && (
+                    <span className="text-slate-500"> · filtered on {trace.jurisdiction.applied_filters.join(', ')}</span>
+                  )}
+                </div>
+              </div>
+            )}
+            {trace.intent?.label && (
+              <div className="flex items-start gap-2 text-[10px] text-slate-300">
+                <Target className="w-3.5 h-3.5 text-blue-300 mt-0.5 flex-shrink-0" />
+                <div>
+                  <span className="text-slate-400 font-semibold">Intent detected: </span>
+                  {trace.intent.label}
+                </div>
+              </div>
+            )}
+            {trace.retrieval && (
+              <div className="flex items-start gap-2 text-[10px] text-slate-300">
+                <Library className="w-3.5 h-3.5 text-violet-300 mt-0.5 flex-shrink-0" />
+                <div>
+                  <span className="text-slate-400 font-semibold">Retrieval: </span>
+                  {trace.retrieval.source_count} source(s) served · {trace.retrieval.method}
+                  {trace.retrieval.llm_draft
+                    ? ` · fluent draft ${trace.retrieval.llm_provider ?? ''}`
+                    : ' · rule-engine text retained'}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            {(trace.rules_applied ?? []).map((rule, i) => {
+              const good = rule.status === 'PASS';
+              const warn = rule.status === 'PARTIAL' || rule.status === 'WARN';
+              return (
+                <div key={i} className="flex items-start gap-2 text-[10px] text-slate-600">
+                  {rule.status === 'PASS' ? (
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  ) : rule.status === 'BLOCK' ? (
+                    <ShieldAlert className="w-3.5 h-3.5 text-red-500 mt-0.5 flex-shrink-0" />
+                  ) : (
+                    <AlertTriangle className={`w-3.5 h-3.5 ${warn ? 'text-amber-500' : 'text-slate-400'} mt-0.5 flex-shrink-0`} />
+                  )}
+                  <div>
+                    <span className={`font-bold ${good ? 'text-emerald-700' : rule.status === 'BLOCK' ? 'text-red-600' : warn ? 'text-amber-700' : 'text-slate-500'}`}>
+                      {rule.rule}
+                    </span>
+                    {rule.detail && <span className="text-slate-500"> — {rule.detail}</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {typeof trace.confidence === 'number' && (
+            <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-100">
+              <span>
+                <Hash className="w-3 h-3 inline -mt-0.5 text-slate-400" /> Final confidence {trace.confidence}%
+              </span>
+              <span className="font-semibold text-slate-700">{trace.verification_badge ?? 'Decided'}</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function confidenceTone(c?: number): 'success' | 'warning' | 'danger' {
@@ -365,10 +506,15 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_SUGGESTIONS);
+  const [panelSources, setPanelSources] = useState<PanelSource[]>(
+    RAG_SOURCES.map((s) => ({ name: s.name, category: s.category, snippet: s.snippet }))
+  );
   const [showSources, setShowSources] = useState<Record<number, boolean>>({});
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [voiceOutput, setVoiceOutput] = useState(false);
   const [speakingMsgId, setSpeakingMsgId] = useState<number | null>(null);
+  const [jurisdiction, setJurisdiction] = useState<'India' | 'International'>('India');
+  const [handoffMsgId, setHandoffMsgId] = useState<number | null>(null);
   const pendingTranscript = useRef('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -415,9 +561,41 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
     setIsLoading(true);
 
     try {
-      const res = await askCopilot(question, passportId);
-      const msg: Message = { role: 'assistant', content: res.answer, sources: res.sources, confidence: res.confidence, charts: res.charts, images: res.images, analysisCard: res.analysis_card, evidenceUsed: res.evidence_used, nextActions: res.next_actions, intent: res.intent, timestamp: Date.now() };
+      const res = await askCopilot(question, passportId, { jurisdiction });
+      const msg: Message = {
+        role: 'assistant',
+        content: res.answer,
+        sources: res.sources,
+        confidence: res.confidence,
+        charts: res.charts,
+        images: res.images,
+        analysisCard: res.analysis_card,
+        evidenceUsed: res.evidence_used,
+        nextActions: res.next_actions,
+        intent: res.intent,
+        jurisdiction: res.jurisdiction,
+        decisionTrace: res.decision_trace,
+        detectedLanguage: res.detected_language,
+        responseSections: res.response_sections,
+        escalation: res.escalation,
+        productClassification: res.product_classification_bilingual || res.product_classification,
+        verification: res.verification,
+        timestamp: Date.now(),
+      };
       setMessages((prev) => [...prev, msg]);
+      const live: PanelSource[] = (res.sources || [])
+        .map((s: CopilotSource, idx: number) => ({
+          name: s.source || `Source ${idx + 1}`,
+          category: s.category || 'Retrieved',
+          snippet: s.content ? s.content.replace(/\s+/g, ' ').slice(0, 110) : '',
+        }))
+        .filter((s: PanelSource, i: number, arr: PanelSource[]) => arr.findIndex((x: PanelSource) => x.name === s.name) === i)
+        .slice(0, 6);
+      setPanelSources(
+        live.length
+          ? live
+          : RAG_SOURCES.map((s) => ({ name: s.name, category: s.category, snippet: s.snippet }))
+      );
       if (voiceOutput && voice.synthSupported) {
         setSpeakingMsgId(messages.length + 1);
         voice.speak(res.answer, () => setSpeakingMsgId(null));
@@ -470,22 +648,44 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
   };
 
   return (
+    <>
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-5 animate-slide-up">
       {/* Chat panel */}
       <GlassCard className="flex flex-col overflow-hidden !p-0 h-[calc(100vh-240px)] min-h-[520px]">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-emerald-200 bg-emerald-50 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-emerald-200 bg-emerald-50 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
               <Bot className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                AI Copilot <Badge variant="info" dot><Sparkles className="w-3 h-3" /> RAG-Powered</Badge>
+                Jurisdiction-Aware AI Copilot <Badge variant="info" dot><Sparkles className="w-3 h-3" /> RAG-Powered</Badge>
               </div>
-              <div className="text-[10px] text-slate-500">Retrieval-grounded · rule-verified · never answers from memory</div>
+              <div className="text-[10px] text-slate-500">Evidence-grounded · jurisdiction-routed · rule-verified</div>
             </div>
           </div>
+
+          {/* Jurisdiction Toggle — India vs International */}
+          <div className="flex items-center gap-1 rounded-full border border-emerald-300 bg-white p-1 shadow-sm" title="Answers are rooted in the selected jurisdiction's law and authorities">
+            {JURISDICTIONS.map((j) => (
+              <button
+                key={j.id}
+                type="button"
+                onClick={() => setJurisdiction(j.id)}
+                title={j.hint}
+                className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition flex items-center gap-1.5 ${
+                  jurisdiction === j.id
+                    ? 'bg-blue-600 text-white shadow'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <Compass className="w-3 h-3" />
+                {j.id}
+              </button>
+            ))}
+          </div>
+
           {voice.synthSupported && (
             <button
               onClick={() => setVoiceOutput((v) => !v)}
@@ -523,7 +723,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                   <TulsiLeaf className="w-4 h-4 text-emerald-600" />
                 </div>
                 <p className="text-sm text-slate-500 max-w-md">
-                  Patentability, regulatory compliance, evidence requirements — grounded in retrieved sources.
+                  Patentability, regulatory compliance, evidence requirements — grounded in retrieved sources and routed to your working jurisdiction.
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-2 max-w-xl">
@@ -548,12 +748,12 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                   <div className="mb-2 rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-white p-3.5 shadow-sm">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        {msg.analysisCard.verification_badge === 'Insufficient Evidence' ? (
-                          <AlertTriangle className="w-4 h-4 text-amber-600" />
-                        ) : (
+                        {isPositiveBadge(msg.analysisCard.verification_badge) ? (
                           <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                        ) : (
+                          <AlertTriangle className="w-4 h-4 text-amber-600" />
                         )}
-                        <span className={`text-[11px] font-bold ${msg.analysisCard.verification_badge === 'Insufficient Evidence' ? 'text-amber-700' : 'text-emerald-700'}`}>
+                        <span className={`text-[11px] font-bold ${isPositiveBadge(msg.analysisCard.verification_badge) ? 'text-emerald-700' : 'text-amber-700'}`}>
                           {msg.analysisCard.verification_badge}
                         </span>
                       </div>
@@ -629,6 +829,146 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                       ))}
                     </ol>
                   </div>
+                )}
+
+                {msg.role === 'assistant' && msg.escalation && msg.escalation.recommended && (
+                  <div className="mt-2 rounded-xl border border-amber-300 bg-gradient-to-br from-amber-50 to-white p-3.5 shadow-sm">
+                    <div className="flex items-center justify-between gap-2 flex-wrap mb-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <AlertTriangle className={`w-4 h-4 ${msg.escalation.urgency === 'high' ? 'text-red-500' : 'text-amber-500'}`} />
+                        <span className={`text-[10px] font-bold uppercase tracking-wider ${msg.escalation.urgency === 'high' ? 'text-red-600' : 'text-amber-700'}`}>
+                          Expert escalation {msg.escalation.urgency_label ? `· ${msg.escalation.urgency_label}` : ''}
+                        </span>
+                      </div>
+                      {msg.escalation.urgency_label_hi && (
+                        <span className="text-[10px] font-semibold text-slate-500">{msg.escalation.urgency_label_hi}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-800 bg-blue-100 px-2 py-0.5 rounded-full">
+                        <UserCheck className="w-3 h-3 text-blue-600" /> {msg.escalation.type_label ?? msg.escalation.type}
+                      </span>
+                      {msg.escalation.type_label_hi && (
+                        <span className="inline-flex items-center text-[10px] text-slate-500">{msg.escalation.type_label_hi}</span>
+                      )}
+                    </div>
+                    {msg.escalation.reason_en && <p className="text-[11px] text-slate-600 leading-relaxed">{msg.escalation.reason_en}</p>}
+                    {msg.escalation.reason_hi && (
+                      <p className="text-[10px] text-slate-500 leading-relaxed mt-1">{msg.escalation.reason_hi}</p>
+                    )}
+                    {msg.escalation.organization && (
+                      <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-2">
+                        <ShieldQuestion className="w-3 h-3 text-slate-400" /> {msg.escalation.organization}
+                        {msg.escalation.website && (
+                          <a href={msg.escalation.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1" onClick={(e) => e.stopPropagation()}>
+                            Visit official site ↗
+                          </a>
+                        )}
+                      </div>
+                    )}
+                    {passportId && (
+                      <div className="mt-3">
+                        <button
+                          onClick={() => setHandoffMsgId(i)}
+                          className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 px-3 py-1.5 rounded-xl shadow transition"
+                        >
+                          <UserCheck className="w-3.5 h-3.5" /> Send to Certified Expert
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {msg.role === 'assistant' && msg.productClassification && (
+                  <div className="mt-2 rounded-xl border border-indigo-200 bg-indigo-50/50 p-3">
+                    <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                      <Table2 className="w-3 h-3 text-indigo-600" /> Product classification
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                      <span className="inline-flex items-center text-[11px] font-bold text-indigo-700 bg-white border border-indigo-200 px-2 py-0.5 rounded-full">
+                        {msg.productClassification.category_label ?? msg.productClassification.pathway_category ?? msg.productClassification.category}
+                      </span>
+                      {msg.productClassification.category_label_hi && (
+                        <span className="text-[10px] text-slate-500">{msg.productClassification.category_label_hi}</span>
+                      )}
+                      {(msg.productClassification.pathway_confidence || msg.productClassification.risk_level) && (
+                        <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 ml-auto">
+                          {msg.productClassification.pathway_confidence && (
+                            <span className={`font-semibold ${msg.productClassification.pathway_confidence === 'HIGH' ? 'text-emerald-600' : msg.productClassification.pathway_confidence === 'MEDIUM' ? 'text-amber-600' : 'text-slate-500'}`}>
+                              {msg.productClassification.pathway_confidence}
+                            </span>
+                          )}
+                          {msg.productClassification.risk_level && (
+                            <span className={`font-semibold px-1.5 py-0.5 rounded-full ${msg.productClassification.risk_level === 'High' ? 'bg-red-100 text-red-700' : msg.productClassification.risk_level === 'Moderate' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                              {msg.productClassification.risk_level} risk
+                            </span>
+                          )}
+                        </span>
+                      )}
+                    </div>
+                    {msg.productClassification.reasons && Array.isArray(msg.productClassification.reasons) && msg.productClassification.reasons.length > 0 && (
+                      <ul className="space-y-0.5 mt-1">
+                        {msg.productClassification.reasons.map((r: unknown, j: number) => (
+                          <li key={j} className="text-[10px] text-slate-500 leading-relaxed">• {String(r)}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
+                {msg.role === 'assistant' && msg.responseSections && (
+                  <div className="mt-2 rounded-xl border border-slate-200 bg-white/80 p-3 space-y-2.5">
+                    <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                      <Scale className="w-3 h-3 text-blue-600" /> Structured analysis
+                    </div>
+                    {msg.responseSections.direct_answer && (
+                      <p className="text-[11px] text-slate-600 leading-relaxed">{msg.responseSections.direct_answer}</p>
+                    )}
+                    {msg.responseSections.key_requirements && msg.responseSections.key_requirements.length > 0 && (
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-500 mb-1">Key requirements</div>
+                        <ul className="space-y-0.5">
+                          {msg.responseSections.key_requirements.map((req, j) => (
+                            <li key={j} className="flex items-start gap-1.5 text-[10px] text-slate-600">
+                              <span className="w-3.5 h-3.5 rounded-full bg-emerald-100 text-emerald-600 text-[8px] font-bold flex items-center justify-center flex-shrink-0 mt-px">{j + 1}</span>
+                              {req}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {msg.responseSections.why_this_matters && (
+                      <p className="text-[10px] text-slate-500 leading-relaxed">{msg.responseSections.why_this_matters}</p>
+                    )}
+                    {msg.responseSections.official_sources_used && msg.responseSections.official_sources_used.length > 0 && (
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-500 mb-1">Official sources used</div>
+                        <ul className="space-y-1">
+                          {msg.responseSections.official_sources_used.map((src, j) => (
+                            <li key={j} className="rounded-lg border border-slate-100 bg-emerald-50/60 px-2 py-1.5">
+                              <div className="flex items-center gap-1.5 text-[10px] text-slate-700">
+                                <Library className="w-3 h-3 text-violet-500" />
+                                <span className="font-semibold">{src.source}</span>
+                                {src.vote && <span className="text-blue-600 font-bold ml-auto">vote {src.vote}</span>}
+                              </div>
+                              {src.quote && <p className="text-[9px] text-slate-500 mt-0.5 leading-relaxed">"{src.quote}"</p>}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {msg.responseSections.disclaimer && (
+                      <p className="text-[9px] text-slate-400 italic leading-relaxed">{msg.responseSections.disclaimer}</p>
+                    )}
+                  </div>
+                )}
+
+                {msg.role === 'assistant' && msg.verification && (
+                  <VerificationBadges verification={msg.verification} />
+                )}
+
+                {msg.role === 'assistant' && msg.decisionTrace && Object.keys(msg.decisionTrace).length > 0 && (
+                  <DecisionTracePanel trace={msg.decisionTrace} />
                 )}
 
                 {msg.role === 'assistant' && msg.images && msg.images.length > 0 && (
@@ -767,9 +1107,9 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
             <Library className="w-4 h-4 text-violet-600" />
             <h3 className="text-sm font-bold text-slate-900">Sources Used</h3>
           </div>
-          <p className="text-[11px] text-slate-500 mb-3">Every answer cites verified authoritative sources.</p>
+          <p className="text-[11px] text-slate-500 mb-3">Every answer cites verified authoritative sources from the knowledge base.</p>
           <div className="space-y-2">
-            {RAG_SOURCES.map((src) => (
+            {panelSources.map((src) => (
               <button key={src.name} className="w-full text-left px-3.5 py-3 rounded-xl bg-emerald-50 border border-emerald-200 hover:border-violet-400 transition group">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-slate-700 flex items-center gap-2">
@@ -777,6 +1117,9 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                   </span>
                 </div>
                 <div className="text-[10px] text-slate-500 mt-1">{src.category}</div>
+                {src.snippet && (
+                  <div className="text-[10px] text-slate-400 mt-1 line-clamp-2">{src.snippet}</div>
+                )}
               </button>
             ))}
           </div>
@@ -790,5 +1133,14 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
         </GlassCard>
       </div>
     </div>
+    {passportId && handoffMsgId !== null && messages[handoffMsgId]?.escalation && (
+      <ExpertHandoffModal
+        isOpen={true}
+        onClose={() => setHandoffMsgId(null)}
+        passportId={passportId}
+        initialExpertType={messages[handoffMsgId].escalation?.type}
+      />
+    )}
+    </>
   );
 }

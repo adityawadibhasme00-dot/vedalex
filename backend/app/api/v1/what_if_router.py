@@ -15,7 +15,7 @@ class WhatIfRequest(BaseModel):
 async def simulate_what_if(req: WhatIfRequest):
     passport = PassportEngine.get_passport(req.passport_id)
     if not passport:
-        passport = PassportEngine.create_from_intake("Ashwagandha + Brahmi formulation")
+        raise HTTPException(status_code=404, detail="Passport not found")
 
     response = WhatIfSimulatorEngine.simulate_claim_mutation(passport, req.mutated_claims)
     return response

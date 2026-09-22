@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from app.services.passport_engine import PassportEngine
@@ -28,7 +28,7 @@ class FTOCheckResponse(BaseModel):
 async def check_fto(req: FTOCheckRequest):
     passport = PassportEngine.get_passport(req.passport_id)
     if not passport:
-        passport = PassportEngine.create_from_intake("Ashwagandha + Brahmi")
+        raise HTTPException(status_code=404, detail="Passport not found")
 
     ingredient_names = [ing.botanical_name or ing.raw_name for ing in passport.ingredients]
     query = " ".join(ingredient_names) + " " + (passport.claimed_innovation or "")

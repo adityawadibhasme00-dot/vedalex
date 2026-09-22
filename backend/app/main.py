@@ -7,11 +7,31 @@ _BACKEND_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _BACKEND_ROOT not in sys.path:
     sys.path.insert(0, _BACKEND_ROOT)
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import init_db
 from app.api.v1.router import api_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # ---- startup ----
+    try:
+        init_db()
+    except Exception as e:
+        print(f"Database initialization skipped: {e}")
+
+    try:
+        from app.rag.retrieval_pipeline import _warmup_rag_pipeline
+        threading.Thread(target=_warmup_rag_pipeline, daemon=True).start()
+    except Exception as e:
+        print(f"RAG warm-up skipped: {e}")
+
+    yield
+    # ---- shutdown (if needed) ----
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -19,7 +39,8 @@ app = FastAPI(
     description="IP-SAKTI — A multilingual, RAG-based (source-cited) AI assistant for Intellectual Property and regulatory guidance in Ayurveda, across national and international regimes.",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     docs_url=f"{settings.API_V1_STR}/docs",
-    redoc_url=f"{settings.API_V1_STR}/redoc"
+    redoc_url=f"{settings.API_V1_STR}/redoc",
+    lifespan=lifespan,
 )
 
 # CORS Setup
@@ -30,22 +51,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Initialize database tables
-@app.on_event("startup")
-async def startup_event():
-    try:
-        init_db()
-    except Exception as e:
-        print(f"Database initialization skipped: {e}")
-
-    # Warm up RAG pipeline (BGE-M3 model + BM25 index) so the first
-    # /rag/* request does not pay the model-loading penalty.
-    try:
-        from app.rag.retrieval_pipeline import _warmup_rag_pipeline
-        threading.Thread(target=_warmup_rag_pipeline, daemon=True).start()
-    except Exception as e:
-        print(f"RAG warm-up skipped: {e}")
 
 # Include v1 Router
 app.include_router(api_router, prefix=settings.API_V1_STR)

@@ -8,16 +8,33 @@ interface ExpertHandoffModalProps {
   isOpen: boolean;
   onClose: () => void;
   passportId: string;
+  initialExpertType?: string;
 }
+
+const EXPERT_TYPE_OPTIONS = [
+  { value: 'Registered Patent Agent', label: 'Registered Patent Agent (Indian Patent Office / Section 3(p) Specialist)' },
+  { value: 'AYUSH Regulatory Consultant', label: 'AYUSH Regulatory Consultant (Drugs & Cosmetics Act / FSSAI 2022)' },
+  { value: 'Export Compliance Consultant', label: 'US FDA & Health Canada Export Regulatory Consultant' },
+];
+
+const ESCALATION_TO_EXPERT: Record<string, string> = {
+  ip_attorney: 'Registered Patent Agent',
+  regulatory_expert: 'AYUSH Regulatory Consultant',
+  nba: 'AYUSH Regulatory Consultant',
+  tkdl: 'Registered Patent Agent',
+};
 
 export default function ExpertHandoffModal({
   isOpen,
   onClose,
-  passportId
+  passportId,
+  initialExpertType
 }: ExpertHandoffModalProps) {
   const [userName, setUserName] = useState('Dr. Rajesh Vaidya');
   const [userEmail, setUserEmail] = useState('rajesh.vaidya@ayurstartup.in');
-  const [expertType, setExpertType] = useState('Registered Patent Agent');
+  const [expertType, setExpertType] = useState(
+    (initialExpertType && ESCALATION_TO_EXPERT[initialExpertType]) || 'Registered Patent Agent'
+  );
   const [dpdpConsent, setDpdpConsent] = useState(true);
   const [liabilityAck, setLiabilityAck] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -97,9 +114,9 @@ export default function ExpertHandoffModal({
                 onChange={(e) => setExpertType(e.target.value)}
                 className="w-full bg-emerald-50/70 border border-emerald-200 rounded-xl p-2.5 text-slate-800 focus:outline-none focus:border-emerald-500"
               >
-                <option value="Registered Patent Agent">Registered Patent Agent (Indian Patent Office / Section 3(p) Specialist)</option>
-                <option value="AYUSH Regulatory Consultant">AYUSH Regulatory Consultant (Drugs & Cosmetics Act / FSSAI 2022)</option>
-                <option value="Export Compliance Consultant">US FDA & Health Canada Export Regulatory Consultant</option>
+                {EXPERT_TYPE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
             </div>
 

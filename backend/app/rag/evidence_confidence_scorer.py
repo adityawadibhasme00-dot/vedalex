@@ -12,11 +12,14 @@ Signals combined:
   4. Rule validation (deterministic rule engine status)
   5. Source authority (government > regulatory > peer-reviewed > secondary)
   6. Source diversity (multiple independent sources corroborate)
+  7. Evidence freshness (current statutes beat superseded ones)
 """
 
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
+from datetime import datetime
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -40,16 +43,18 @@ class EvidenceConfidence:
     source_authority: float
     source_diversity: float
     rule_engine_pass: Optional[bool]
+    source_freshness: float = 0.0
 
 
 # Signal weights (must sum to 1.0)
 _WEIGHTS = {
     "retrieval": 0.20,
     "citation": 0.15,
-    "entailment": 0.30,
+    "entailment": 0.25,
     "authority": 0.15,
     "diversity": 0.10,
-    "rule": 0.10,
+    "rule": 0.07,
+    "freshness": 0.08,
 }
 
 # Authority rank mapping (lower = better)
@@ -108,6 +113,53 @@ def _source_diversity_score(sources: List[Dict[str, Any]]) -> float:
         categories.add(cat.lower())
     # 4+ distinct categories = full diversity
     return min(1.0, len(categories) / 4.0)
+
+
+_FRESHNESS_FIELDS = ("effective_date", "updated_at", "published_date", "date", "year")
+
+
+def _parse_source_year(source: Dict[str, Any]) -> Optional[int]:
+    """Extract a 4-digit year from the first available date-ish field."""
+    for field in _FRESHNESS_FIELDS:
+        val = source.get(field)
+        if val is None or val == "":
+            continue
+        if isinstance(val, (int, float)) and 1900 <= int(val) <= 2100:
+            return int(val)
+        text = str(val)
+        match = re.search(r"(19|20)\d{2}", text)
+        if match:
+            return int(match.group(0))
+        try:
+            parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+            return parsed.year
+        except ValueError:
+            continue
+    return None
+
+
+def _source_freshness_score(sources: List[Dict[str, Any]]) -> float:
+    """Freshness of dated sources: current = 1.0, < 2 years = 0.9, else = 0.5.
+
+    Undated sources are neutral (0.7) so absence of a date never tanks
+    confidence, while visibly stale statutes do get penalised."""
+    if not sources:
+        return 0.0
+    current_year = datetime.utcnow().year
+    scores: List[float] = []
+    for s in sources:
+        year = _parse_source_year(s)
+        if year is None:
+            scores.append(0.7)
+            continue
+        age = current_year - year
+        if age <= 0:
+            scores.append(1.0)
+        elif age < 2:
+            scores.append(0.9)
+        else:
+            scores.append(0.5)
+    return sum(scores) / len(scores)
 
 
 def _compute_overall(
@@ -212,6 +264,15 @@ def compute_evidence_confidence(
         description=f"Rule engine: {'PASS' if rule_engine_pass is True else ('FAIL' if rule_engine_pass is False else 'N/A')}",
     ))
 
+    # 7. Evidence freshness (dated statutes / amendments)
+    fresh_score = _source_freshness_score(sources)
+    signals.append(ConfidenceSignal(
+        name="evidence_freshness",
+        score=fresh_score,
+        weight=_WEIGHTS["freshness"],
+        description=f"Source recency: {fresh_score:.2f}",
+    ))
+
     # Compute overall
     overall = _compute_overall(signals)
     band = _score_to_band(overall)
@@ -226,4 +287,5 @@ def compute_evidence_confidence(
         source_authority=auth_score,
         source_diversity=div_score,
         rule_engine_pass=rule_engine_pass,
+        source_freshness=fresh_score,
     )

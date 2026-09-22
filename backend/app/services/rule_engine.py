@@ -28,6 +28,51 @@ class DeterministicRuleEngine:
     # Declarative rules (YAML pack + Excel blueprint Rules sheet)
     # ------------------------------------------------------------------
     @classmethod
+    def _normalize_rule(cls, rule: Dict[str, Any]) -> Dict[str, Any]:
+        """Translate the STEP-4 guide schema (``when``/``then``) into the
+        engine's internal ``conditions``/``consequence`` shape, keeping the
+        legacy schema intact. Both dialects run on the same interpreter."""
+        rule = dict(rule)
+
+        # when: { all: [ {field, operator, value}, ... ] } -> conditions
+        if "when" in rule and "conditions" not in rule:
+            when = rule.get("when") or {}
+            conds = when.get("all") or when.get("any") or []
+            normalized = []
+            for c in conds:
+                if not isinstance(c, dict):
+                    continue
+                value = c.get("value") if "value" in c else c.get("expected_value")
+                normalized.append({
+                    "fact_key": c.get("field") or c.get("fact_key") or c.get("key"),
+                    "operator": c.get("operator") or "equals",
+                    "expected_value": value,
+                })
+            rule["conditions"] = normalized
+            if "any" in when and "all" not in when:
+                rule["_conditions_mode"] = "any"
+            rule["_schema"] = "when_then"
+
+        # then: { result: {...}, actions: [...] } -> consequence { category, requirements }
+        if "then" in rule and "consequence" not in rule:
+            then = rule.get("then") or {}
+            result = then.get("result") or {}
+            consequence = dict(then.get("consequence") or {})
+            consequence.setdefault("category", result.get("category") or then.get("category") or "")
+            extra = then.get("actions") or then.get("requirements") or result.get("requirements") or []
+            if isinstance(extra, list):
+                # Alternative-IP items from the guide are surfaced as obligations.
+                alt_ip = result.get("alternative_ip") or []
+                consequence.setdefault("requirements", list(extra))
+                consequence.setdefault("alternative_ip", alt_ip)
+            rule["consequence"] = consequence
+            rule.setdefault("risk_level", result.get("risk_level", "low"))
+            rule["_schema"] = "when_then"
+
+        rule.setdefault("confidence_weight", 1.0)
+        return rule
+
+    @classmethod
     def _load_rule_packs(cls) -> List[Dict[str, Any]]:
         if cls._yaml_packs_cache is not None:
             return cls._yaml_packs_cache
@@ -40,7 +85,7 @@ class DeterministicRuleEngine:
                     data = yaml.safe_load(f)
                 if isinstance(data, dict) and isinstance(data.get("rules"), list):
                     for rule in data["rules"]:
-                        rule = dict(rule)
+                        rule = cls._normalize_rule(dict(rule))
                         rule["rule_pack_id"] = data.get("rule_pack_id", "")
                         rule["jurisdiction"] = data.get("jurisdiction", "")
                         rule["authority"] = data.get("authority", "")
@@ -85,19 +130,47 @@ class DeterministicRuleEngine:
         resolved_names = " ".join(
             str(getattr(ing, "canonical_name", "") or "") for ing in resolved_ingredients
         ).lower()
+        process_text = (passport.process_description or "").lower()
+        classical_keywords = ("kwatha", "vati", "taila", "churna", "ghrita", "asava",
+                              "arishta", "decoction", "classical", "traditional process",
+                              "bhavana", "kalka", "swarasa")
+        process_conforms_to_classical = any(kw in process_text for kw in classical_keywords) and \
+            not any(novel in process_text for novel in ("spray dry", "nano", "novel",
+                                                        "encapsulat", "standardized extraction"))
+        title_tokens = re.findall(r"[a-z][a-z]{3,}", (passport.case_title or "").lower())
+        generic_terms = {"herbal", "ayurvedic", "ayurveda", "tablet", "capsule",
+                         "powder", "syrup", "vati", "formulation", "medicine", "tonic",
+                         "churna", "kwatha", "extract", "supplement", "oil", "balm"}
+        product_name_is_generic = bool(title_tokens) and all(tok in generic_terms for tok in title_tokens)
+        product_is_single_ingredient = len(passport.ingredients) == 1
+        origin_text = f"{passport.biological_resource_origin} {passport.manufacturing_location}".lower()
+        geographic_origin_is_indian = ("india" in origin_text)
+        orient_text = f"{passport.intended_use} {' '.join(passport.proposed_claims)}".lower()
+        has_traditional_origin_claim = any(kw in orient_text for kw in (
+            "classical", "samhita", "ayurveda", "ayurvedic", "traditional", "siddha",
+            "unani", "rasayana", "parampra", "ancestral", "prakrit"))
         return {
             "ingredients_have_documented_tk_use": has_canonical,
             "synergistic_empirical_data_present": False,
             "ingredients_conform_to_first_schedule": has_canonical,
-            "process_conforms_to_classical_text": False,
+            "process_conforms_to_classical_text": process_conforms_to_classical,
             "contains_only_permitted_ayush_ingredients": has_canonical,
-            "is_novel_ratio_or_form": True,
+            "is_novel_ratio_or_form": not process_conforms_to_classical,
             "ingredients_on_aahara_positive_list": has_canonical,
             "claim_contains_disease_treatment": has_disease_claim,
             "form_is_dietary_food": not has_disease_claim,
             "ingredients_are_dietary_botanicals": has_canonical,
             "ingredients_on_nhpid_list": has_canonical,
             "dosage_within_nhpid_monograph_limits": has_canonical,
+            "product_form": (passport.product_form or "").lower(),
+            "business_role": (passport.business_role or "").lower(),
+            "manufacturing_location": (passport.manufacturing_location or "").lower(),
+            "biological_resource_origin": (passport.biological_resource_origin or "").lower(),
+            "target_markets": [m.lower() for m in passport.target_markets],
+            "product_name_is_generic": product_name_is_generic,
+            "product_is_single_ingredient": product_is_single_ingredient,
+            "geographic_origin_is_indian": geographic_origin_is_indian,
+            "has_traditional_origin_claim": has_traditional_origin_claim,
             "proposed_claims": claims_text,
             "intended_use": passport.intended_use.lower(),
             "resolved_ingredients": resolved_names,
@@ -117,6 +190,8 @@ class DeterministicRuleEngine:
         if op in ("not equals", "neq", "is not"):
             return actual != expected
         if op in ("contains", "in"):
+            if isinstance(expected, (list, tuple, set)):
+                return actual in expected
             return (expected in actual) if isinstance(actual, (str, list, tuple)) else actual == expected
         if op in ("gt", "greater than"):
             try:
@@ -156,7 +231,11 @@ class DeterministicRuleEngine:
                 continue
             conditions = rule.get("conditions")
             if isinstance(conditions, list) and conditions:
-                ok = all(cls._eval_condition(c, facts) for c in conditions if isinstance(c, dict))
+                eval_mode = rule.get("_conditions_mode")
+                if eval_mode == "any":
+                    ok = any(cls._eval_condition(c, facts) for c in conditions if isinstance(c, dict))
+                else:
+                    ok = all(cls._eval_condition(c, facts) for c in conditions if isinstance(c, dict))
             else:
                 condition_text = rule.get("condition")
                 if condition_text:
@@ -173,6 +252,10 @@ class DeterministicRuleEngine:
             return finding
         extra_requirements: List[str] = []
         fired_names: List[str] = []
+        risk_ranks = {"critical": 4, "high": 3, "medium": 2, "low": 1}
+        applied_rules: List[Dict[str, Any]] = []
+        requires_human_review = finding.requires_human_review
+        risk_level = finding.risk_level
         for rule in fired:
             fired_names.append(rule.get("name") or rule.get("rule_name") or rule.get("rule_pack_id") or "rule")
             cons = rule.get("consequence", {}) or {}
@@ -191,6 +274,30 @@ class DeterministicRuleEngine:
             cat = cons.get("category") or rule.get("outcome") or ""
             if cat and rule.get("consequence", {}).get("category"):
                 pass
+
+            merged_rule = {
+                "rule_id": rule.get("id", ""),
+                "rule_version": rule.get("rule_version", ""),
+                "rule_pack_id": rule.get("rule_pack_id", ""),
+                "jurisdiction": rule.get("jurisdiction", ""),
+                "effective_from": rule.get("effective_from", ""),
+                "status": rule.get("status", "active"),
+                "risk_level": rule.get("risk_level", "low"),
+                "requires_human_review": bool(rule.get("requires_human_review", False)),
+                "confidence_weight": float(rule.get("confidence_weight", 1.0)),
+                "statute_ref": rule.get("statute_ref", ""),
+                "evidence": rule.get("evidence", {}) or {},
+                "category": cat,
+            }
+            alt_ip = (rule.get("consequence", {}) or {}).get("alternative_ip") or []
+            if alt_ip:
+                merged_rule["alternative_ip"] = alt_ip
+            rule_risk = str(rule.get("risk_level", "low")).lower()
+            if risk_ranks.get(rule_risk, 1) > risk_ranks.get(risk_level, 1):
+                risk_level = rule_risk
+            if rule.get("requires_human_review"):
+                requires_human_review = True
+            applied_rules.append(merged_rule)
 
         conditions = list(finding.conditions_evaluated) + [f"Rule pack triggered: {r}" for r in fired_names]
         next_steps = list(finding.next_action_steps)
@@ -212,6 +319,9 @@ class DeterministicRuleEngine:
             coverage_limitations=limitations,
             assumptions_made=finding.assumptions_made,
             explanation_text=finding.explanation_text,
+            risk_level=risk_level,
+            requires_human_review=requires_human_review,
+            applied_rules=applied_rules,
         )
 
     # ------------------------------------------------------------------
@@ -399,7 +509,7 @@ class DeterministicRuleEngine:
         category = "Natural Health Product (NHP - Class I/II)"
         status = RuleConditionState.SATISFIED
         conditions = [
-            "Ashwagandha and Brahmi listed in Health Canada NHPID Monograph Compendium",
+            "Ingredients resolved to entries in the Health Canada NHPID Monograph Compendium",
             "Dosage falls within permitted dried herb equivalent limits (< 6000mg/day)"
         ]
         next_steps = [

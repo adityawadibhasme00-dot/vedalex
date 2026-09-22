@@ -39,6 +39,7 @@ class InnovationPassportDB(Base):
     business_role = Column(String(100), nullable=True)
     biological_resource_origin = Column(String(100), nullable=True)
     version = Column(Integer, default=1)
+    unresolved_clarifications = Column(JSON, default=list)
     qr_code = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

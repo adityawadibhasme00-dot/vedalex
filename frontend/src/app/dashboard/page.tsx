@@ -17,7 +17,6 @@ import DocumentAnalyzer from '../../components/DocumentAnalyzer';
 import DossierView from '../../components/DossierView';
 import WhatIfSimulator from '../../components/WhatIfSimulator';
 import SaktiAssistant from '../../components/SaktiAssistant';
-import LeafRain from '../../components/PixelLeafRain';
 import { ClaimSafetyIntelligence } from '../../components/ClaimSafetyIntelligence';
 import { EvidenceQualityIntelligence } from '../../components/EvidenceQualityIntelligence';
 import { BioResourceIntelligence } from '../../components/BioResourceIntelligence';
@@ -312,7 +311,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex font-sans relative text-slate-800">
-      <LeafRain />
       {/* ─── Sidebar ─────────────────────────────────────────────── */}
       <aside className={`
         fixed left-0 top-0 h-full z-40 flex flex-col
@@ -465,7 +463,7 @@ export default function DashboardPage() {
 
         {isLoading && (
           <div className="h-0.5 bg-emerald-100 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 animate-shimmer" />
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-emerald-600 to-amber-500 animate-shimmer" />
           </div>
         )}
 

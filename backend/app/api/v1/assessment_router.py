@@ -20,11 +20,7 @@ class AssessmentRequest(BaseModel):
 async def evaluate_assessment(req: AssessmentRequest):
     passport = PassportEngine.get_passport(req.passport_id)
     if not passport:
-        # Create on the fly if not yet persisted
-        passport = PassportEngine.create_from_intake(
-            raw_text="Ashwagandha + Brahmi formulation, claim: supports healthy sleep",
-            user_lang=req.language or "en"
-        )
+        raise HTTPException(status_code=404, detail="Passport not found")
 
     raw_findings = DeterministicRuleEngine.evaluate_passport(
         passport,
@@ -47,7 +43,7 @@ async def evaluate_assessment(req: AssessmentRequest):
 async def get_provenance(passport_id: str, jurisdiction: str = "India"):
     passport = PassportEngine.get_passport(passport_id)
     if not passport:
-        passport = PassportEngine.create_from_intake("Ashwagandha + Brahmi")
+        raise HTTPException(status_code=404, detail="Passport not found")
 
     findings = DeterministicRuleEngine.evaluate_passport(passport, [jurisdiction])
     target_finding = next((f for f in findings if f.jurisdiction.lower() == jurisdiction.lower()), None)

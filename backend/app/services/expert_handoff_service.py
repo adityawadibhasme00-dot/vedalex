@@ -11,10 +11,16 @@ class ExpertHandoffService:
     with explicit DPDP Act consent and defined liability boundaries.
     """
 
+    # ticket_id -> passport_id mapping (so the dossier endpoint can resolve
+    # the originating passport). Persisted in-memory; the dossier itself is
+    # regenerated on demand from the passport record.
+    _tickets: Dict[str, str] = {}
+
     @classmethod
     def dispatch_case(cls, req: ExpertHandoffRequest) -> ExpertHandoffResponse:
         ticket_id = f"IP-EXPERT-{str(uuid.uuid4())[:8].upper()}"
-        
+        cls._tickets[ticket_id] = req.passport_id
+
         # Log DPDP consent audit trail
         consent_record = DPDPConsentLogger.log_consent(
             user_id=req.user_email,
@@ -29,7 +35,11 @@ class ExpertHandoffService:
             status="QUEUED_FOR_EXPERT_DISPATCH",
             assigned_facilitation_center="TIFAC-DST Patent Facilitation Cell / AYUSH IP Facilitation Center",
             sla_response_hours=48,
-            dossier_download_url=f"/api/v1/handoff/dossier/{ticket_id}.pdf",
+            dossier_download_url=f"/api/v1/expert-handoff/dossier/{ticket_id}.pdf",
             consent_audit_hash=consent_record["consent_hash"],
             message=f"Case successfully routed to {req.expert_type}. Registered agent review will commence within 48 hours."
         )
+
+    @classmethod
+    def get_passport_id_for_ticket(cls, ticket_id: str) -> str:
+        return cls._tickets.get(ticket_id, "")

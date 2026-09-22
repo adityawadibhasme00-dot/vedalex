@@ -1,0 +1,109 @@
+rule_pack_id: "RULE-IN-TK-TKDL"
+jurisdiction: "India"
+authority: "TKDL / CSIR & Indian Patent Office (CGPDTM)"
+governing_act: "TKDL framework & Patents Act, 1970 (Section 3(p))"
+version: "1.0.0"
+rules:
+  - id: "RULE_TK_TKDL_PRIOR_ART_POINTER"
+    name: "TKDL Prior-Art Pointer for Classical Formulations"
+    statute_ref: "Traditional Knowledge Digital Library (TKDL)"
+    rule_version: "1.0.0"
+    effective_from: "2001-01-01"
+    status: "active"
+    risk_level: "high"
+    requires_human_review: true
+    evidence:
+      source_id: "tkdl_overview_and_section_3p"
+      locator: "TKDL database & Section 3(p) conjunction"
+      authority: "TKDL / CSIR / Govt. of India"
+    explanation_template:
+      en: "Single-origin botanicals sourced in India with documented traditional use likely appear in TKDL. A professional TKDL search is mandatory before claiming novelty so the Section 3(p) bar is checked against published traditional knowledge."
+      hi: "भारत में उत्पादित एकल-उत्पत्ति वनस्पतियों के पारंपरिक उपयोग TKDL में दर्ज होने की संभावना है। नवीनता का दावा करने से पहले पेशेवर TKDL खोज आवश्यक है ताकि अनुच्छेद 3(p) रोक की जाँच प्रकाशित पारंपरिक ज्ञान के विरुद्ध हो।"
+    conditions:
+      - fact_key: "ingredients_have_documented_tk_use"
+        operator: "equals"
+        expected_value: true
+      - fact_key: "geographic_origin_is_indian"
+        operator: "equals"
+        expected_value: true
+    consequence:
+      category: "TKDL Prior-Art Pointer (High Risk)"
+      requirements:
+        - "Commission a professional TKDL search (Paid subscription under 2022 access framework) before patent filing"
+        - "Cross-check every traditional indication against TKDL classical-text references"
+        - "If classical match exists: document transformation (novel ratio/process) to argue over known use"
+        - "Cite TKDL/classical text in disclosure under Section 10(4)(d)"
+
+  - id: "RULE_TK_CLASSICAL_TEXT_IDENTITY"
+    name: "Classical Text Identity — Aggregation Bar Check"
+    statute_ref: "Section 3(p) & TK Guidelines"
+    rule_version: "1.0.0"
+    effective_from: "2005-04-04"
+    status: "active"
+    risk_level: "high"
+    requires_human_review: true
+    evidence:
+      source_id: "patents_act_1970_section_3"
+      locator: "Section 3(p) & IPIndia TK examination guidelines"
+      authority: "Indian Patent Office (CGPDTM)"
+    explanation_template:
+      en: "Traditional formulations named in classical texts, combined as-is or in trivial ratios, trigger the Section 3(p) aggregation bar. Novelty requires a demonstrable transformation or synergism beyond known aggregation."
+      hi: "शास्त्रीय ग्रंथों में नामित पारंपरिक फॉर्मूलेशन, यथावत् या तुच्छ अनुपात में संयोजित, अनुच्छेद 3(p) के समूहन प्रतिषेध को लागू करते हैं। नवीनता के लिए ज्ञात समूहन से परे सिद्ध परिवर्तन या सिनर्जिज्म आवश्यक है।"
+    conditions:
+      - fact_key: "has_traditional_origin_claim"
+        operator: "equals"
+        expected_value: true
+      - fact_key: "ingredients_have_documented_tk_use"
+        operator: "equals"
+        expected_value: true
+    consequence:
+      category: "Section 3(p) Aggregation — Classical Text Identity Risk"
+      requirements:
+        - "Confirm whether formulation is verbatim classical or a novel transformation"
+        - "Obtain synergism/isobologram or unexpected-effect evidence for any novel combination"
+        - "Disclose source & geographical origin of biological material (Sec 10(4)(d)(ii))"
+        - "Obtain NBA approval under Section 6 of Biological Diversity Act before grant"
+
+  # Guide-schema (STEP 4) rule — uses `when`/`then` + `confidence_weight`.
+  # The rule engine normalizes this into conditions/consequence at load time.
+  - id: "IN_PATENT_CLASSICAL_001"
+    name: "Classical medicine patentability bar"
+    statute_ref: "Section 3(p) of Patents Act, 1970"
+    rule_version: "1.0.0"
+    effective_from: "2005-04-04"
+    status: "active"
+    risk_level: "high"
+    requires_human_review: true
+    confidence_weight: 0.95
+    when:
+      all:
+        - field: "ingredients_have_documented_tk_use"
+          operator: "equals"
+          value: true
+        - field: "has_traditional_origin_claim"
+          operator: "equals"
+          value: true
+        - field: "process_conforms_to_classical_text"
+          operator: "equals"
+          value: true
+    then:
+      result:
+        patentability: "barred"
+        category: "Classical medicine — patent barred under 3(p)"
+        legal_basis: "Section 3(p) of Patents Act, 1970"
+        risk_level: "high"
+        alternative_ip:
+          - "Trademark for brand name"
+          - "GI if region-specific"
+          - "TKDL for prior-art defense"
+      actions:
+        - "Conduct TKDL search to confirm formulation is documented"
+        - "Explore trademark / GI protection as alternative IP"
+        - "Consult a registered IP attorney before filing"
+    evidence:
+      source_id: "patents_act_1970_section_3"
+      locator: "Section 3(p)"
+      authority: "The Patents Act, 1970 (as amended 2005)"
+    explanation:
+      en: "Classical formulations from authoritative texts face a patentability bar under Section 3(p) as they constitute traditional knowledge."
+      hi: "पारंपरिक ज्ञान होने के कारण शास्त्रीय फॉर्मूलेशन पर Patents Act की Section 3(p) के तहत पेटेंट बाधा लागू होती है।"

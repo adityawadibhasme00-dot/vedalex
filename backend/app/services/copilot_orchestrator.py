@@ -81,7 +81,18 @@ def _meaningful_tokens(question: str) -> set:
     return set(
         t for t in tokens
         if t not in STOPWORDS and t not in FRAMING_WORDS and t
+        and t not in HINGLISH_STOPWORDS
     )
+
+
+# Hinglish / Hindi query-framing words that carry no retrieval signal.
+HINGLISH_STOPWORDS = {
+    "mujhe", "mujh", "hai", "kya", "karna", "karein", "karo", "kar", "hoga",
+    "honge", "ke", "se", "ka", "ki", "ko", "mein", "me", "mera", "meri",
+    "mere", "aap", "aapka", "aapki", "aapko", "banna", "banana", "banaye",
+    "jawab", "batao", "bata", "chahiye", "liye", "nahi", "na", "wo", "woh",
+    "ye", "yah", "is", "us", "aur", "ho", "tha", "thi", "the", "gaya",
+}
 
 
 def _source_kind(source: Dict[str, Any]) -> str:
@@ -385,12 +396,18 @@ def _claim_firewall(claims_texts: List[str]) -> Dict[str, Any]:
 # Answer builders (deterministic, retrieval-grounded)
 # ---------------------------------------------------------------------------
 
-def _general_grounded_summary(question: str, sources: List[Dict[str, Any]]) -> str:
+def _general_grounded_summary(question: str, sources: List[Dict[str, Any]],
+                              loose: bool = False) -> str:
     """Build a grounded, citation-bound answer for general RAG questions.
 
     Strict zero-hallucination contract: every sentence emitted here must
     be traceable to a retrieved source. No templated editorial claims
     about what the sources mean — only what they directly state.
+
+    When ``loose`` is True and the strict keyword filter matches nothing
+    (for example a Hinglish/generic phrasing), the function still returns
+    the best-authority sources on file, explicitly labelled as the closest
+    citations — never invented content.
     """
     if not sources:
         return ""
@@ -402,15 +419,37 @@ def _general_grounded_summary(question: str, sources: List[Dict[str, Any]]) -> s
         re.sub(r"[^a-z0-9%.]", "", w.lower())
         for w in question.split()
         if w.lower() not in STOPWORDS and w.lower() not in FRAMING_WORDS
+        and w.lower() not in HINGLISH_STOPWORDS
     )
     relevant_sources = []
     for s in sources:
-        src_text = re.sub(r"[^a-z0-9%.]", " ", str(s.get("content", "")).lower())
-        src_tokens = set(src_text.split())
+        src_hay = " ".join([
+            str(s.get("content", "")),
+            str(s.get("title", "")),
+            str(s.get("source", "")),
+            str(s.get("act_title", "")),
+        ]).lower()
+        src_tokens = set(re.sub(r"[^a-z0-9%.]", " ", src_hay).split())
         if meaningful.intersection(src_tokens):
             relevant_sources.append(s)
-    if not relevant_sources:
+    if not relevant_sources and not loose:
         return ""
+
+    if not relevant_sources and loose:
+        # Weak coverage (different language / generic phrasing): use the
+        # highest-authority sources on file, clearly labelled as such.
+        def _rank_key(s: Dict[str, Any]):
+            try:
+                rank = int(s.get("authority_rank") or 3)
+            except Exception:
+                rank = 3
+            return (float(s.get("score") or 0.0), -rank)
+        relevant_sources = sorted(
+            sources, key=_rank_key, reverse=True
+        )[:3]
+        fallback_mode = True
+    else:
+        fallback_mode = False
 
     bullets: List[str] = []
     for s in relevant_sources[:4]:
@@ -437,6 +476,14 @@ def _general_grounded_summary(question: str, sources: List[Dict[str, Any]]) -> s
 
     if not bullets:
         return ""
+
+    if fallback_mode:
+        summary = (
+            "I could not map your exact wording to a specific provision, but these "
+            "are the closest official sources currently in the knowledge base "
+            "(I answer from retrieved documents only):\n\n"
+        ) + "\n".join(bullets)
+        return summary
 
     summary = "Based on the retrieved official sources:\n\n" + "\n".join(bullets)
     if len(relevant_sources) > 4:
@@ -660,19 +707,24 @@ class AICopilotOrchestrator:
 
     @classmethod
     def run(cls, question: str, passport_id: Optional[str] = None,
-            context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+            context: Optional[Dict[str, Any]] = None,
+            retrieved_sources: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
         # 1. Retrieve evidence ONCE via the hybrid pipeline, then share the
         # result between the grounding path and the source list. The pipeline
         # (embedding + cross-encoder rerank) is the dominant cost on CPU, so
-        # running it twice used to double the end-to-end latency.
+        # running it twice used to double the end-to-end latency. Callers may
+        # pass pre-retrieved sources (e.g. /rag/ask) to avoid re-embedding.
         retrieval_result = {}
         sources: List[Dict[str, Any]] = []
-        try:
-            from app.rag.retrieval_pipeline import HybridRetriever
-            retrieval_result = HybridRetriever.retrieve(question, top_k=10)
-            sources = cls._dedupe(retrieval_result.get("sources", []))
-        except Exception:
-            pass
+        if retrieved_sources:
+            sources = cls._dedupe(retrieved_sources)
+        else:
+            try:
+                from app.rag.retrieval_pipeline import HybridRetriever
+                retrieval_result = HybridRetriever.retrieve(question, top_k=10)
+                sources = cls._dedupe(retrieval_result.get("sources", []))
+            except Exception:
+                pass
 
         # Fallback to legacy FAISS + statutory search only if the hybrid
         # pipeline returned nothing.
@@ -772,6 +824,18 @@ class AICopilotOrchestrator:
         # 6. Executive summary + risk level + next actions.
         citation = _top_citation(sources)
         exec_summary = _executive_summary(intent_id, r, claim, citation)
+        if not grounded and sources and not should_refuse:
+            # Retrieval coverage is weak (e.g. Hinglish/generic phrasing) but
+            # documents DO exist. Rescue with a strictly source-bound summary —
+            # the loose mode labels closest authorities, never invents content.
+            loose_summary = _general_grounded_summary(question, sources, loose=True)
+            if loose_summary:
+                exec_summary = loose_summary
+                grounded = True
+                if confidence < 0.35:
+                    confidence = _compute_confidence(
+                        meaningful, sources, min(1.0, coverage + 0.2), intent_id
+                    )
         if not grounded:
             exec_summary = NO_EVIDENCE_ANSWER
         elif intent_id == "general" or (

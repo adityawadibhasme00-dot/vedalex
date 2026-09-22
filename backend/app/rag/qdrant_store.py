@@ -74,8 +74,13 @@ class QdrantVectorStore:
                     fallback_path = os.path.join(
                         os.path.dirname(__file__), "qdrant_local_data"
                     )
-                    self._client = QdrantClient(path=fallback_path, timeout=30)
-                    logger.info(f"Qdrant remote unavailable — using local storage: {fallback_path}")
+                    try:
+                        self._client = QdrantClient(path=fallback_path, timeout=30)
+                        logger.info(f"Qdrant remote unavailable — using local storage: {fallback_path}")
+                    except Exception as e_local:
+                        self._client = QdrantClient(":memory:")
+                        logger.warning(f"Local Qdrant locked ({e_local}) — using in-memory mode")
+
 
             self._ensure_collection()
             logger.info(f"Qdrant connected: {url} (collection={COLLECTION_NAME})")
@@ -97,12 +102,21 @@ class QdrantVectorStore:
                 # Verify existing collection dim matches engine dim (BGE-M3 <> fallback)
                 try:
                     info = self._client.get_collection(COLLECTION_NAME)
-                    actual_dim = getattr(info, "vectors_count", None)
-                    if actual_dim is None:
-                        from qdrant_client.models import VectorParams
-                        params = getattr(info, "config", None) or {}
-                        vparams = getattr(params, "params", None)
-                        actual_dim = getattr(vparams, "size", None) if vparams else None
+                    actual_dim = None
+                    try:
+                        cfg = getattr(info, "config", None)
+                        params = getattr(cfg, "params", None)
+                        vectors = getattr(params, "vectors", None)
+                        if hasattr(vectors, "size"):
+                            actual_dim = vectors.size
+                        elif isinstance(vectors, dict):
+                            first_v = next(iter(vectors.values()), None)
+                            if hasattr(first_v, "size"):
+                                actual_dim = first_v.size
+                        elif hasattr(params, "size"):
+                            actual_dim = params.size
+                    except Exception as e:
+                        logger.warning(f"Could not verify collection dim: {e}")
                     if actual_dim and actual_dim != self._dim:
                         logger.warning(
                             f"Collection dim {actual_dim} != engine dim {self._dim} — recreating"
@@ -405,12 +419,17 @@ class QdrantVectorStore:
             optimizer = getattr(info, "optimizer_status", "unknown")
             actual_dim = self._dim
             try:
-                cfg = getattr(info, "config", None) or {}
+                cfg = getattr(info, "config", None)
                 params = getattr(cfg, "params", None)
-                if params is not None:
-                    d = getattr(params, "size", None)
-                    if d:
-                        actual_dim = d
+                vectors = getattr(params, "vectors", None)
+                if hasattr(vectors, "size"):
+                    actual_dim = vectors.size
+                elif isinstance(vectors, dict):
+                    first_v = next(iter(vectors.values()), None)
+                    if hasattr(first_v, "size"):
+                        actual_dim = first_v.size
+                elif hasattr(params, "size"):
+                    actual_dim = params.size
             except Exception:
                 pass
             return {
