@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PATHWAY-02
+TITLE: NF-kB inflammatory signalling pathway
+OMICS_TYPE: pathway
+ORGANISM: Homo sapiens
+COMPOUND: Curcumin / Boswellic acid
+GENE: NFKB1; RELA; IKBKB; PTGS2; TNF; IL6
+PROTEIN: NF-kB p50/p65; IKK-beta; COX-2; TNF; IL-6
+UNIPROT: P19838
+NCBI_GENE_ID: 4790
+PUBCHEM_CID: 
+PATHWAY: NF-kB signalling
+ASSAY_TYPE: Luciferase NF-kB reporter; cytokine ELISA
+PMID: 
+SOURCE_URL: https://www.wikipathways.org/pathways/WP5609.html
+AUTHORITY: WikiPathways / KEGG (Kyoto Encyclopedia)
+JURISDICTION: International
+
+The NF-kB pathway (RELA/p65, NFKB1, IKBKB, NFKBIA) is the master regulator of pro-inflammatory gene expression. Curcumin and boswellic acids are documented NF-kB pathway suppressors via IKK inhibition, reducing PTGS2 (COX-2), TNF, IL6 and IL1B output.

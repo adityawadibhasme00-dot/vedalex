@@ -661,13 +661,14 @@ def collect_knowledge_documents(root: str | None = None) -> list[dict[str, Any]]
         print(f"(kb) blueprint loader skipped: {e}")
 
     # Multi-omics evidence suite (proteomics, metabolomics, pharmacogenomics,
-    # pathway, transcriptomics/genomics). Curated seed always loads; live
-    # API harvest is additive and network-guarded.
+    # pathway, transcriptomics/genomics). Curated seed always loads; the
+    # committed external snapshot (GBIF, PubChem, UniProt, NCBI) is additive
+    # and network-guarded.
     try:
         from app.rag.datasources import harvest_multiomics
         omics_docs = harvest_multiomics(include_live=False)
         all_documents.extend(omics_docs)
-        print(f"(kb) multiomics: {len(omics_docs)} curated records loaded")
+        print(f"(kb) multiomics: {len(omics_docs)} curated + external records loaded")
     except Exception as e:
         print(f"(kb) multiomics skipped: {e}")
 

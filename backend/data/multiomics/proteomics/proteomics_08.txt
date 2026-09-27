@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PROTEOMICS-08
+TITLE: GABRA1 - GABA-A receptor alpha-1 subunit (anxiolytic target)
+OMICS_TYPE: proteomics
+ORGANISM: Homo sapiens
+COMPOUND: Withania somnifera (Ashwagandha)
+GENE: GABRA1
+PROTEIN: Gamma-aminobutyric acid receptor subunit alpha-1
+UNIPROT: P14867
+NCBI_GENE_ID: 2554
+PUBCHEM_CID: 
+PATHWAY: GABAergic synapse
+ASSAY_TYPE: Binding assay; electrophysiology
+PMID: 
+SOURCE_URL: https://www.uniprot.org/uniprotkb/P14867
+AUTHORITY: UniProt Consortium (EMBL-EBI / SIB / PIR)
+JURISDICTION: International
+
+GABRA1 encodes the alpha-1 subunit of the GABA-A receptor, the principal inhibitory ionotropic receptor in the central nervous system and the target of many anxiolytics. Withania somnifera glycowithanolides are documented to modulate GABAergic signalling, a mechanism consistent with the anxiolytic and sleep-promoting effects reported in clinical studies of Ashwagandha root extracts.

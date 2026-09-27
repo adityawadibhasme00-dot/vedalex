@@ -1,0 +1,18 @@
+DOC_ID: OMICS-METABOLOMICS-05
+TITLE: Emodin - anthraquinone with laxative and anti-inflammatory markers
+OMICS_TYPE: metabolomics
+ORGANISM: Rheum / Raphanus sativus / Polygonum
+COMPOUND: Emodin
+GENE: 
+PROTEIN: 
+UNIPROT: 
+NCBI_GENE_ID: 
+PUBCHEM_CID: 3220
+PATHWAY: Anthraquinone biosynthesis
+ASSAY_TYPE: HPLC / TLC-densitometry
+PMID: 
+SOURCE_URL: https://pubchem.ncbi.nlm.nih.gov/compound/3220
+AUTHORITY: PubChem (NCBI) / HMDB / MetaboLights (EMBL-EBI)
+JURISDICTION: International
+
+Emodin is a hydroxyanthraquinone found in Rheum species roots, Polygonum cuspidatum and Cassia, and is registered in PubChem (CID 3220). It is a marker constituent in metabolomic and quality-control profiling of rheum and related laxative botanicals.

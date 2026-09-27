@@ -43,6 +43,10 @@ class KnowledgeStatus(BaseModel):
     treaties_available: int = 0
     india_code_acts: int = 0
     india_code_api_live: bool = False
+    external_datasets: list[dict] = []
+    external_snapshot_present: bool = False
+    external_retrieved_at: str | None = None
+    unavailable_sources: list[dict] = []
 
 class IndiaCodeHarvestRequest(BaseModel):
     api_key: str
@@ -84,6 +88,14 @@ def reindex_knowledge_base(req: ReindexRequest):
     index.build(docs)
     AICopilot.reset_index()
 
+    # Reindex is the supported point at which the derived blueprint registries
+    # are rewritten; reads deliberately no longer write to app/knowledge.
+    from app.rag.xlsx_pipeline import regenerate_blueprint_registries
+    try:
+        regenerate_blueprint_registries()
+    except Exception:  # noqa: BLE001 - regeneration is best effort
+        pass
+
     from app.services.corpus_manifest import build_manifest
     build_manifest()
 
@@ -103,11 +115,13 @@ def knowledge_base_status():
     import os
 
     from app.rag.kb import KB_SUBFOLDERS
+    from app.rag.datasources import external as external_datasets
     from app.services.corpus_manifest import get_corpus_status
     from app.services.indiacode_client import india_code_status as ic_status
 
     manifest = get_corpus_status()
     ic = ic_status()
+    ext = external_datasets.external_status()
     treaties_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "knowledge", "treaties_metadata.json")
     treaties_count = 0
     if os.path.exists(treaties_file):
@@ -143,6 +157,10 @@ def knowledge_base_status():
         treaties_available=treaties_count,
         india_code_acts=len(ic.get("tracked_acts", [])),
         india_code_api_live=bool(ic.get("api_responsive")),
+        external_datasets=ext.get("datasets", []),
+        external_snapshot_present=bool(ext.get("snapshot_present")),
+        external_retrieved_at=ext.get("retrieved_at"),
+        unavailable_sources=ext.get("unavailable_sources", []),
     )
 
 @router.post("/harvest/indiacode", response_model=IndiaCodeHarvestResponse)

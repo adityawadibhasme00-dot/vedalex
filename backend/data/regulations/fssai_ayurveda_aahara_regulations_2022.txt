@@ -1,0 +1,36 @@
+Food Safety and Standards (Ayurveda Aahara) Regulations, 2022 - Regulatory Summary
+
+Published in the Gazette of India on 9 May 2022 (notified 5 May 2022) under the Food Safety and Standards Act, 2006, in consultation with the Ministry of AYUSH.
+
+Definition: "Ayurveda Aahara" means food prepared in accordance with the recipes, ingredients or processes described in the authoritative books of Ayurveda listed under Schedule A of the regulations. It covers recipes and ingredients for promoting health, specific physiological needs, and foods for consumption during or after specified diseases and disorders (Pathya).
+
+Structure of the regulation (verified headings):
+1. Short Title and Commencement
+2. Definitions
+3. General Requirements (Regulation 3: Food Business Operators shall formulate Ayurveda Aahara in accordance with the categories and requirements specified in Schedule B)
+4. Additives
+5. Contaminants (per FSS (Contaminants, Toxins and Residues) Regulation, 2011)
+6. Packaging
+7. Restriction on Sale, Manufacture, etc. of Ayurveda Aahara
+8. Not to Claim Treating Human Disease, etc. (prohibits labelling, presentation and advertisement claiming the property of preventing, treating or curing any human disease)
+9. Claim by Food Business Operator
+10. Prior Approval for Ayurveda Aahara (per FSS (Approval for Non-Specific Food and Food Ingredients) Regulation, 2017)
+11. Constitution of Expert Committee
+12. Labelling of Ayurveda Aahara (intended purpose, target consumer group, recommended duration of use, and other specific requirements)
+13. Other Requirements for Ayurveda Aahara
+14. Information by the Food Business Operator to Food Authority
+Schedules A-E: Schedule A lists the authoritative Ayurvedic books; Schedule B defines the categories of Ayurveda Aahara and their regulatory requirements; Schedule C lists permitted additives; Schedule D sets microbiological standards; Schedule E specifies the mandatory Ayurveda Aahara logo.
+
+Key compliance facts:
+- Exclusions: Ayurvedic drugs and proprietary Ayurvedic medicines, medicinal products, cosmetics, narcotic or psychotropic substances, and herbs in Schedule E-1 of the D&C Act 1940/Rules 1945.
+- Not recommended for children below 2 years of age.
+- Licensing and marketing approval is mandatory (FoSCoS portal); the dedicated logo must be used.
+- June/July 2025: FSSAI Order dated 25.07.2025 published the list of Category A Ayurveda Aahara products covered under the 2022 Regulations, providing regulatory clarity and simplifying registration/licensing via FoSCoS for Food Business Operators.
+- An Expert Committee constituted with FSSAI and Ministry of AYUSH representatives recommends approval of claims and products and addresses licensing, certification, laboratory accreditation and quality issues.
+
+Sources:
+- Gazette PDF: https://stg-old.fssai.gov.in/upload/notifications/2022/05/62789a20b54bdGazette_Notification_Ayurveda_Aahara_09_05_2022.pdf
+- PIB PRID 1824783 (12 May 2022): https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=1824783
+- FAO/FAOLEX IND221232: http://faolex.fao.org/docs/pdf/IND221232.pdf
+- FSSAI Order dated 25-07-2025 enclosing Ayurveda Aahara.
+- FSSAI regulatory portal: https://fssai.gov.in/food-law/regulations

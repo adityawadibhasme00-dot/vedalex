@@ -1,0 +1,18 @@
+TITLE: The Patents Rules, 2003 — Filing, Examination and Opposition procedure
+AUTHORITY: Indian Patent Office (CGPDTM), Ministry of Commerce & Industry
+JURISDICTION: India
+SOURCE: https://ipindia.gov.in/frontend/pdf/patents/patent_rules2003.pdf
+EFFECTIVE: 2004-05-20
+SUBSECTION: Patents Rules 2003 (amended 2016, 2020, 2024)
+
+Filing and Forms
+A patent application in India is filed at the Indian Patent Office under the Patents Act, 1970 read with the Patents Rules, 2003. The application can be made with the patent office having jurisdiction over the place of residence, principal place of business, or origin of the invention. Applicants must file Form 1 (application for grant of patent), Form 2 (provisional or complete specification), Form 3 (statement and undertaking regarding foreign filing) where applicable, and the prescribed fee under the First Schedule of the Rules. The specification must describe the invention and the best method of performing it. For an Ayurveda or traditional-knowledge based invention, the specification must also disclose the source and geographical origin of any biological material used under Section 10(4)(d)(ii) of the Patents Act.
+
+Examination
+Examination of a patent application is not automatic. Form 18 (request for examination) must be filed within 48 months from the date of filing, the date of priority, or the date of early publication, whichever is earlier. The Controller issues a First Examination Report (FER) listing objections, and the applicant must respond within the prescribed period (six months, extendable up to three additional months). Failure to comply leads to abandonment of the application.
+
+Opposition and Grant
+Pre-grant opposition is available to any person under Section 25(1) of the Act before grant, including grounds that the invention is not novel, involves an inventive step, or is excluded under Section 3 (including Section 3(p) for traditional knowledge). After grant, post-grant opposition can be filed under Section 25(2) within twelve months. On acceptance the patent is granted with a term of twenty years from the filing date, subject to payment of renewal fees from the third year.
+
+Sources: https://ipindia.gov.in/frontend/pdf/patents/patent_rules2003.pdf
+Sources: https://ipindia.gov.in/writereaddata/Portal/Images/pdf/PatentRules2003-11March2015.pdf

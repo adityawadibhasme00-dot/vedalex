@@ -1,0 +1,18 @@
+DOC_ID: OMICS-METABOLOMICS-04
+TITLE: Berberine - isoquinoline alkaloid with metabolic activity
+OMICS_TYPE: metabolomics
+ORGANISM: Berberis aristata / Tinospora cordifolia
+COMPOUND: Berberine
+GENE: 
+PROTEIN: 
+UNIPROT: 
+NCBI_GENE_ID: 
+PUBCHEM_CID: 2353
+PATHWAY: Isoquinoline alkaloid biosynthesis
+ASSAY_TYPE: HPLC / LC-MS
+PMID: 
+SOURCE_URL: https://pubchem.ncbi.nlm.nih.gov/compound/2353
+AUTHORITY: PubChem (NCBI) / HMDB / MetaboLights (EMBL-EBI)
+JURISDICTION: International
+
+Berberine is an isoquinoline alkaloid found in Berberis species and reported in Tinospora cordifolia, and is registered in PubChem (CID 2353). It is widely studied for AMPK-dependent effects on glucose and lipid metabolism. Its common name and structure make it a canonical metabolomic marker for berberine-containing botanicals.

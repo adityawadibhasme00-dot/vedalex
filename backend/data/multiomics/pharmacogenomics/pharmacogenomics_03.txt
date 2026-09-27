@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PHARMACOGENOMICS-03
+TITLE: Curcumin modulates ABCB1/P-gp and UGT-mediated disposition
+OMICS_TYPE: pharmacogenomics
+ORGANISM: Homo sapiens
+COMPOUND: Curcumin (Curcuma longa)
+GENE: ABCB1; UGT1A1
+PROTEIN: P-glycoprotein; UGT1A1
+UNIPROT: P08183
+NCBI_GENE_ID: 5243
+PUBCHEM_CID: 
+PATHWAY: Efflux and conjugation disposition
+ASSAY_TYPE: Human and animal PK studies
+PMID: 
+SOURCE_URL: https://www.uniprot.org/uniprotkb/P08183
+AUTHORITY: PharmGKB (Stanford) / FDA
+JURISDICTION: International
+
+Curcumin is documented to modulate P-glycoprotein (ABCB1) and UDP-glucuronosyltransferase activity, which can alter the exposure of orally administered drugs (digoxin, irinotecan, anticoagulants). Pharmacogenomic counselling should consider ABCB1 and UGT1A1 genotype when dose-customising curcumin-combination claims.

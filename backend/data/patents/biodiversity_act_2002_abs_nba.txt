@@ -1,0 +1,23 @@
+Biological Diversity Act, 2002 - Access, Benefit Sharing and IP Clearance
+
+The Biological Diversity Act, 2002 (BDA), enacted to implement India's obligations under the Convention on Biological Diversity/ Nagoya Protocol, has three objectives: conservation and sustainable use of biological diversity; regulation of access to biological resources; and fair and equitable benefit sharing (ABS) with local communities for the use of such resources and associated knowledge.
+
+Scope: India is one of the world's "mega diversity" countries with about 7-8% of all recorded species, including more than 45,000 plant and 91,000 animal species. The Act governs access to biological resources occurring in India or knowledge associated with them.
+
+Section 6 - IP clearance before grant: any person applying for any IP right, in or outside India, based on research or information on a biological resource obtained from India must obtain prior approval of the National Biodiversity Authority (NBA) before the right is secured/granted. For patents, NBA approval may be obtained after filing provided it is obtained before sealing/grant.
+
+Routes under the Biological Diversity (Amendment) Act, 2023 (in force 1 April 2024) and the Biological Diversity Rules, 2024 (G.S.R. 665(E), notified 22 Oct 2024, in force 21 Dec 2024):
+- Section 3(2) applicants (non-citizens, NRIs, foreign bodies, Indian companies effectively controlled by foreigners): file Form 7 for PRIOR APPROVAL before grant; fee Rs 5,000 (individual) / Rs 10,000 (entity); NBA decides within 180 days. Form 7 covers digital sequence information relating to the biological resource (Rule 16).
+- Section 7 applicants (Indian citizens and locally-controlled Indian bodies): file Form 8 for REGISTRATION before grant; fee Rs 2,000 (individual) / Rs 5,000 (entity); no fixed decision period, so file early.
+- After grant: both routes require intimation to the NBA within 45 days (Rules 16(1)(e) and 16(2)(d)).
+- At commercialisation: s.7 patentees must obtain prior approval in Form 9 (fee Rs 5,000 / Rs 10,000), with NBA deciding within 180 days; s.3(2) applicants continue to comply with the Form 7 agreement terms.
+
+Benefit sharing: under s.21, the NBA determines fair and equitable benefit sharing in monetary form (royalties/upfront fees as a percentage of revenue) or non-monetary form (technology transfer, joint IP ownership, capacity building, conservation funding). Benefits flow into the National Biodiversity Fund, from which up to 95% is disbursed to State Biodiversity Boards and Biodiversity Management Committees for conservation and community welfare.
+
+Interaction with the Patents Act, 1970: the complete specification must disclose the source and geographical origin of biological material under s.10(4)(d)(ii)(D). NBA compliance and specification disclosure are separate obligations; failure in either can separately block grant or ground opposition (e.g. NBA v Sunev Pharma Solutions).
+
+Sources:
+- https://www.indiacode.nic.in/bitstream/123456789/21545/1/the_biological_diversity_act,_2002.pdf
+- Biological Diversity (Amendment) Act 2023 (No. 10 of 2023): https://egazette.gov.in/WriteReadData/2023/247815.pdf
+- Biological Diversity Rules, 2024 (G.S.R. 665(E)): https://nbaindia.org
+- NBA ABS portal (Forms 7, 8, 9).

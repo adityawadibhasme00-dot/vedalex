@@ -1,0 +1,17 @@
+TITLE: PubMed evidence summaries — curcumin and Ashwagandha clinical research
+AUTHORITY: PubMed / National Center for Biotechnology Information (NCBI)
+JURISDICTION: International
+SOURCE: https://pubmed.ncbi.nlm.nih.gov/
+EFFECTIVE: 1970-onwards
+
+Curcumin (Curcuma longa) clinical evidence
+PubMed indexes randomised controlled trials and meta-analyses on curcumin and turmeric. Key streams of evidence include: curcumin's anti-inflammatory activity in osteoarthritis and rheumatoid conditions; modulation of oxidative stress and inflammatory markers (e.g., C-reactive protein); and effects in metabolic conditions such as dyslipidaemia and glycaemic control. Several registered trials (e.g., ClinicalTrials.gov entries evaluating curcumin formulations) report improvements in joint discomfort and inflammatory biomarkers, while cautioning that bioavailability of native curcumin is low and enhanced by formulations such as piperine co-administration or phytosomal/curcuminoid complexes.
+
+Ashwagandha (Withania somnifera) clinical evidence
+PubMed-indexed trials on Ashwagandha root extract evaluate effects on stress and anxiety (reductions in perceived stress scale and serum cortisol), sleep quality, and aspects of cognitive performance and physical performance (strength, recovery). Many studies use standardised extracts (e.g., 300 mg, 5% withanolides twice daily) and report generally good tolerability.
+
+Evidence classification rules
+For regulatory citation purposes, each claim should be matched to an indexed study; Level-1 evidence (systematic reviews / meta-analyses) and Level-2 evidence (RCTs) support structure/function claims for dietary supplement filing (US DSHEA), while disease-treatment claims still trigger drug classification. PubMed identifiers (PMID) provide verifiable clickable citations for an Innovation Passport evidence register.
+
+Sources: https://pubmed.ncbi.nlm.nih.gov/
+Sources: https://clinicaltrials.gov/

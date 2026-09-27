@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PATHWAY-04
+TITLE: AMPK metabolic sensing pathway
+OMICS_TYPE: pathway
+ORGANISM: Homo sapiens
+COMPOUND: Berberine
+GENE: PRKAA1; STK11; SLC2A4
+PROTEIN: AMPK alpha-1; LKB1; GLUT4
+UNIPROT: Q13131
+NCBI_GENE_ID: 5562
+PUBCHEM_CID: 
+PATHWAY: AMPK signalling
+ASSAY_TYPE: p-AMPK immunoassay; glucose uptake
+PMID: 
+SOURCE_URL: https://www.wikipathways.org/pathways/WP1406.html
+AUTHORITY: WikiPathways / KEGG (Kyoto Encyclopedia)
+JURISDICTION: International
+
+AMPK signalling (PRKAA1/PRKAA2, STK11/LKB1) is the energy-sensing axis governing glucose uptake, fatty-acid oxidation and autophagy. Berberine is documented to activate AMPK, improving hepatic and muscle insulin sensitivity in pre-clinical and clinical settings.

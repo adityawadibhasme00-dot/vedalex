@@ -1,0 +1,18 @@
+WHO Guidelines on Quality and Safety of Herbal Medicines
+
+The World Health Organization provides global guidance on the safety, quality and efficacy of herbal medicines through the WHO monographs on selected medicinal plants, the WHO Guidelines on Quality of Herbal Medicines (1998), and the WHO guidelines on good herbal processing practices and on selecting marker substances for quality control of herbal medicines.
+
+Key quality control requirements for herbal medicines:
+- Authentication of starting materials: botanical identity of the drug verified against reference standards (macroscopic/microscopic identity, Latin binomial, part used).
+- Standardized extraction and processing: reproducible processes validated and documented.
+- Batch-to-batch consistency: assay of marker/active constituents and physico-chemical parameters within defined ranges.
+- Contaminant testing: pesticide residues, heavy metals (lead, arsenic, cadmium, mercury), aflatoxins and microbial limits.
+- Stability assessment per ICH guidelines (Q1A-Q1C stability of new drug substances/products).
+- Adverse event monitoring and pharmacovigilance for marketed herbal products.
+
+Policy guidance: WHO advises Member States to formulate national policies, regulations and standards for traditional medicine as part of comprehensive national health systems, and to consider integrating, where appropriate, safe and evidence-based traditional and complementary medicine services into national health systems at the primary care level (WHA62.13; WHO Traditional Medicine Strategy 2014-2023). Regulatory alignment improves trade and consumer safety for Ayurvedic herbal products.
+
+Relevance to IP-SAKTI: quality standards at the monograph level (Ayurvedic Pharmacopoeia of India, WHO monographs) underpin both safety claims and regulatory submissions (FSSAI Ayurveda Aahara, ASU drug licensing, US dietary supplement cGMP 21 CFR 111, Health Canada NHPR site licensing).
+
+References: WHO Monographs on Selected Medicinal Plants; WHO guidelines on good herbal processing practices; ICH Q1A-Q1C stability guidelines.
+Source: https://www.who.int/health-topics/traditional-complementary-and-integrative-medicine

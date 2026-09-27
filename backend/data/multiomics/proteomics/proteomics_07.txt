@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PROTEOMICS-07
+TITLE: BDNF - brain-derived neurotrophic factor
+OMICS_TYPE: proteomics
+ORGANISM: Homo sapiens
+COMPOUND: Bacopa monnieri (Brahmi) extract
+GENE: BDNF
+PROTEIN: Brain-derived neurotrophic factor
+UNIPROT: P23560
+NCBI_GENE_ID: 627
+PUBCHEM_CID: 
+PATHWAY: Neurotrophin signalling; synaptic plasticity
+ASSAY_TYPE: ELISA; Western blot
+PMID: 
+SOURCE_URL: https://www.uniprot.org/uniprotkb/P23560
+AUTHORITY: UniProt Consortium (EMBL-EBI / SIB / PIR)
+JURISDICTION: International
+
+BDNF (brain-derived neurotrophic factor) supports neuronal survival, synaptic plasticity and memory. Standardised bacosides from Bacopa monnieri are documented to increase BDNF expression and signalling in models of cognitive enhancement. Protein-level elevation of BDNF is a recognised mechanistic marker for nootropic claims.

@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PHARMACOGENOMICS-02
+TITLE: Ashwagandha - CYP3A4/CYP2C9 interaction risk flag
+OMICS_TYPE: pharmacogenomics
+ORGANISM: Homo sapiens
+COMPOUND: Withania somnifera (Ashwagandha)
+GENE: CYP3A4; CYP2C9
+PROTEIN: Cytochrome P450 3A4; 2C9
+UNIPROT: P08684
+NCBI_GENE_ID: 1576
+PUBCHEM_CID: 
+PATHWAY: Xenobiotic (Phase I) metabolism
+ASSAY_TYPE: In vitro inhibition screen
+PMID: 
+SOURCE_URL: https://www.uniprot.org/uniprotkb/P08684
+AUTHORITY: PharmGKB (Stanford) / FDA
+JURISDICTION: International
+
+Withania somnifera root extracts containing withanolides are documented as potential inhibitors of CYP3A4 and CYP2C9 in preclinical interaction screening. The clinical relevance applies to patients co-medicated with CYP3A4 substrates (statins, calcium-channel blockers, immunosuppressants). The absence of a large phase-I human interaction dataset should be flagged rather than affirmed. Database reference: NLM/DrugBank-grade interaction flags.

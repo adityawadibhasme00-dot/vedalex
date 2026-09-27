@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PROTEOMICS-02
+TITLE: PTGS2 (COX-2) - inducible prostaglandin synthase
+OMICS_TYPE: proteomics
+ORGANISM: Homo sapiens
+COMPOUND: Curcumin (Curcuma longa)
+GENE: PTGS2
+PROTEIN: Prostaglandin-endoperoxide synthase 2 (COX-2)
+UNIPROT: P35354
+NCBI_GENE_ID: 5743
+PUBCHEM_CID: 
+PATHWAY: Arachidonic acid metabolism; NF-kB
+ASSAY_TYPE: Western blot; qRT-PCR
+PMID: 
+SOURCE_URL: https://www.uniprot.org/uniprotkb/P35354
+AUTHORITY: UniProt Consortium (EMBL-EBI / SIB / PIR)
+JURISDICTION: International
+
+PTGS2 encodes the inducible cyclooxygenase-2 enzyme that converts arachidonic acid into pro-inflammatory prostaglandins. Curcumin, the principal curcuminoid of Curcuma longa (turmeric), is documented to down-regulate PTGS2 expression through blockade of NF-kB signalling. Suppression of COX-2 protein is a well-characterized, evidence-linked mechanism supporting anti-inflammatory claims.

@@ -1,0 +1,23 @@
+Canada - Natural Health Products Regulations (NHPR) SOR/2003-196
+
+Health Canada regulates herbal and Ayurvedic products sold in Canada as Natural Health Products (NHPs) under the Natural Health Products Regulations, SOR/2003-196, implemented by the Natural and Non-prescription Health Products Directorate (NNHPD).
+
+Product licensing:
+- No person shall sell a natural health product unless a product licence has been issued for it (SOR/2003-196 Part 1), which yields an 8-digit Natural Product Number (NPN) printed on the label.
+- Product licence applications provide evidence of safety, efficacy and quality (including GMP evidence) for the medicinal ingredients and the proposed health claims.
+- Assessment classes: Class I (lowest risk, fastest review), II, III, IV. Formulations conforming to published NHPID monographs qualify for expedited Class I assessment.
+- Compliance with the Natural Health Products Ingredient Database (NHPID) and Compendium of Monographs supports claim assessment; monographed botanicals (e.g. Ashwagandha root, Bacopa monnieri for cognitive function, turmeric for inflammatory states) can carry indication statements from the monograph.
+
+Site licensing / GMP:
+- Importing and manufacturing sites must hold a Canadian Site Licence demonstrating GMP compliance (Good Manufacturing Practices per Part 3 of the NHPR), including for foreign sites.
+- Lot/import/distribution records and adverse reaction reporting (within 15 days for serious adverse reactions) are mandatory.
+
+Labelling:
+- Labels must show the NPN/licence number, medicinal ingredients and amounts, recommended use, and the mandatory statement that this product may not be appropriate for all persons.
+
+Comparison for global filing: where a claim is framed as supporting sleep or memory function and uses monographed botanicals at monograph doses, Health Canada Class I review can approve the same product the US FDA would permit only as a dietary supplement with a DSHEA disclaimer and that India would regulate as Ayurveda Aahara (food) or an ASU drug depending on the claim.
+
+Sources:
+- SOR/2003-196: https://laws-lois.justice.gc.ca/eng/regulations/SOR-2003-196/
+- Health Canada NHP: https://www.canada.ca/en/health-canada/services/drugs-health-products/natural-non-prescription.html
+- NNHPD Compendium of Monographs.

@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PROTEOMICS-11
+TITLE: ABCB1 (P-glycoprotein) - efflux transporter modulating bioavailability
+OMICS_TYPE: proteomics
+ORGANISM: Homo sapiens
+COMPOUND: Curcumin (Curcuma longa)
+GENE: ABCB1
+PROTEIN: ATP-dependent translocase ABCB1 (P-glycoprotein 1)
+UNIPROT: P08183
+NCBI_GENE_ID: 5243
+PUBCHEM_CID: 
+PATHWAY: Xenobiotic efflux; ADME
+ASSAY_TYPE: Efflux assay (Caco-2)
+PMID: 
+SOURCE_URL: https://www.uniprot.org/uniprotkb/P08183
+AUTHORITY: UniProt Consortium (EMBL-EBI / SIB / PIR)
+JURISDICTION: International
+
+ABCB1 encodes the ATP-binding cassette efflux transporter P-glycoprotein (P-gp) that limits intestinal and blood-brain barrier uptake of xenobiotics. Curcumin and its metabolites are documented to modulate ABCB1/P-gp activity, influencing the pharmacokinetic profile of co-administered drugs and supporting claims about enhanced bioavailability when combined with P-gp-modulating bioactives.

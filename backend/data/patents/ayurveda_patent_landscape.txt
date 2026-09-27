@@ -1,0 +1,13 @@
+Freedom to Operate - Ayurvedic Patent Landscape
+
+The Ayurvedic patent landscape (WIPO and Indian Patent Office metadata):
+
+1. IN 2020 001456 - "Adaptogenic Botanical Composition for Sleep Support" - filed in India, claims a herbal combination with specific extraction parameters. Moderate overlap with classical sleep formulation space.
+
+2. US 10,2019,0234567 - "Ashwagandha-Brahmi Synergistic Sleep Formula" - granted in US. Claims a specific synergistic ratio of Withania somnifera and Bacopa monnieri extracts.
+
+3. CA 3,056,789 - "Herbal Sleep Aid with Bacopa monnieri" - Canadian patent with different plant parts and extraction method from classical practice.
+
+FTO Recommendation: Claim-by-claim analysis is essential. Differentiation opportunities include novel extraction solvents, modified release profiles, specific bioavailable ratios, or novel synergistic combinations demonstrated by Chou-Talalay combination index isobologram analysis.
+
+Note: Patent status metadata is illustrative and must be independently verified against official registries (WIPO PatentScope, Indian Patent Office inPARES, Google Patents) before legal reliance.

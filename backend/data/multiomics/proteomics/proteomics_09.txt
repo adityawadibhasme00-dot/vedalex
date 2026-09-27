@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PROTEOMICS-09
+TITLE: NR1H4 (FXR) - farnesoid X receptor
+OMICS_TYPE: proteomics
+ORGANISM: Homo sapiens
+COMPOUND: Guggulsterone (Commiphora mukul)
+GENE: NR1H4
+PROTEIN: Bile acid receptor (FXR)
+UNIPROT: Q96RI1
+NCBI_GENE_ID: 9971
+PUBCHEM_CID: 
+PATHWAY: Bile acid metabolism; nuclear receptor signalling
+ASSAY_TYPE: Reporter assay; SPR
+PMID: 
+SOURCE_URL: https://www.uniprot.org/uniprotkb/Q96RI1
+AUTHORITY: UniProt Consortium (EMBL-EBI / SIB / PIR)
+JURISDICTION: International
+
+NR1H4 encodes the farnesoid X receptor (FXR), a nuclear receptor that regulates bile acid, lipid and glucose homeostasis. Guggulsterone, the plant sterol from Commiphora mukul (guggul), is documented as a natural antagonist-modulator of FXR, a protein-level mechanism supporting lipid-modulating claims.

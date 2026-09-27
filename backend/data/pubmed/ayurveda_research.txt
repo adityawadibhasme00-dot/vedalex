@@ -1,0 +1,15 @@
+PubMed Research Metadata - Ayurvedic Botanicals (Evidence Status)
+
+Peer-reviewed evidence relevant to sleep and cognition formulations containing Ashwagandha, Brahmi (Bacopa) and related Medhya Rasayanas.
+
+1. Ashwagandha (Withania somnifera) - stress and sleep: randomized, double-blind, placebo-controlled trials of standardized root extract (e.g. 300 mg twice daily, KSM-66 or Sensoril-type full-spectrum root extracts) report significant improvement in sleep quality and reduced Perceived Stress Scale scores (e.g. Lopresti et al., 2019). Note: claims in marketing collaterals must stay within structure/function language in the US and approved indications elsewhere.
+2. Bacopa monnieri (Brahmi) - cognition: systematic reviews and multiple trials show consistent improvements in memory acquisition and retention with standardized extracts standardised to bacosides, most after 8-12 weeks of dosing (e.g. Stough et al., 2013; Kongkeaw et al., 2014).
+3. Cortisol/gabaergic mechanisms: Ashwagandha root's withanolides are studied for cortisol-lowering and GABAergic modulation; Haridra (Curcuma longa) curcuminoids for anti-inflammatory signalling; these mechanisms support but do not replace clinical claim substantiation.
+4. Combination index (isobolographic) evidence gap: conclusive combination-specific Chou-Talalay data for Ashwagandha+Bacopa fixed ratios remains scarce; genering such quantitative synergy data is both an evidence need and, when robust, a patentability differentiator against Section 3(p)/(d)/(e) of the Patents Act, 1970.
+
+Evidence hierarchy in the ASU framework: for classical formulations (Rule 158-B category A), published literature referencing First Schedule books satisfies experience/effectiveness. For proprietary (category B) products, documented safety study plus clinical/experiential evidence is required; for health claims in food (Ayurveda Aahara), FSSAI requires approved claims under the 2022 Regulations.
+
+Global trials landscape: the WHO International Clinical Trials Registry Platform listed 4,778 traditional medicine-related clinical trials globally (165 restricted to COVID-19) as of the EB152/37 report (Dec 2022), confirming a growing clinical evidence base for traditional botanicals.
+
+Search terms for deeper retrieval: "Withania somnifera clinical trial", "Bacopa monnieri cognition systematic review", "curcumin sleep", "Ayurvedic formulation RCT", "traditional medicine clinical evidence", "Chou-Talalay herbal combination."
+General source: https://pubmed.ncbi.nlm.nih.gov/ (evidence abstracts should be verified individually before citation in any submission).

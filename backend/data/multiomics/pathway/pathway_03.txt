@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PATHWAY-03
+TITLE: GABAergic anxiolytic signalling pathway
+OMICS_TYPE: pathway
+ORGANISM: Homo sapiens
+COMPOUND: Ashwagandha glycowithanolides
+GENE: GABRA1; GAD1; GABBR1
+PROTEIN: GABA-A alpha-1; GAD1; GABA-B1
+UNIPROT: P14867
+NCBI_GENE_ID: 2554
+PUBCHEM_CID: 
+PATHWAY: GABAergic synapse
+ASSAY_TYPE: Binding displacement assays
+PMID: 
+SOURCE_URL: https://www.wikipathways.org/pathways/WP1362.html
+AUTHORITY: WikiPathways / KEGG (Kyoto Encyclopedia)
+JURISDICTION: International
+
+GABAergic signalling (GABRA1/GABRB3 receptor subunits, GABA synthesis via GAD1) mediates inhibitory neurotransmission and is the canonical target for anxiolytics. Withania somnifera glycowithanolides are documented to enhance GABAergic activity, consistent with anxiolytic clinical claims.
