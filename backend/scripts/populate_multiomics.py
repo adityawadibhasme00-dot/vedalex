@@ -1,9 +1,14 @@
 """Write all curated multi-omics seed records into data/multiomics/ as .txt files."""
-import os, sys, textwrap
+import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from app.rag.datasources.seed.curated import (
-    build_omics_seed_documents, PROTEOMICS, METABOLOMICS, PHARMACOGENOMICS, PATHWAYS,
+    METABOLOMICS,
+    PATHWAYS,
+    PHARMACOGENOMICS,
+    PROTEOMICS,
+    build_omics_seed_documents,
 )
 
 BASE = os.path.join(os.path.dirname(__file__), "..", "data", "multiomics")

@@ -2,11 +2,23 @@ rule_pack_id: "RULE-IN-PATENT-SEC3P"
 jurisdiction: "India"
 authority: "Indian Patent Office (CGPDTM)"
 governing_act: "The Patents Act, 1970 (Section 3(p))"
-version: "1.0.0"
+version: "1.1.0"
 rules:
   - id: "RULE_PATENT_SEC3P_OBJECTION"
     name: "Section 3(p) Traditional Knowledge Aggregation Bar"
     statute_ref: "Section 3(p) & TK Guidelines"
+    rule_version: "1.1.0"
+    effective_from: "2005-04-04"
+    status: "active"
+    risk_level: "high"
+    requires_human_review: true
+    evidence:
+      source_id: "patents_act_1970_section_3"
+      locator: "Section 3(p)"
+      authority: "The Patents Act, 1970 (as amended 2005)"
+    explanation_template:
+      en: "Ingredients documented as traditional knowledge with no proven synergism trigger the Section 3(p) non-patentability bar. Verify absence of synergism data and NBA compliance before filing."
+      hi: "घटक जो दस्तावेज़ित पारंपरिक ज्ञान हैं और जिनके लिए सिनर्जिज्म डेटा नहीं है, अनुच्छेद 3(p) की नॉन-पेटेंटबिलिटी रोक को लागू करते हैं। दाखिल करने से पहले सिनर्जिज्म डेटा की अनुपस्थिति और एनबीए अनुपालन की जाँच करें।"
     conditions:
       - fact_key: "ingredients_have_documented_tk_use"
         operator: "equals"

@@ -1,0 +1,185 @@
+{
+  "_meta": {
+    "schema_version": "1.0",
+    "curated": "2026-09-20",
+    "purpose": "Legal/Ayurveda bilingual glossary for the IP-SAKTI Sahayak copilot. Legal terms retain statutory meaning; Ayurveda terms follow classical usage. Not a substitute for official Hindi statutory texts.",
+    "languages": ["en", "hi"]
+  },
+  "terms": {
+    "patent": {
+      "en": "patent",
+      "hi": "पेटेंट (एकाधिकार)",
+      "notes": "Grant under Patents Act 1970 conferring exclusive right over an invention."
+    },
+    "trade_mark": {
+      "en": "trade mark",
+      "hi": "व्यापार चिह्न",
+      "notes": "Mark capable of distinguishing goods/services (Trade Marks Act 1999)."
+    },
+    "geographical_indication": {
+      "en": "geographical indication (GI)",
+      "hi": "भौगोलिक संकेत (जीआई)",
+      "notes": "Goods originating from a defined territory with qualities linked to origin (GI of Goods Act 1999)."
+    },
+    "industrial_design": {
+      "en": "industrial design",
+      "hi": "औद्योगिक डिजाइन",
+      "notes": "Novel/original configuration or ornamentation applied to an article (Designs Act 2000)."
+    },
+    "copyright": {
+      "en": "copyright",
+      "hi": "कॉपीराइट",
+      "notes": "Exclusive right over original literary, dramatic, musical, artistic works (Copyright Act 1957)."
+    },
+    "invention": {
+      "en": "invention",
+      "hi": "आविष्कार",
+      "notes": "New product or process involving inventive step and industrial applicability — Patents Act s.2(1)(j)."
+    },
+    "prior_art": {
+      "en": "prior art",
+      "hi": "पूर्व साहित्य / प्रियर आर्ट",
+      "notes": "Existing knowledge made available to the public before a filing date."
+    },
+    "novelty": {
+      "en": "novelty",
+      "hi": "नवीनता",
+      "notes": "Not anticipated by prior art — Patents Act s.2(1)(l), s.13."
+    },
+    "inventive_step": {
+      "en": "inventive step",
+      "hi": "आविष्कारी कदम",
+      "notes": "Non-obviousness over prior art to a person skilled in the art — Patents Act s.2(1)(ja)."
+    },
+    "industrial_applicability": {
+      "en": "industrial applicability",
+      "hi": "औद्योगिक उपयोगिता",
+      "notes": "Capable of being made or used in an industry — Patents Act s.2(1)(ac)."
+    },
+    "exclusion": {
+      "en": "exclusion / not an invention",
+      "hi": "बहिष्करण / आविष्कार नहीं",
+      "notes": "Categories under s.3 that are NOT patentable inventions."
+    },
+    "traditional_knowledge": {
+      "en": "traditional knowledge (TK)",
+      "hi": "पारंपरिक ज्ञान",
+      "notes": "Knowledge held by Indigenous/local communities; a patent bar under s.3(p)."
+    },
+    "natural_law": {
+      "en": "mere discovery of a natural law / substance",
+      "hi": "प्राकृतिक नियम / प्राकृतिक वस्तु की मात्र खोज",
+      "notes": "s.3(c): mere discovery of a natural phenomenon is not an invention."
+    },
+    "living_substance": {
+      "en": "merely mixing to obtain a combination",
+      "hi": "मिश्रण मात्र",
+      "notes": "s.3(e): mere admixture resulting in aggregation of properties is excluded."
+    },
+    "method_of_treatment": {
+      "en": "method of treatment / diagnosis",
+      "hi": "उपचार / निदान की विधि",
+      "notes": "s.3(i): methods of treatment of humans/animals by surgery or therapy are exclusions."
+    },
+    "disclosure_of_origin": {
+      "en": "disclosure of source / origin",
+      "hi": "स्रोत / उत्पत्ति का प्रकटीकरण",
+      "notes": "s.10(4)(d)(ii) Biodiv requirement; GRATK/ABS dimension for biological material."
+    },
+    "specification": {
+      "en": "specification",
+      "hi": "अभिनिर्दिष्टता",
+      "notes": "Full description of invention: provisional or complete — Patents Act s.10."
+    },
+    "claims": {
+      "en": "claims",
+      "hi": "दावे",
+      "notes": "Define scope of protection — Patents Act s.10(4)(c), r.13."
+    },
+    "filing_date": {
+      "en": "filing date / priority date",
+      "hi": "दाखिल करने की तारीख / प्राथमिकता तारीख",
+      "notes": "Determines novelty comparison window and opposition windows."
+    },
+    "opposition": {
+      "en": "opposition",
+      "hi": "आपत्ति",
+      "notes": "Pre-grant (s.25(1)) and post-grant (s.25(2)) challenge."
+    },
+    "examination": {
+      "en": "examination",
+      "hi": "परीक्षण",
+      "notes": "Substantive examination under s.12-13 and First Examination Report (FER)."
+    },
+    "grant": {
+      "en": "grant",
+      "hi": "अनुदान",
+      "notes": "Patent sealed under s.43; term 20 years from filing — s.53."
+    },
+    "renewal_fee": {
+      "en": "renewal fee",
+      "hi": "नवीनीकरण शुल्क",
+      "notes": "Annual fee under s.53/142 to keep patent in force."
+    },
+    "license": {
+      "en": "license",
+      "hi": "अनुज्ञप्ति (लाइसेंस)",
+      "notes": "Voluntary, compulsory (s.84), or license of right (s.86)."
+    },
+    "compulsory_license": {
+      "en": "compulsory license",
+      "hi": "अनिवार्य लाइसेंस",
+      "notes": "Granted under s.84 for reasonable-requirement/availability/price grounds."
+    },
+    "anti_biopiracy": {
+      "en": "anti-biopiracy",
+      "hi": "जैवचोरी-विरोधी",
+      "notes": "Prevention of unauthorized patenting of bioresources/TK; prior-art pointers (s.3(p), BD Act)."
+    },
+    "biodiversity_act": {
+      "en": "Biological Diversity Act",
+      "hi": "जैव विविधता अधिनियम",
+      "notes": "S.6 approval required for patenting an invention based on biological resources."
+    },
+    "authority": {
+      "en": "competent authority / office",
+      "hi": "सक्षम प्राधिकारी / कार्यालय",
+      "notes": "CGPDTM for patents; CDSCO for drugs; FSSAI for foods."
+    },
+    "registration": {
+      "en": "registration",
+      "hi": "पंजीकरण",
+      "notes": "Formal record conferring rights (TM s.23, Designs s.5, Copyright s.44)."
+    },
+    "disclaimer": {
+      "en": "disclaimer",
+      "hi": "अस्वीकृति",
+      "notes": "Renunciation of protection over part of a mark or specification."
+    },
+    "gazette": {
+      "en": "Official Gazette",
+      "hi": "राजपत्र",
+      "notes": "Statutory publication where rules/regulations are notified."
+    },
+    "ayurveda_formulation": {
+      "en": "Ayurvedic medicine / formulation",
+      "hi": "आयुर्वेदिक औषधि / योग",
+      "notes": "Processed botanical/natural formulation under Ayurveda, Siddha, Unani systems."
+    },
+    "classical_text": {
+      "en": "classical text",
+      "hi": "प्राचीन ग्रंथ",
+      "notes": "e.g. Charaka Samhita, Sushruta Samhita — recognized Ayurveda compendia."
+    },
+    "patent_office": {
+      "en": "patent office",
+      "hi": "पेटेंट कार्यालय",
+      "notes": "Office of the Controller General of Patents, Designs & Trade Marks."
+    },
+    "priority": {
+      "en": "priority (Paris/PCT)",
+      "hi": "प्राथमिकता",
+      "notes": "Claim to earlier filing date, typically 12 months (PCT/Paris)."
+    }
+  }
+}

@@ -21,12 +21,9 @@ This replaces both faiss_retriever.py and retrieval_engine.py with a single
 production-grade module.
 """
 
-import re
-import os
-import json
-import glob
-from typing import List, Dict, Any, Optional, Tuple
 import logging
+import re
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +43,8 @@ class HybridRetriever:
 
     _instance: Optional["HybridRetriever"] = None
     _bm25_index = None
-    _bm25_corpus: List[Dict[str, Any]] = []
-    _bm25_tokenized: List[List[str]] = []
+    _bm25_corpus: list[dict[str, Any]] = []
+    _bm25_tokenized: list[list[str]] = []
 
     def __new__(cls):
         if cls._instance is None:
@@ -59,7 +56,7 @@ class HybridRetriever:
     # ------------------------------------------------------------------
 
     @classmethod
-    def build_bm25_index(cls, documents: List[Dict[str, Any]]):
+    def build_bm25_index(cls, documents: list[dict[str, Any]]):
         """Build BM25 index from knowledge base documents."""
         if not BM25_AVAILABLE:
             logger.warning("BM25 unavailable — semantic-only mode")
@@ -84,8 +81,8 @@ class HybridRetriever:
 
     @classmethod
     def bm25_search(
-        cls, query: str, top_k: int = 20, domains: Optional[List[str]] = None
-    ) -> List[Dict[str, Any]]:
+        cls, query: str, top_k: int = 20, domains: list[str] | None = None
+    ) -> list[dict[str, Any]]:
         """Keyword search using BM25 scoring."""
         if cls._bm25_index is None:
             # Auto-build index from Qdrant if available (or KB files)
@@ -127,7 +124,7 @@ class HybridRetriever:
             ]
         scored.sort(key=lambda x: x[1], reverse=True)
 
-        results = []
+        results: list[dict[str, Any]] = []
         for idx, score in scored[:top_k]:
             doc = cls._bm25_corpus[idx].copy()
             doc["bm25_score"] = score
@@ -145,9 +142,9 @@ class HybridRetriever:
         cls,
         query: str,
         top_k: int = 20,
-        filters: Optional[Dict[str, Any]] = None,
-        domains: Optional[List[str]] = None,
-    ) -> List[Dict[str, Any]]:
+        filters: dict[str, Any] | None = None,
+        domains: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
         """Semantic search via Qdrant restricted to intent-relevant domains."""
         from app.rag.qdrant_store import QdrantVectorStore
         store = QdrantVectorStore()
@@ -161,10 +158,10 @@ class HybridRetriever:
     def statutory_search(
         cls,
         query: str,
-        jurisdiction: Optional[str] = None,
+        jurisdiction: str | None = None,
         top_k: int = 6,
         min_score: float = 1.0,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Search statutory passages via the existing retrieval engine."""
         from app.services.retrieval_engine import HybridRetrievalEngine
         citations = HybridRetrievalEngine.search_passages(
@@ -198,7 +195,7 @@ class HybridRetriever:
         return 1.0 / (HybridRetriever.RRF_K + rank)
 
     @staticmethod
-    def _doc_merge_key(doc: Dict[str, Any]) -> str:
+    def _doc_merge_key(doc: dict[str, Any]) -> str:
         """Stable dedup identity across retrieval strategies."""
         doc_id = doc.get("doc_id") or doc.get("id") or ""
         source = doc.get("source") or ""
@@ -211,14 +208,14 @@ class HybridRetriever:
     @classmethod
     def _merge_results(
         cls,
-        semantic_results: List[Dict[str, Any]],
-        bm25_results: List[Dict[str, Any]],
-        statutory_results: List[Dict[str, Any]],
-    ) -> List[Dict[str, Any]]:
+        semantic_results: list[dict[str, Any]],
+        bm25_results: list[dict[str, Any]],
+        statutory_results: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         """Fuse all retrieval lists with Reciprocal Rank Fusion, dedupe, and
         normalise per-source scores. Statutory sources keep a small authority
         tiebreak so binding law surfaces first when RRF scores are equal."""
-        merged: Dict[str, Dict[str, Any]] = {}
+        merged: dict[str, dict[str, Any]] = {}
 
         for i, doc in enumerate(semantic_results, start=1):
             key = cls._doc_merge_key(doc)
@@ -272,9 +269,9 @@ class HybridRetriever:
     @classmethod
     def _apply_metadata_filters(
         cls,
-        documents: List[Dict[str, Any]],
-        filters: Optional[Dict[str, Any]] = None,
-    ) -> List[Dict[str, Any]]:
+        documents: list[dict[str, Any]],
+        filters: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
         """Filter documents by metadata fields."""
         if not filters:
             return documents
@@ -308,9 +305,9 @@ class HybridRetriever:
     def _rerank(
         cls,
         query: str,
-        documents: List[Dict[str, Any]],
+        documents: list[dict[str, Any]],
         top_k: int = 5,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Rerank documents using cross-encoder."""
         from app.rag.reranker import Reranker
         if not Reranker.is_available():
@@ -330,8 +327,8 @@ class HybridRetriever:
     def _compute_confidence(
         cls,
         query: str,
-        sources: List[Dict[str, Any]],
-        grounding: Dict[str, Any],
+        sources: list[dict[str, Any]],
+        grounding: dict[str, Any],
     ) -> float:
         """Compute confidence score based on retrieval quality signals."""
         if not sources:
@@ -382,11 +379,11 @@ class HybridRetriever:
         cls,
         query: str,
         top_k: int = 5,
-        filters: Optional[Dict[str, Any]] = None,
-        jurisdiction: Optional[str] = None,
-        category: Optional[str] = None,
-        domains: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        filters: dict[str, Any] | None = None,
+        jurisdiction: str | None = None,
+        category: str | None = None,
+        domains: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Full hybrid retrieval pipeline.
 
@@ -453,7 +450,7 @@ class HybridRetriever:
         confidence = cls._compute_confidence(query, reranked, grounding)
 
         # Step 9: Hallucination validation
-        from app.rag.hallucination_guard import validate_answer, should_refuse_answer
+        from app.rag.hallucination_guard import should_refuse_answer
         should_refuse, refusal_reason = should_refuse_answer(
             coverage=grounding["coverage_ratio"],
             confidence=confidence,
@@ -492,7 +489,7 @@ class HybridRetriever:
     # ------------------------------------------------------------------
 
     @classmethod
-    def reindex_all(cls) -> Dict[str, Any]:
+    def reindex_all(cls) -> dict[str, Any]:
         """Full reindex: load KB -> embed -> upsert to Qdrant."""
         import time
         start = time.time()
@@ -522,7 +519,7 @@ class HybridRetriever:
         return stats
 
     @classmethod
-    def get_status(cls) -> Dict[str, Any]:
+    def get_status(cls) -> dict[str, Any]:
         """Return current pipeline status."""
         from app.rag.qdrant_store import QdrantVectorStore
         qdrant_stats = QdrantVectorStore().get_collection_stats()
@@ -591,7 +588,7 @@ def _is_qdrant_available() -> bool:
         return False
 
 
-def _get_official_web_status() -> Dict[str, Any]:
+def _get_official_web_status() -> dict[str, Any]:
     try:
         from app.rag.official_web_retriever import get_status
         return get_status()

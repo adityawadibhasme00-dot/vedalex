@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
@@ -32,6 +30,15 @@ services:
       - "6333:6333"
       - "6334:6334"
 
+  redis:
+    image: redis:7-alpine
+    container_name: ipsakti_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
   backend:
     build:
       context: ./backend
@@ -47,6 +54,10 @@ services:
       - QDRANT_URL=http://qdrant:6333
       - IPSAKTI_USE_BGE_M3=1
       - IPSAKTI_USE_RERANKER=1
+      - REDIS_URL=redis://redis:6379/0
+      - IPSAKTI_RAG_DEFAULT=hybrid
+      - IPSAKTI_RAG_CACHE_TTL=3600
+      - IPSAKTI_RAG_RATE_LIMIT=60
     ports:
       - "8000:8000"
     volumes:
@@ -58,15 +69,21 @@ services:
       postgres:
         condition: service_healthy
       qdrant:
+        condition: service_started
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        # Baked into the client bundle / Next.js rewrites at build time.
+        # Browser-side calls go to the same origin (/api/v1) and are proxied
+        # server-side to the backend container.
+        NEXT_PUBLIC_API_BASE_URL: /api/v1
+        BACKEND_URL: http://backend:8000
     container_name: ipsakti_frontend
     restart: always
     environment:
-      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1
       - NODE_ENV=production
     ports:
       - "3000:3000"
@@ -76,3 +93,4 @@ services:
 volumes:
   postgres_data:
   qdrant_data:
+  redis_data:

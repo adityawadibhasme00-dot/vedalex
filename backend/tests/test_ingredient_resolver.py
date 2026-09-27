@@ -1,5 +1,6 @@
 from app.services.ingredient_resolver import IngredientResolverService
 
+
 def test_canonical_botanical_resolution():
     # Test Devanagari Hindi
     res_hi = IngredientResolverService.resolve("अश्वगंधा")

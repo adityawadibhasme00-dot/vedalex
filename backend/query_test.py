@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import json
 import time
+
 from app.rag.retrieval_pipeline import HybridRetriever
 
 query = "Can an Ashwagandha wound-healing formulation be patented in India?"
@@ -18,7 +19,7 @@ elapsed = time.time() - start
 
 print("=" * 70)
 print("QUERY:", query)
-print("TIME: %.2fs" % elapsed)
+print(f"TIME: {elapsed:.2f}s")
 print("=" * 70)
 print("GROUNDING:", json.dumps(result.get("grounding", {}), indent=2)[:600])
 print("CONFIDENCE:", result.get("confidence"))

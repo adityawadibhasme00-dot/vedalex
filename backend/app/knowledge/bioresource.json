@@ -1,5 +1,33 @@
 [
   {
+    "canonical_id": "ING-SARPAGANDHA",
+    "botanical_name": "Rauvolfia serpentina (L.) Benth. ex Kurz",
+    "family": "Apocynaceae",
+    "api_monograph_id": "API-VOL2-023",
+    "plant_parts": ["Root (Mula)"],
+    "geography": [
+      { "state": "Kerala", "status": "verified", "note": "Traditional cultivation belts in southern Western Ghats; API monograph 'Sarpagandha'.", "source": "Ayurvedic Pharmacopoeia of India" },
+      { "state": "West Bengal", "status": "supplier_confirmed", "note": "Nursery/cultivation source; CITES provenance documentation pending.", "source": "Supplier declaration" }
+    ],
+    "conservation_status": "CITES Appendix II — wild populations declining from habitat loss and root harvesting; cultivation is the sustainable source.",
+    "trade_demand_class": "High (blood-pressure & sleep segment; reserpine-alkaloid market)",
+    "price_trend_note": "Root prices rising with regulatory pressure on wild harvest; certified cultivated root commands premium.",
+    "provenance_options": ["Domestic Cultivated (Certificate of Cultivation)", "License-certified nursery", "Wild-collected (not recommended — CITES + EXIM restrictions)"],
+    "abs_considerations": [
+      "CITES Appendix II — export of roots/derivatives requires a CITES export permit and legal-procurement certification.",
+      "Wild-collected access triggers SBB/NBA ABS benefit-sharing under the Biological Diversity Act, 2002 (as amended 2023).",
+      "Keep Certificate of Cultivation / Legal Procurement Certificate on file to unlock compliant export channels."
+    ],
+    "tk_considerations": [
+      "Classical Sarpagandha usage (Charaka, Susruta) documented — standard uses are dense prior art.",
+      "Novel extraction/marker (reserpine content) claims remain the patentable surface."
+    ],
+    "ip_considerations": [
+      "Reserpine and Rauwolfia alkaloid patents are legacy prior art; FTO review mandatory.",
+      "Process/marker standardisation or combination synergy evidence required for inventive step."
+    ]
+  },
+  {
     "canonical_id": "ING-ASHWAGANDHA",
     "botanical_name": "Withania somnifera (L.) Dunal",
     "family": "Solanaceae",

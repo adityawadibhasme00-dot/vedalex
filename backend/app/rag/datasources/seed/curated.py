@@ -11,7 +11,7 @@ These records power the "multiomics" knowledge category so that patentability
 assessments can cite mechanistic evidence with deterministic accessions.
 """
 
-from typing import List, Dict, Any
+from typing import Any
 
 AUTHORITY_MAP = {
     "genomics": "NCBI Gene / NCBI (National Library of Medicine)",
@@ -40,7 +40,7 @@ def _rec(
     pmid: str = "",
     source_url: str = "",
     doc_suffix: str = "A",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     authority = AUTHORITY_MAP.get(omics_type, "Official Source")
     doc_id = f"OMICS-{omics_type.upper()}-{doc_suffix}"
     return {
@@ -383,8 +383,8 @@ PATHWAYS = [
 ]
 
 
-def build_omics_seed_documents() -> List[Dict[str, Any]]:
-    docs: List[Dict[str, Any]] = []
+def build_omics_seed_documents() -> list[dict[str, Any]]:
+    docs: list[dict[str, Any]] = []
     for omics in (PROTEOMICS, METABOLOMICS, PHARMACOGENOMICS, PATHWAYS):
         docs.extend(omics)
     # Genomics subset folded into proteomics/transcriptomics via gene-level

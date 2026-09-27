@@ -11,7 +11,7 @@ component breakdown, strengths / weaknesses and recommended next actions.
 No random values are used — all scores are derived deterministically from
 the Innovation Passport fields and the knowledge base.
 """
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from app.models.passport import InnovationPassport
 
@@ -88,7 +88,7 @@ DISPUTE_MARKERS = [
     "breach of nda", "assignment dispute", "co-inventor disagreement",
 ]
 
-COMPONENT_META: Dict[str, Dict[str, str]] = {
+COMPONENT_META: dict[str, dict[str, str]] = {
     "novelty":    {"label": "Novelty",           "good": "Novel composition & formulation technology", "warn": "Moderate novelty — common ingredient/process"},
     "prior_art":  {"label": "Prior Art",          "good": "Low prior-art overlap",                    "warn": "Similar prior art found"},
     "section3p":  {"label": "Section 3(p)",       "good": "Section 3(p) compliance",                  "warn": "Section 3(p) exposure for TK herbs"},
@@ -102,11 +102,11 @@ COMPONENT_META: Dict[str, Dict[str, str]] = {
 TARGET_MARKET_FTO_PENALTY = {"China", "European Union", "EU", "Japan", "United States"}
 
 
-def _norm(value: Optional[str]) -> str:
+def _norm(value: str | None) -> str:
     return (value or "").lower()
 
 
-def _has_any_marker(text: str, markers: List[str]) -> bool:
+def _has_any_marker(text: str, markers: list[str]) -> bool:
     return any(m in text for m in markers)
 
 
@@ -114,7 +114,7 @@ class PatentReadinessEngine:
 
     # ── helpers ────────────────────────────────────────────────────────────────
     @staticmethod
-    def _ingredients_lower(passport: InnovationPassport) -> List[str]:
+    def _ingredients_lower(passport: InnovationPassport) -> list[str]:
         terms = []
         for ing in passport.ingredients:
             terms.append(_norm(ing.botanical_name))
@@ -122,7 +122,7 @@ class PatentReadinessEngine:
         return [t for t in terms if t]
 
     @staticmethod
-    def _match_ingredients(passport: InnovationPassport, corpus: List[str]) -> List[str]:
+    def _match_ingredients(passport: InnovationPassport, corpus: list[str]) -> list[str]:
         """Return corpus entries (e.g. canonical pharmacological names) that appear
         in any ingredient field (botanical name or raw name)."""
         terms = PatentReadinessEngine._ingredients_lower(passport)
@@ -142,7 +142,7 @@ class PatentReadinessEngine:
 
     # ── Step 1: Novelty Score (max 30) ─────────────────────────────────────────
     @staticmethod
-    def _novelty(passport: InnovationPassport) -> Dict[str, Any]:
+    def _novelty(passport: InnovationPassport) -> dict[str, Any]:
         text = PatentReadinessEngine._build_text(passport)
         ing_count = len(passport.ingredients)
         has_novel = _has_any_marker(text, NOVEL_MARKERS)
@@ -186,7 +186,7 @@ class PatentReadinessEngine:
 
     # ── Step 2: Prior Art Search (max 20) ─────────────────────────────────────
     @staticmethod
-    def _prior_art(passport: InnovationPassport) -> Dict[str, Any]:
+    def _prior_art(passport: InnovationPassport) -> dict[str, Any]:
         text = PatentReadinessEngine._build_text(passport)
         has_novel = _has_any_marker(text, NOVEL_MARKERS)
         common = PatentReadinessEngine._match_ingredients(passport, COMMON_BOTANICALS)
@@ -195,7 +195,7 @@ class PatentReadinessEngine:
 
         if common:
             overlap = 0.85 if not has_novel else 0.65
-            evidence = "high-density botanicals (turmeric, neem, tulsi, ashwagandha …)"
+            evidence = "high-density botanical with extensive prior-art records (common Ayurveda species)"
         elif moderate:
             overlap = 0.60 if not has_novel else 0.42
             evidence = "commonly studied Ayurveda botanicals"
@@ -218,7 +218,7 @@ class PatentReadinessEngine:
         }
 
     @staticmethod
-    def _build_similar_patents(passport: InnovationPassport, overlap: float) -> List[Dict[str, Any]]:
+    def _build_similar_patents(passport: InnovationPassport, overlap: float) -> list[dict[str, Any]]:
         matches = PatentReadinessEngine._match_ingredients(passport, COMMON_BOTANICALS + MODERATE_BOTANICALS + RARE_BOTANICALS)
         pool = [
             ("Adaptogenic Herbal Composition", "IN-2019-01456", "India", 0.62),
@@ -244,7 +244,7 @@ class PatentReadinessEngine:
 
     # ── Step 3: Section 3(p) check (max 15) ───────────────────────────────────
     @staticmethod
-    def _section_3p(passport: InnovationPassport) -> Dict[str, Any]:
+    def _section_3p(passport: InnovationPassport) -> dict[str, Any]:
         text = PatentReadinessEngine._build_text(passport)
         tk_herbs = PatentReadinessEngine._match_ingredients(passport, TK_CLASSICAL_HERBS)
         has_novel = _has_any_marker(text, NOVEL_MARKERS)
@@ -278,7 +278,7 @@ class PatentReadinessEngine:
 
     # ── Step 4: Disclosure Risk (max 10) ──────────────────────────────────────
     @staticmethod
-    def _disclosure(passport: InnovationPassport) -> Dict[str, Any]:
+    def _disclosure(passport: InnovationPassport) -> dict[str, Any]:
         status = _norm(passport.existing_ip_status)
         clarifications = " ".join(_norm(c) for c in (passport.unresolved_clarifications or []))
 
@@ -299,7 +299,7 @@ class PatentReadinessEngine:
 
     # ── Step 5: Evidence Strength (max 10) ────────────────────────────────────
     @staticmethod
-    def _evidence(passport: InnovationPassport, db: Optional[Any] = None) -> Dict[str, Any]:
+    def _evidence(passport: InnovationPassport, db: Any | None = None) -> dict[str, Any]:
         evidence_count = 0
         accepted = 0
         if db is not None:
@@ -347,7 +347,7 @@ class PatentReadinessEngine:
 
     # ── Step 6: Inventorship & Ownership (max 5) ──────────────────────────────
     @staticmethod
-    def _ownership(passport: InnovationPassport) -> Dict[str, Any]:
+    def _ownership(passport: InnovationPassport) -> dict[str, Any]:
         role = _norm(passport.business_role)
         status = _norm(passport.existing_ip_status)
         text = f"{role} {status} {_norm(passport.manufacturing_location)}"
@@ -366,7 +366,7 @@ class PatentReadinessEngine:
 
     # ── Step 7: Freedom-To-Operate (max 5) ────────────────────────────────────
     @staticmethod
-    def _fto(passport: InnovationPassport) -> Dict[str, Any]:
+    def _fto(passport: InnovationPassport) -> dict[str, Any]:
         text = PatentReadinessEngine._build_text(passport)
         has_novel = _has_any_marker(text, NOVEL_MARKERS)
         common = PatentReadinessEngine._match_ingredients(passport, COMMON_BOTANICALS)
@@ -406,7 +406,7 @@ class PatentReadinessEngine:
 
     # ── Step 8: Documentation Completeness (max 5) ────────────────────────────
     @staticmethod
-    def _documentation(passport: InnovationPassport) -> Dict[str, Any]:
+    def _documentation(passport: InnovationPassport) -> dict[str, Any]:
         total = 0.0
         checks = []
 
@@ -449,7 +449,7 @@ class PatentReadinessEngine:
 
     # ── Public compute entrypoint ─────────────────────────────────────────────
     @classmethod
-    def compute(cls, passport: InnovationPassport, db: Optional[Any] = None) -> Dict[str, Any]:
+    def compute(cls, passport: InnovationPassport, db: Any | None = None) -> dict[str, Any]:
         novelty = cls._novelty(passport)
         prior_art = cls._prior_art(passport)
         section_3p = cls._section_3p(passport)
@@ -516,7 +516,7 @@ class PatentReadinessEngine:
         }
 
     @staticmethod
-    def _missing_evidence(components, evidence, section_3p) -> List[str]:
+    def _missing_evidence(components, evidence, section_3p) -> list[str]:
         evidence_earned = evidence["earned"]
         section_earned = section_3p["earned"]
         prior_art_earned = next(c["earned"] for c in components if c["code"] == "prior_art")
@@ -537,7 +537,7 @@ class PatentReadinessEngine:
         return items
 
     @staticmethod
-    def _next_actions(components, evidence, section_3p, prior_art) -> List[str]:
+    def _next_actions(components, evidence, section_3p, prior_art) -> list[str]:
         by_code = {c["code"]: c for c in components}
         actions = []
 

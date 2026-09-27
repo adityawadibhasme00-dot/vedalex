@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { SUPPORTED_LANGUAGES, t } from '../lib/i18n';
 import { useLang } from '../lib/LangContext';
-import { ShieldCheck, Globe, Wifi, WifiOff, Accessibility as AccessibilityIcon, Leaf } from 'lucide-react';
+import { ShieldCheck, Globe, Wifi, WifiOff, Accessibility as AccessibilityIcon, Leaf, FlaskConical } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
 import AccessibilityPanel from './AccessibilityPanel';
 
@@ -82,6 +83,16 @@ export default function Navbar({ isOnline, offlineDraftCount }: NavbarProps) {
             <Globe className="w-4 h-4 text-emerald-600" />
             <span className="text-sm font-medium">{langLabel}</span>
           </button>
+
+          <span className="hidden md:flex">
+            <Link
+              href="/innovation-lab"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-700 text-white border border-emerald-800 hover:bg-emerald-800 transition text-xs font-medium"
+            >
+              <FlaskConical className="w-4 h-4" />
+              Innovation AI Lab
+            </Link>
+          </span>
         </div>
       </header>
 

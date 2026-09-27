@@ -1,15 +1,16 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional
+
+from pydantic import BaseModel
+
 
 class ExpertHandoffRequest(BaseModel):
     passport_id: str
     expert_type: str = "Registered Patent Agent"  # "Registered Patent Agent" | "AYUSH Regulatory Consultant"
     user_name: str
     user_email: str
-    user_phone: Optional[str] = None
+    user_phone: str | None = None
     explicit_dpdp_consent: bool = True
     liability_boundary_acknowledged: bool = True
-    notes: Optional[str] = None
+    notes: str | None = None
 
 class ExpertHandoffResponse(BaseModel):
     ticket_id: str

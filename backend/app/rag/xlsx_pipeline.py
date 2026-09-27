@@ -14,10 +14,10 @@ The workbook is optional. If no file is present every loader returns empty lists
 and the RAG system operates purely on the curated text corpus.
 """
 
-import os
 import glob
 import json
-from typing import List, Dict, Any, Optional
+import os
+from typing import Any
 
 BACKEND_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -41,7 +41,7 @@ def _normalize(value: Any) -> str:
     return " ".join(str(value).replace("_", " ").split()).strip().lower()
 
 
-def _find_sheet(workbook, *names: str) -> Optional[Any]:
+def _find_sheet(workbook, *names: str) -> Any | None:
     targets = {_normalize(n) for n in names}
     for ws in workbook.worksheets:
         if _normalize(ws.title) in targets:
@@ -52,10 +52,10 @@ def _find_sheet(workbook, *names: str) -> Optional[Any]:
     return None
 
 
-def _rows_to_dicts(ws) -> List[Dict[str, Any]]:
+def _rows_to_dicts(ws) -> list[dict[str, Any]]:
     rows = []
     headers = None
-    for idx, row in enumerate(ws.iter_rows(values_only=True)):
+    for _idx, row in enumerate(ws.iter_rows(values_only=True)):
         values = ["" if v is None else str(v).strip() for v in row]
         if not any(values):
             continue
@@ -102,15 +102,15 @@ _HEADER_ALIASES = {
 }
 
 
-def _renamed(record: Dict[str, str]) -> Dict[str, str]:
-    out: Dict[str, str] = {}
+def _renamed(record: dict[str, str]) -> dict[str, str]:
+    out: dict[str, str] = {}
     for header, value in record.items():
         key = _HEADER_ALIASES.get(_normalize(header), _normalize(header))
         out[key] = value
     return out
 
 
-def _g(record: Dict[str, Any], *names: str) -> str:
+def _g(record: dict[str, Any], *names: str) -> str:
     """Tolerant lookup across key spellings (raw, normalized, aliased)."""
     if not record:
         return ""
@@ -134,7 +134,7 @@ def _persist_json(name: str, data: Any) -> None:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def load_blueprint_documents() -> List[Dict[str, Any]]:
+def load_blueprint_documents() -> list[dict[str, Any]]:
     """Read evidence passages + source inventory from the blueprint and return
     vector-ready documents with full RAG metadata (doc_id, authority, URL...)."""
     path = blueprint_path()
@@ -146,10 +146,10 @@ def load_blueprint_documents() -> List[Dict[str, Any]]:
         return []
 
     wb = openpyxl.load_workbook(path, read_only=False, data_only=True)
-    documents: List[Dict[str, Any]] = []
-    sources: List[Dict[str, Any]] = []
-    rules: List[Dict[str, Any]] = []
-    defaults: Dict[str, str] = {}
+    documents: list[dict[str, Any]] = []
+    sources: list[dict[str, Any]] = []
+    rules: list[dict[str, Any]] = []
+    defaults: dict[str, str] = {}
 
     ws_inventory = _find_sheet(wb, "source inventory", "sources", "folder checklist")
     if ws_inventory:
@@ -315,7 +315,7 @@ def load_blueprint_documents() -> List[Dict[str, Any]]:
     return documents
 
 
-def load_blueprint_registry() -> Dict[str, Any]:
+def load_blueprint_registry() -> dict[str, Any]:
     """Return blueprint-derived source registry + rules (for the retrieval engine)."""
     path = blueprint_path()
     if not path:
@@ -326,8 +326,8 @@ def load_blueprint_registry() -> Dict[str, Any]:
         return {"sources": [], "rules": []}
 
     wb = openpyxl.load_workbook(path, read_only=False, data_only=True)
-    sources: List[Dict[str, str]] = []
-    rules: List[Dict[str, str]] = []
+    sources: list[dict[str, str]] = []
+    rules: list[dict[str, str]] = []
 
     ws_inventory = _find_sheet(wb, "source inventory", "sources")
     if ws_inventory:

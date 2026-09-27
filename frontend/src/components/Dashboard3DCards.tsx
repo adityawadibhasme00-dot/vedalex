@@ -36,7 +36,7 @@ export default function Dashboard3DCards({
           <Sparkles className="w-4 h-4 text-emerald-600" />
           <span>Enterprise 3D Interactive Intelligence Cards</span>
         </h3>
-        <span className="text-xs text-slate-500">Move cursor to tilt in 3D • Click 'Inspect Stat' to flip</span>
+        <span className="text-xs text-slate-500">Move cursor to tilt in 3D • Click &apos;Inspect Stat&apos; to flip</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

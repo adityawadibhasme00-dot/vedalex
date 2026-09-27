@@ -21,26 +21,24 @@ from __future__ import annotations
 import json
 import os
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from app.models.passport import InnovationPassport
 from app.services.patent_readiness_engine import (
-    PatentReadinessEngine,
     COMMON_BOTANICALS,
     MODERATE_BOTANICALS,
-    RARE_BOTANICALS,
     NOVEL_MARKERS,
-    NOVEL_DOSAGE_FORMS,
+    RARE_BOTANICALS,
+    PatentReadinessEngine,
     _norm,
 )
-from app.services.rule_engine import DeterministicRuleEngine
 
 KNOWLEDGE_DIR = os.path.join(os.path.dirname(__file__), "..", "knowledge")
 
 
 def _load_knowledge_json(name: str) -> Any:
     try:
-        with open(os.path.join(KNOWLEDGE_DIR, name), "r", encoding="utf-8") as f:
+        with open(os.path.join(KNOWLEDGE_DIR, name), encoding="utf-8") as f:
             return json.load(f)
     except Exception:
         return None
@@ -106,9 +104,9 @@ CELL_RATIONALE = {
 }
 
 
-def build_opportunity_grid() -> Dict[str, Any]:
+def build_opportunity_grid() -> dict[str, Any]:
     """Deterministic 5x5 opportunity grid (0-100 cell scores)."""
-    cells: List[Dict[str, Any]] = []
+    cells: list[dict[str, Any]] = []
     for herb in HERBS:
         for form in FORMS:
             density = HERB_DENSITY[herb]
@@ -146,8 +144,8 @@ class WhitespaceNavigator:
 
     # ── helpers ────────────────────────────────────────────────────────────────
     @staticmethod
-    def _match_grid_herbs(passport: InnovationPassport) -> List[str]:
-        matched: List[str] = []
+    def _match_grid_herbs(passport: InnovationPassport) -> list[str]:
+        matched: list[str] = []
         for ing in passport.ingredients:
             text = f"{ing.raw_name} {ing.botanical_name or ''}".lower()
             for herb, tokens in HERB_TOKENS.items():
@@ -158,7 +156,7 @@ class WhitespaceNavigator:
         return matched
 
     @staticmethod
-    def _match_grid_forms(passport: InnovationPassport) -> List[str]:
+    def _match_grid_forms(passport: InnovationPassport) -> list[str]:
         text = f"{_norm(passport.product_form)} {_norm(passport.dosage_form)} {_norm(passport.process_description)}"
         matched = []
         for form in FORMS:
@@ -234,7 +232,7 @@ class WhitespaceNavigator:
         return 45
 
     @staticmethod
-    def _market_gap(passport: InnovationPassport, grid: Dict[str, Any]) -> int:
+    def _market_gap(passport: InnovationPassport, grid: dict[str, Any]) -> int:
         herbs = WhitespaceNavigator._match_grid_herbs(passport)
         forms = WhitespaceNavigator._match_grid_forms(passport)
         if not herbs and not forms:
@@ -265,14 +263,14 @@ class WhitespaceNavigator:
 
     # ── dimension assembly ─────────────────────────────────────────────────────
     @classmethod
-    def _compute_dimensions(cls, passport: InnovationPassport, readiness: Dict[str, Any], grid: Dict[str, Any]) -> Dict[str, Any]:
+    def _compute_dimensions(cls, passport: InnovationPassport, readiness: dict[str, Any], grid: dict[str, Any]) -> dict[str, Any]:
         ingredient = cls._ingredient_uniqueness(passport)
         process = cls._process_uniqueness(passport)
         delivery = cls._delivery_opportunity(passport)
         novelty = round((readiness.get("novelty_score", 0) + readiness.get("inventive_step_score", 0)) / 2)
         tk_risk = cls._tk_risk(passport)
         tk = 100 - tk_risk
-        evidence_comp = next((c for c in readiness.get("components", []) if c["code"] == "evidence"), {})
+        evidence_comp: dict[str, Any] = next((c for c in readiness.get("components", []) if c["code"] == "evidence"), {})
         evidence = round((evidence_comp.get("earned", 0) or 0) / max(1, evidence_comp.get("max", 1)) * 100)
         market = cls._market_gap(passport, grid)
 
@@ -318,7 +316,7 @@ class WhitespaceNavigator:
         }
 
     @staticmethod
-    def _section3p_summary(readiness: Dict[str, Any]) -> str:
+    def _section3p_summary(readiness: dict[str, Any]) -> str:
         comp = next((c for c in readiness.get("components", []) if c["code"] == "section3p"), None)
         if not comp:
             return "Section 3(p): not evaluated"
@@ -331,9 +329,9 @@ class WhitespaceNavigator:
 
     # ── evidence / hallucination guard ─────────────────────────────────────────
     @classmethod
-    def _collect_evidence(cls, query: str, herbs: List[str]) -> Dict[str, Any]:
-        patent_evidence: List[Dict[str, str]] = []
-        tk_references: List[Dict[str, str]] = []
+    def _collect_evidence(cls, query: str, herbs: list[str]) -> dict[str, Any]:
+        patent_evidence: list[dict[str, str]] = []
+        tk_references: list[dict[str, str]] = []
         insufficient = False
 
         # Statutory / patent passages (BM-25 corpus)
@@ -399,7 +397,7 @@ class WhitespaceNavigator:
         }
 
     @classmethod
-    def _confidence(cls, evidence: Dict[str, Any], section: str, cell_score: int) -> int:
+    def _confidence(cls, evidence: dict[str, Any], section: str, cell_score: int) -> int:
         base = 35
         if evidence["patent_evidence"]:
             base += min(25, len(evidence["patent_evidence"]) * 8)
@@ -414,9 +412,9 @@ class WhitespaceNavigator:
 
     # ── landscape graph ────────────────────────────────────────────────────────
     @classmethod
-    def _landscape(cls, passport: InnovationPassport, readiness: Dict[str, Any], evidence: Dict[str, Any], grid: Dict[str, Any]) -> Dict[str, Any]:
-        nodes: List[Dict[str, Any]] = []
-        links: List[Dict[str, Any]] = []
+    def _landscape(cls, passport: InnovationPassport, readiness: dict[str, Any], evidence: dict[str, Any], grid: dict[str, Any]) -> dict[str, Any]:
+        nodes: list[dict[str, Any]] = []
+        links: list[dict[str, Any]] = []
         herbs = cls._match_grid_herbs(passport)
         if not herbs:
             herbs = ["Turmeric", "Neem", "Tulsi", "Ashwagandha", "Aloe Vera"]
@@ -446,17 +444,17 @@ class WhitespaceNavigator:
             {"id": "pat-1", "label": "Ashwagandha Stress Supplements", "hit": False},
             {"id": "pat-2", "label": "Topical Herbal Gels", "hit": False},
         ]
-        for m, c in enumerate(clusters):
+        for ci, c in enumerate(clusters):
             nodes.append({"id": c["id"], "label": c["label"], "type": "patent", "group": 4})
-            node_idx = m % max(1, len(herbs))
-            links.append({"source": f"ing-{node_idx}", "target": c["id"], "weight": 0.55, "strength": round(0.4 + (m % 3) * 0.15, 2)})
+            node_idx = ci % max(1, len(herbs))
+            links.append({"source": f"ing-{node_idx}", "target": c["id"], "weight": 0.55, "strength": round(0.4 + (ci % 3) * 0.15, 2)})
         return {"nodes": nodes, "links": links}
 
     # ── opportunity cards (hallucination-guarded) ─────────────────────────────
     @classmethod
-    def _cards(cls, passport: InnovationPassport, dims: Dict[str, Any], grid: Dict[str, Any], evidence: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _cards(cls, passport: InnovationPassport, dims: dict[str, Any], grid: dict[str, Any], evidence: dict[str, Any]) -> list[dict[str, Any]]:
         herbs = cls._match_grid_herbs(passport)
-        candidates: List[Dict[str, Any]] = []
+        candidates: list[dict[str, Any]] = []
         for cell in grid["cells"]:
             score = round(
                 cell["value"] * 0.7
@@ -511,7 +509,7 @@ class WhitespaceNavigator:
 
     # ── mutation for before/after simulator ────────────────────────────────────
     @staticmethod
-    def _apply_mutation(passport: InnovationPassport, mutate: Optional[Dict[str, Any]]) -> InnovationPassport:
+    def _apply_mutation(passport: InnovationPassport, mutate: dict[str, Any] | None) -> InnovationPassport:
         clone = passport.model_copy(deep=True)
         if not mutate:
             return clone
@@ -538,14 +536,14 @@ class WhitespaceNavigator:
 
     # ── orchestrator ───────────────────────────────────────────────────────────
     @classmethod
-    def analyze(cls, passport_id: str, db: Optional[Any] = None, mutate: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def analyze(cls, passport_id: str, db: Any | None = None, mutate: dict[str, Any] | None = None) -> dict[str, Any]:
         from app.services.passport_engine import PassportEngine
         passport = PassportEngine.get_passport(passport_id)
         if not passport:
             from fastapi import HTTPException
             raise HTTPException(status_code=404, detail="Passport not found")
 
-        def run(p: InnovationPassport) -> Dict[str, Any]:
+        def run(p: InnovationPassport) -> dict[str, Any]:
             readiness = PatentReadinessEngine.compute(p, db=db)
             grid = build_opportunity_grid()
             dims = cls._compute_dimensions(p, readiness, grid)
@@ -614,9 +612,10 @@ class WhitespaceNavigator:
         # Persist to OpportunityAnalysis
         try:
             from sqlalchemy.orm import Session
+
             from app.models.db_models import OpportunityAnalysis
             if isinstance(db, Session):
-                row = db.query(OpportunityAnalysis).filter_by(passport_id=passport_id).order_by(OpportunityAnalysis.created_at.desc()).first()
+                row: Any = db.query(OpportunityAnalysis).filter_by(passport_id=passport_id).order_by(OpportunityAnalysis.created_at.desc()).first()
                 dims = before["dimensions"]
                 dmap = {d["label"]: d["value"] for d in dims}
                 payload = {

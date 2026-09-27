@@ -1,0 +1,323 @@
+"""
+End-to-end ingestion pipeline for IP-SAKTI's RAG knowledge base.
+
+Flow per source: fetch -> extract -> normalize -> metadata -> chunk -> embed
+-> upsert to Qdrant, with:
+  - content-hash change detection (only changed documents are re-embedded)
+  - licensing guardrail enforcement (restricted sources = pointers/citations only)
+  - local corpus + knowledge-seed ingestion
+  - BM25 index refresh after new vectors land
+
+Usage:
+    python -m app.ingestion --sources p0 --mode update
+"""
+
+import glob
+import json
+import logging
+import os
+import time
+from typing import Any
+
+from app.ingestion import fetchers, normalizer
+from app.ingestion import metadata as md
+from app.ingestion import sources as src
+from app.ingestion.chunker import to_documents
+
+logger = logging.getLogger(__name__)
+
+STATE_FILE = os.path.join(os.path.dirname(__file__), "..", "..", "data", "ingestion_state.json")
+
+CATEGORY_BY_SEED_FILE = {
+    "botanical_synonyms": "botanical",
+    "api_monographs": "pharmacopoeia",
+    "acts_and_gazettes": "statutory",
+    "evidence_ladders": "regulatory",
+    "safety_signals": "safety",
+    "export_market_requirements": "regulatory",
+    "perm_tk_prior_art": "tkdl",
+    "white_space": "regulatory",
+    "claim_alternatives": "regulatory",
+}
+
+
+def _load_state() -> dict[str, Any]:
+    try:
+        with open(STATE_FILE, encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception:
+        return {"sources": {}, "last_global_run": None}
+
+
+def _save_state(state: dict[str, Any]) -> None:
+    os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
+    with open(STATE_FILE, "w", encoding="utf-8") as fh:
+        json.dump(state, fh, indent=2)
+
+
+def _upsert(documents: list[dict[str, Any]]) -> int:
+    if not documents:
+        return 0
+    from app.rag.qdrant_store import QdrantVectorStore
+    store = QdrantVectorStore()
+    return store.upsert_documents(documents, batch_size=32)
+
+
+def _refresh_bm25() -> None:
+    """Rebuild the in-memory BM25 index from Qdrant after ingestion."""
+    try:
+        from app.rag.qdrant_store import QdrantVectorStore
+        from app.rag.retrieval_pipeline import HybridRetriever
+        store = QdrantVectorStore()
+        docs = store.get_all_documents(limit=8000)
+        if docs:
+            HybridRetriever.build_bm25_index(docs)
+            logger.info("BM25 index refreshed (%d documents)", len(docs))
+    except Exception as exc:
+        logger.debug("BM25 refresh skipped: %s", exc)
+
+
+def ingest_one_url(
+    source: dict[str, Any],
+    url: str,
+    state: dict[str, Any],
+    mode: str,
+    limit_per_source: int | None,
+) -> list[dict[str, Any]]:
+    """Fetch one URL for a source, chunk it, and upsert (change-aware)."""
+    title, text = None, None
+    if url.endswith(".pdf"):
+        text = fetchers.fetch_pdf(url)
+        title = source.get("name", url.split("/")[-1])
+    else:
+        fetched = fetchers.fetch_html(url)
+        if fetched:
+            title, text = fetched
+    if not text or len(normalizer.normalize_text(text)) < 120:
+        return []
+
+    text = normalizer.normalize_text(text)
+    digest = md.content_digest(text)
+
+    per_source = state["sources"].setdefault(source["id"], {})
+    url_state = per_source.get("urls", {}).get(url, {})
+    if mode != "full" and url_state.get("hash") == digest:
+        logger.info("  unchanged: %s (%s)", source["id"], url)
+        return []
+
+    base = md.build_metadata(source, url, title or source["name"], text, 0)
+    docs = to_documents(text, title or source["name"], url, base)
+    if limit_per_source is not None:
+        docs = docs[:limit_per_source]
+    upserted = _upsert(docs)
+    per_source.setdefault("urls", {})[url] = {
+        "hash": digest,
+        "chunks": len(docs),
+        "upserted": upserted,
+        "last_run": time.strftime("%Y-%m-%dT%H:%M:%S"),
+    }
+    logger.info("  ingested %d chunks from %s", len(docs), url)
+    return docs
+
+
+def _allowed_urls(source: dict[str, Any], query: str | None) -> list[str]:
+    """URLs to harvest for a source, honouring its access mode."""
+    urls = list(source.get("canonical_urls") or [])
+    mode = source.get("access_mode", "public")
+
+    if mode == "restricted":
+        # TKDL licence: never scrape search results. Authorized pointers only.
+        urls = list(source.get("pointer_urls") or []) or urls[:1]
+        logger.info("Restricted source %s: pointers only (%d URLs)", source["id"], len(urls))
+        return urls
+
+    if query:
+        found = fetchers.search_source(urls, query, top=3)
+        return found or urls
+    return urls
+
+
+def ingest_source(source: dict[str, Any], mode: str = "update", query: str | None = None,
+                  limit_per_source: int | None = None) -> dict[str, Any]:
+    state = _load_state()
+    urls = _allowed_urls(source, query)
+    harvested: list[dict[str, Any]] = []
+    for url in urls:
+        docs = ingest_one_url(source, url, state, mode, limit_per_source)
+        harvested.extend(docs)
+    state["sources"].setdefault(source["id"], {})["last_run"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+    _save_state(state)
+    return {
+        "source_id": source["id"],
+        "name": source["name"],
+        "priority": source["priority"],
+        "access_mode": source["access_mode"],
+        "urls": url,
+        "chunks": len(harvested),
+    }
+
+
+def _json_value_text(value: Any) -> str:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, ensure_ascii=False)
+    return str(value)
+
+
+def ingest_local_corpus(mode: str = "update") -> dict[str, Any]:
+    """Index curated files under backend/data/** (txt/md/json/pdf/docx)."""
+    base = os.path.join(os.path.dirname(STATE_FILE))
+    state = _load_state()
+    per_source = state["sources"].setdefault("local_corpus", {})
+    per_source.setdefault("files", {})
+    harvested: list[dict[str, Any]] = []
+    patterns = [
+        os.path.join(base, "**", "*.txt"),
+        os.path.join(base, "**", "*.md"),
+        os.path.join(base, "**", "*.json"),
+        os.path.join(base, "**", "*.csv"),
+        os.path.join(base, "**", "*.pdf"),
+        os.path.join(base, "**", "*.docx"),
+        os.path.join(base, "**", "*.png"),
+        os.path.join(base, "**", "*.jpg"),
+        os.path.join(base, "**", "*.jpeg"),
+    ]
+    seen_files = set()
+    for pattern in patterns:
+        for path in glob.glob(pattern, recursive=True):
+            seen_files.add(os.path.normpath(path))
+
+    for path in sorted(seen_files):
+        parsed = fetchers.read_local_file(path)
+        if not parsed:
+            continue
+        title, text = parsed
+        text = normalizer.normalize_text(text)
+        digest = md.content_digest(text)
+        if mode != "full" and per_source["files"].get(path, {}).get("hash") == digest:
+            continue
+        source = {
+            "id": "local_corpus", "name": f"Local corpus — {title}",
+            "jurisdiction": "Mixed", "authority": "Curated internal corpus",
+            "authority_level": 3, "priority": "P0", "document_type": "regulations",
+            "category": "regulatory", "access_mode": "authorized",
+        }
+        base_md = md.build_metadata(source, path, title, text, 0)
+        docs = to_documents(text, title, path, base_md)
+        upserted = _upsert(docs)
+        per_source["files"][path] = {"hash": digest, "chunks": len(docs), "upserted": upserted}
+        harvested.extend(docs)
+        logger.info("  ingested %d chunks from %s", len(docs), path)
+    _save_state(state)
+    return {"source_id": "local_corpus", "name": "Local corpus", "chunks": len(harvested)}
+
+
+def ingest_knowledge_seeds(mode: str = "update") -> dict[str, Any]:
+    """Index canonical seed JSON (app/knowledge/*.json) as retrievable docs."""
+    state = _load_state()
+    per_source = state["sources"].setdefault("knowledge_seeds", {})
+    per_source.setdefault("files", {})
+    harvested: list[dict[str, Any]] = []
+    seed_dir = os.path.join(os.path.dirname(__file__), "..", "knowledge")
+    if not os.path.isdir(seed_dir):
+        return {"source_id": "knowledge_seeds", "name": "Knowledge seeds", "chunks": 0}
+    for path in sorted(glob.glob(os.path.join(seed_dir, "*.json"))):
+        name = os.path.splitext(os.path.basename(path))[0]
+        try:
+            with open(path, encoding="utf-8") as fh:
+                data = json.load(fh)
+        except Exception as exc:
+            logger.warning("Seed read failed %s: %s", path, exc)
+            continue
+        text = "\n".join(
+            f"{k}: {_json_value_text(v)}"
+            for k, v in (data.items() if isinstance(data, dict) else [("entry", data)])
+        )
+        text = normalizer.normalize_text(text)
+        digest = md.content_digest(text)
+        if mode != "full" and per_source["files"].get(name, {}).get("hash") == digest:
+            continue
+        source = {
+            "id": "knowledge_seeds", "name": f"IP-SAKTI canonical seeds — {name}",
+            "jurisdiction": "India", "authority": "IP-SAKTI canonical knowledge seeds",
+            "authority_level": 1, "priority": "P0",
+            "document_type": "regulations",
+            "category": CATEGORY_BY_SEED_FILE.get(name, "regulatory"),
+            "access_mode": "authorized",
+        }
+        base_md = md.build_metadata(source, path, name, text, 0)
+        docs = to_documents(text, name, path, base_md, max_tokens=500)
+        upserted = _upsert(docs)
+        per_source["files"][name] = {"hash": digest, "chunks": len(docs), "upserted": upserted}
+        harvested.extend(docs)
+        logger.info("  ingested %d chunks from seed %s", len(docs), name)
+    _save_state(state)
+    return {"source_id": "knowledge_seeds", "name": "Knowledge seeds", "chunks": len(harvested)}
+
+
+def run_ingestion(
+    source_ids: list[str] | None = None,
+    mode: str = "update",
+    include_local: bool = True,
+    include_seeds: bool = True,
+    query: str | None = None,
+    limit_per_source: int | None = None,
+) -> dict[str, Any]:
+    """
+    Orchestrate a full or incremental ingest pass.
+
+    Args:
+        source_ids: None -> all corpus sources. Accepts ids/P0-P3/all/daily/weekly/monthly.
+        mode: update (hash-aware) | full (force re-embed, chunks unchanged) | refresh.
+        include_local / include_seeds: include the curated local corpus / seed JSONs.
+    """
+    selected = src.resolve_source_ids(source_ids) if source_ids else list(src.CORPUS)
+    if not selected:
+        return {"ok": False, "error": "No sources matched", "sources": []}
+
+    started = time.time()
+    results: list[dict[str, Any]] = []
+    total_chunks = 0
+
+    for source in selected:
+        try:
+            res = ingest_source(source, mode=mode, query=query, limit_per_source=limit_per_source)
+            results.append(res)
+            total_chunks += res.get("chunks", 0)
+        except Exception as exc:
+            logger.exception("Ingestion failed for %s", source["id"])
+            results.append({"source_id": source["id"], "error": str(exc)[:200]})
+
+    if include_local:
+        results.append(ingest_local_corpus(mode=mode))
+    if include_seeds:
+        results.append(ingest_knowledge_seeds(mode=mode))
+
+    state = _load_state()
+    state["last_global_run"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+    _save_state(state)
+
+    _refresh_bm25()
+
+    summary = {
+        "ok": True,
+        "mode": mode,
+        "sources_processed": len(results),
+        "total_chunks": total_chunks,
+        "elapsed_seconds": round(time.time() - started, 2),
+        "results": results,
+        "state_file": STATE_FILE,
+    }
+    logger.info("Ingestion complete: %s", summary)
+    return summary
+
+
+def get_ingestion_status() -> dict[str, Any]:
+    state = _load_state()
+    return {
+        "state_file": STATE_FILE,
+        "last_global_run": state.get("last_global_run"),
+        "sources": state.get("sources", {}),
+        "corpus": [s["id"] for s in src.list_sources()],
+    }

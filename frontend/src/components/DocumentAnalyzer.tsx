@@ -170,7 +170,7 @@ export default function DocumentAnalyzer({ onApplyToPassport, passportId }: Docu
           ) : (
             <div className="glass-panel p-8 rounded-2xl border border-emerald-200 h-full flex flex-col items-center justify-center text-center text-slate-500">
               <FileText className="w-8 h-8 text-slate-600 mb-2" />
-              <p className="text-xs">Upload a document or click "Analyze Document" on the left to inspect structured facts.</p>
+              <p className="text-xs">Upload a document or click &quot;Analyze Document&quot; on the left to inspect structured facts.</p>
             </div>
           )}
         </div>

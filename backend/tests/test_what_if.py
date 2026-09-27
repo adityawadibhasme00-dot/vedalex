@@ -1,6 +1,7 @@
 from app.services.passport_engine import PassportEngine
 from app.services.what_if_engine import WhatIfSimulatorEngine
 
+
 def test_what_if_simulation_disease_claim():
     passport = PassportEngine.create_from_intake(
         raw_text="Ashwagandha + Brahmi formulation, claim: supports healthy sleep, target markets: India, USA, Canada",

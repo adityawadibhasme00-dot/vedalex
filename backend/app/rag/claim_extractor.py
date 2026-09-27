@@ -12,16 +12,15 @@ Extraction strategy:
   4. Classify claim type (factual, legal, numerical, causal, comparative)
 """
 
-import re
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass, field
-from enum import Enum
 import logging
+import re
+from dataclasses import dataclass, field
+from enum import StrEnum
 
 logger = logging.getLogger(__name__)
 
 
-class ClaimType(str, Enum):
+class ClaimType(StrEnum):
     FACTUAL = "factual"
     LEGAL = "legal"
     NUMERICAL = "numerical"
@@ -35,7 +34,7 @@ class ClaimType(str, Enum):
 class Claim:
     text: str
     claim_type: ClaimType
-    citations: List[str] = field(default_factory=list)
+    citations: list[str] = field(default_factory=list)
     source_index: int = 0
     confidence_hint: float = 0.5
 
@@ -118,7 +117,7 @@ def _classify_claim(text: str) -> ClaimType:
     return ClaimType.FACTUAL
 
 
-def _split_sentences(text: str) -> List[str]:
+def _split_sentences(text: str) -> list[str]:
     """Split text on sentence boundaries, handling legal text conventions."""
     raw = re.split(r"(?<=[.!?])\s+(?=[A-Z\"\']|(?:\d))", text)
     sentences = []
@@ -138,7 +137,7 @@ def _is_skip_sentence(text: str) -> bool:
     return False
 
 
-def extract_claims(answer: str) -> List[Claim]:
+def extract_claims(answer: str) -> list[Claim]:
     """
     Extract individual verifiable claims from a generated answer.
 
@@ -150,7 +149,7 @@ def extract_claims(answer: str) -> List[Claim]:
         return []
 
     sentences = _split_sentences(answer)
-    claims: List[Claim] = []
+    claims: list[Claim] = []
 
     for i, sentence in enumerate(sentences):
         if _is_skip_sentence(sentence):

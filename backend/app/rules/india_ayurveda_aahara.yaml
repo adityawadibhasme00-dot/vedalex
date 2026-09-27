@@ -2,11 +2,23 @@ rule_pack_id: "RULE-IN-AAHARA-2022"
 jurisdiction: "India"
 authority: "Food Safety and Standards Authority of India (FSSAI)"
 governing_act: "Food Safety and Standards (Ayurveda Aahara) Regulations, 2022"
-version: "1.0.0"
+version: "1.1.0"
 rules:
   - id: "RULE_AYURVEDA_AAHARA_ELIGIBLE"
     name: "Ayurveda Aahara Eligible Pathway"
     statute_ref: "Regulation 4 & Schedule I"
+    rule_version: "1.1.0"
+    effective_from: "2022-05-09"
+    status: "active"
+    risk_level: "low"
+    requires_human_review: false
+    evidence:
+      source_id: "fssai_ayurveda_aahara_regulations_2022"
+      locator: "Regulation 4 & Schedule I"
+      authority: "FSSAI Ayurveda Aahara Regulations, 2022"
+    explanation_template:
+      en: "Ingredients on the Ayurveda Aahara positive list with dietary-food form and no disease claims qualify for FSSAI Central licensing under the Ayurveda Aahara category."
+      hi: "आयुर्वेद आहार सकारात्मक सूची में मौजूद सामग्री, खाद्य रूप और बिना रोग दावों के FSSAI केंद्रीय लाइसेंस के लिए पात्र हैं।"
     conditions:
       - fact_key: "ingredients_on_aahara_positive_list"
         operator: "equals"
@@ -28,6 +40,18 @@ rules:
   - id: "RULE_AAHARA_PROHIBITED_CLAIM"
     name: "Ayurveda Aahara Claim Violation"
     statute_ref: "Regulation 4(2)"
+    rule_version: "1.1.0"
+    effective_from: "2022-05-09"
+    status: "active"
+    risk_level: "high"
+    requires_human_review: true
+    evidence:
+      source_id: "fssai_ayurveda_aahara_regulations_2022"
+      locator: "Regulation 4(2)"
+      authority: "FSSAI Ayurveda Aahara Regulations, 2022"
+    explanation_template:
+      en: "Any disease cure or treatment claim disqualifies the product from the Ayurveda Aahara food category and redirects it to the ASU Drug licensing pathway."
+      hi: "किसी भी रोग चिकित्सा दावे से उत्पाद आयुर्वेद आहार खाद्य श्रेणी से अयोग्य होकर आयुष औषध लाइसेंस मार्ग पर चला जाता है।"
     conditions:
       - fact_key: "claim_contains_disease_treatment"
         operator: "equals"

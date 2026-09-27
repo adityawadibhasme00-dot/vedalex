@@ -1,6 +1,6 @@
-from app.rag.claim_extractor import extract_claims, ClaimType
-from app.rag.claim_verifier import verify_claims
 from app.rag.citation_validity_checker import check_citation_validity
+from app.rag.claim_extractor import ClaimType, extract_claims
+from app.rag.claim_verifier import verify_claims
 from app.rag.evidence_confidence_scorer import compute_evidence_confidence
 from app.rag.verification_orchestrator import run_verification
 

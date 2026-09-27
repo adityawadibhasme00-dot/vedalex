@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "corpus_version": "c340c275e3c77789",
+  "generated_at": "2026-09-26T18:48:23Z",
+  "industry_signals": "IP-SAKTI Sahayak curated corpus",
+  "scope": [
+    "rule_pack_rules_yaml",
+    "knowledge_json",
+    "curated_text_data",
+    "kb_documents",
+    "treaties_metadata",
+    "legal_glossary",
+    "cites_appendices"
+  ],
+  "file_hashes": {
+    "rule_pack_rules_yaml": {
+      "canada_nhpd.yaml": "7e09b4c34af052aaf9b3b854462d9b5b2a68e4d8ba34b162cd5e30a758752087",
+      "india_asu_drugs.yaml": "7e857ac10204042266f72c8915b5c91c1f644dc94804d4b1c09b617192634a04",
+      "india_ayurveda_aahara.yaml": "648ea883fe5fc0700c90e728a48d676a20a5bd9bc8d19ae842f42298a6dba71c",
+      "india_ip_suite.yaml": "bb3c2d21117912f0b78b4ace47b7d308a794a5bbfb76d6e092812d4847433b9e",
+      "india_patent_sec3p.yaml": "ad04aee97b3bea653af107a31d42e2c5956a32cf0af160c34bfa327cd33d23e9",
+      "india_tk_tkdl.yaml": "d439c368c837abe1398bcc8546aa2946b7a28f72349b1d06beea0da8d6aa20c7",
+      "us_fda_dshea.yaml": "a405bf62e25c77bd54d30aa794d71569dd92f2f62a91b51a2f94bdcb8c845767"
+    },
+    "knowledge_json": {
+      "acts_and_gazettes.json": "c5dba16176233108b402b996bde87e787fdcbea4773aad860cd1a33fbec2cab3",
+      "api_monographs.json": "5faf4df5fe85ad315b1f21992d8c648e5e8aa1c0261756c460e63a833aaed8d3",
+      "bioresource.json": "80dc079d733b3aed5a88c738b2d84bdb8015e9c935d3effe17cde4aa12c16d26",
+      "blueprint_rules.json": "3148891cda7b6a7fa4f25612706be8199ba16e3de3a21c44e2f5d8f363df8ea6",
+      "blueprint_sources.json": "faee015d064094e5c3d3b177ae0f1b83f47073b1dabb001a30c65bdca4f80db6",
+      "botanical_synonyms.json": "3c2fe3fea2dbf677424cc678ccbd67e34e19437cb9f9b1405565b1a536719701",
+      "cites.json": "fc225e11159f51591bcf2c12bf4ca0246dd63b1c987db400093d50573687a237",
+      "claim_alternatives.json": "fa01ad9d880da1f0381b2e01c2428cc72909cf4187f07f43537977a0ae2a8760",
+      "evidence_ladders.json": "ad781ac216d94c6201056994332066a5f1aaa5902f01f22558076343a32395e9",
+      "export_market_requirements.json": "3cd6afc01d8ceab44748505e6a2b71db5dbeba83f00305038f4af8b3bb341c94",
+      "fee_schedule.json": "eed510ef7dde2c90d0ad5e42b2f2718c281fe86f3883a5118539ae0444ed8f5e",
+      "india_origin.json": "9b146313d843d0552778ede3db0750e28139ad1f1bc7d94c4c8e8b10fe02549b",
+      "legal_glossary.json": "3058e64e0db31f2d2ef3caa0ffb448c763d42e8075e2a594bd5a7c2f04abb350",
+      "pathway_rules.json": "515b9f25b135c2ac5d7ea175918b36aa273f16326b50edb40324fd3e58b328ac",
+      "permitted_tk_prior_art.json": "077ffff4ac4846c8413d5cef153a5d49cb23a5bd08eb8596baf49ce559d32d4b",
+      "quality_pharmacopoeia.json": "619952d81572f36e3162bfc4f2b9bc06f60269597894342b13d6b4db081797bb",
+      "safety_signals.json": "7944635fcad3318910c3571dee0ce2a4578d13f27ea59527b45efb2892526291",
+      "treaties_metadata.json": "99d1adacfb6e845be6fedd1b2f0fe29bffe25e6e5f81d856a46463ffffdba1cd",
+      "white_space.json": "d5cd8ac11090141cc6efdc8ce19bf1e7c6c4a3426b0447c2f4864011c6814c32"
+    },
+    "curated_text_data": {},
+    "kb_documents": {
+      "README.md": "41d0aabbb138147ab566f853e19fe3cdf0383a92f33ff1aa1407554c12a2409a",
+      "links\\resources.json": "8dc4d16d2f582374575df9a8e55cdf35bbdba4be0f57aa3ecfd71e4703cd2586",
+      "tkdl\\tkdl_overview_and_section_3p.txt": "4732474ed5195702591222240df3009e3491340b9bf3ffb8d2c93e22326f9222",
+      "wipo\\wipo_patentscope_and_tk.txt": "22c05414972a91c807702eae38c56896c01b74c5e97d52e266c601463bcdd37d"
+    },
+    "treaties_metadata": {
+      "treaties_metadata.json": "99d1adacfb6e845be6fedd1b2f0fe29bffe25e6e5f81d856a46463ffffdba1cd"
+    },
+    "cites_appendices": {
+      "cites.json": "fc225e11159f51591bcf2c12bf4ca0246dd63b1c987db400093d50573687a237"
+    }
+  },
+  "artifact_counts": {
+    "rule_pack_rules_yaml": 7,
+    "knowledge_json": 19,
+    "curated_text_data": 0,
+    "kb_documents": 4,
+    "treaties_metadata": 1,
+    "cites_appendices": 1
+  }
+}

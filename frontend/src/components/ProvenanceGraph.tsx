@@ -32,7 +32,7 @@ export default function ProvenanceGraph({
         <div className="flex items-center space-x-2.5 mb-1">
           <Sparkles className="w-5 h-5 text-emerald-600" />
           <h3 className="text-base font-bold text-slate-900 font-display">
-            Traceable Decision Workspace ("Why?" Provenance Chain)
+            Traceable Decision Workspace (&quot;Why?&quot; Provenance Chain)
           </h3>
         </div>
         <p className="text-xs text-slate-500">
@@ -95,7 +95,7 @@ export default function ProvenanceGraph({
               <div key={node.id} className="p-3.5 rounded-xl bg-emerald-50/70 border border-blue-500/30 text-xs space-y-2">
                 <span className="font-semibold text-slate-900 block leading-snug">{node.label}</span>
                 <p className="text-[10px] text-slate-600 font-mono italic line-clamp-3">
-                  "{node.passage_excerpt}"
+                  &quot;{node.passage_excerpt}&quot;
                 </p>
                 <div className="flex items-center justify-between text-[10px] text-blue-600 pt-1 border-t border-emerald-200">
                   <span>{node.effective_date}</span>

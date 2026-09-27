@@ -1,9 +1,10 @@
 import os
 from datetime import datetime
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from typing import Optional
+
 from app.services.passport_engine import PassportEngine
 from app.services.rule_engine import DeterministicRuleEngine
 
@@ -12,14 +13,14 @@ try:
     QRCODE_AVAILABLE = True
 except ImportError:
     QRCODE_AVAILABLE = False
-from io import BytesIO
 import base64
+from io import BytesIO
 
 router = APIRouter(prefix="/export", tags=["Dossier Export"])
 
 class ExportRequest(BaseModel):
     passport_id: str
-    format: Optional[str] = "pdf"
+    format: str | None = "pdf"
 
 class ExportResponse(BaseModel):
     status: str
@@ -33,7 +34,7 @@ def _finding_row(f):
     return f'<tr><td>{f.jurisdiction}</td><td>{f.pathway_category}</td><td class="{css_class}">{risk_level}</td><td>{f.explanation_text or f.status}</td></tr>'
 
 @router.post("/dossier", response_model=ExportResponse)
-async def export_dossier(req: ExportRequest):
+def export_dossier(req: ExportRequest):
     passport = PassportEngine.get_passport(req.passport_id)
     if not passport:
         raise HTTPException(status_code=404, detail="Passport not found")
@@ -163,7 +164,7 @@ async def export_dossier(req: ExportRequest):
     )
 
 @router.get("/download/{filename}")
-async def download_dossier(filename: str):
+def download_dossier(filename: str):
     export_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "exports")
     filepath = os.path.join(export_dir, filename)
     if not os.path.exists(filepath):

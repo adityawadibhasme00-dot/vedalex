@@ -1,23 +1,24 @@
-import uuid
 import time
+import uuid
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
-from app.models.regulatory import AssessmentResponse, RegulatoryFinding
-from app.services.passport_engine import PassportEngine
-from app.services.rule_engine import DeterministicRuleEngine
+
+from app.models.regulatory import AssessmentResponse
 from app.services.citation_validator import CitationValidator
+from app.services.passport_engine import PassportEngine
 from app.services.provenance_engine import ProvenanceEngine
+from app.services.rule_engine import DeterministicRuleEngine
 
 router = APIRouter(prefix="/assessment", tags=["Regulatory & IP Assessment"])
 
 class AssessmentRequest(BaseModel):
     passport_id: str
-    target_markets: Optional[List[str]] = ["India", "United States", "Canada"]
-    language: Optional[str] = "en"
+    target_markets: list[str] | None = ["India", "United States", "Canada"]
+    language: str | None = "en"
 
 @router.post("/evaluate", response_model=AssessmentResponse)
-async def evaluate_assessment(req: AssessmentRequest):
+def evaluate_assessment(req: AssessmentRequest):
     passport = PassportEngine.get_passport(req.passport_id)
     if not passport:
         raise HTTPException(status_code=404, detail="Passport not found")
@@ -40,7 +41,7 @@ async def evaluate_assessment(req: AssessmentRequest):
     )
 
 @router.get("/{passport_id}/provenance")
-async def get_provenance(passport_id: str, jurisdiction: str = "India"):
+def get_provenance(passport_id: str, jurisdiction: str = "India"):
     passport = PassportEngine.get_passport(passport_id)
     if not passport:
         raise HTTPException(status_code=404, detail="Passport not found")

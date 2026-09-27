@@ -1,12 +1,13 @@
 import uuid
-from typing import Dict, Any, List, Optional
-from sqlalchemy.orm import Session
-from app.models.passport import InnovationPassport, IngredientEntry, FactOrigin, ClarificationQuery
-from app.services.multilingual_nlp import MultilingualNLPEngine
-from app.services.ingredient_resolver import IngredientResolverService
-from app.core.database import SessionLocal
-from app.models.db_models import InnovationPassportDB, IngredientDB, User
+from typing import Any
 
+from sqlalchemy.orm import Session
+
+from app.core.database import SessionLocal
+from app.models.db_models import IngredientDB, InnovationPassportDB, User
+from app.models.passport import ClarificationQuery, FactOrigin, IngredientEntry, InnovationPassport
+from app.services.ingredient_resolver import IngredientResolverService
+from app.services.multilingual_nlp import MultilingualNLPEngine
 
 _ANONYMOUS_USER_EMAIL = "anonymous@ipsakti.in"
 
@@ -33,21 +34,46 @@ class PassportEngine:
     Passports are persisted to the database (Postgres / SQLite fallback) so data survives restarts;
     the in-memory store is only a read-through cache.
     """
-    _passports_store: Dict[str, InnovationPassport] = {}
+    _passports_store: dict[str, InnovationPassport] = {}
 
     @classmethod
     def create_from_intake(
         cls,
         raw_text: str,
         user_lang: str = "en",
-        title: str = "Ayurvedic Sleep & Calm Formulation"
+        title: str = "Ayurvedic Botanical Formulation",
+        intake: dict[str, Any] | None = None,
     ) -> InnovationPassport:
-        detected_lang = MultilingualNLPEngine.detect_language(raw_text)
+        intake = intake or {}
+        product_type = intake.get("product_type") or "Ayurvedic Medicine"
+        category = intake.get("category")
+        target_markets = intake.get("target_markets")
+        extraction_method = intake.get("extraction_method")
+        solvent = intake.get("solvent")
+        temperature = intake.get("temperature")
+        time_ = intake.get("time")
+        processing_steps = intake.get("processing_steps")
+        proposed_claims = intake.get("proposed_claims")
+
+        _FORM_MAPPING = {
+            "Nutraceutical": ("Capsule", "500 mg Capsule, Once Daily"),
+            "Ayurvedic Medicine": ("Tablet (Vati)", "500mg Once or Twice Daily"),
+            "Cosmetic": ("Topical Cream", "Apply as needed"),
+            "Food Supplement": ("Powder / Sachet", "1 Sachet (10 g) with meals"),
+            "Herbal Supplement": ("Capsule", "500 mg Capsule, Once Daily"),
+        }
+        product_form, dosage_form = _FORM_MAPPING.get(
+            product_type, ("Capsule", "500 mg Capsule, Once Daily")
+        )
+
+        ingredient_prep = "Aqueous Extract" + ((" - " + solvent) if solvent else "")
+
+        MultilingualNLPEngine.detect_language(raw_text)
         resolved_botanicals = MultilingualNLPEngine.normalize_botanical_mentions(raw_text)
 
         ingredients = []
         if resolved_botanicals:
-            for raw_tok, canonical_id, conf in resolved_botanicals:
+            for raw_tok, _canonical_id, _conf in resolved_botanicals:
                 resolved = IngredientResolverService.resolve(raw_tok)
                 if resolved:
                     ingredients.append(IngredientEntry(
@@ -56,53 +82,74 @@ class PassportEngine:
                         botanical_name=resolved.accepted_botanical_name,
                         api_monograph_id=resolved.api_monograph_id,
                         plant_part=resolved.standard_plant_parts[0] if resolved.standard_plant_parts else "Root",
-                        preparation_method="Aqueous Extract",
+                        preparation_method=ingredient_prep,
                         quantity_percentage=50.0,
                         origin_status=FactOrigin.USER_CONFIRMED
                     ))
 
-        # Default fallback ingredients if none parsed
-        if not ingredients:
-            ashwa = IngredientResolverService.resolve("Ashwagandha")
-            brahmi = IngredientResolverService.resolve("Brahmi")
-            ingredients = [
-                IngredientEntry(
-                    raw_name="Ashwagandha",
-                    canonical_id=ashwa.canonical_id if ashwa else "ING-ASHWAGANDHA",
-                    botanical_name=ashwa.accepted_botanical_name if ashwa else "Withania somnifera",
-                    api_monograph_id=ashwa.api_monograph_id if ashwa else "API-VOL1-008",
-                    quantity_percentage=50.0
-                ),
-                IngredientEntry(
-                    raw_name="Brahmi",
-                    canonical_id=brahmi.canonical_id if brahmi else "ING-BRAHMI",
-                    botanical_name=brahmi.accepted_botanical_name if brahmi else "Bacopa monnieri",
-                    api_monograph_id=brahmi.api_monograph_id if brahmi else "API-VOL2-014",
-                    quantity_percentage=50.0
-                )
-            ]
+        # No botanicals parsed — never fabricate a default ingredient set.
+        # Ingredients stay empty so downstream engines treat the formulation
+        # as unspecified until the user confirms botanicals, and a
+        # DECISION_CRITICAL clarification is raised below. This keeps the
+        # copilot herb-agnostic instead of assuming Ashwagandha/Brahmi.
 
-        # Extract Claims & Form
-        claims = ["Supports healthy sleep", "Promotes mental relaxation"]
-        if "insomnia" in raw_text.lower() or "रोग" in raw_text.lower() or "उपचार" in raw_text.lower():
-            claims = ["Treats chronic insomnia and nervous agitation"]
+        # Claims come only from the applicant's intake (or an explicit
+        # therapeutic-phrasing cue in the raw text). No canned claim defaults.
+        claims: list[str] = []
+        if proposed_claims:
+            claims = [c for c in proposed_claims if c]
+        elif any(marker in raw_text.lower() for marker in (
+            "treat", "cure", "insomnia", "रोग", "उपचार", "चिकित्सा",
+        )):
+            claims = [raw_text.strip()[:200]]
+
+        # Build the process description from the intake so the typed/selected
+        # values (e.g. "Ethanol 90% + Water 10%", "official", an official link)
+        # are persisted into the passport and visible in exports/classification.
+        if extraction_method:
+            process_parts = [extraction_method]
+        else:
+            process_parts = ["Standardized aqueous extraction (Kwatha)"]
+        if solvent:
+            process_parts.append("using " + solvent)
+        if temperature:
+            process_parts.append("at " + temperature)
+        if time_:
+            process_parts.append("for " + time_)
+        process_parts.append("spray-dried into " + product_form.lower() + " form")
+        process_description = " ".join(process_parts)
+        if processing_steps:
+            process_description += ". Steps: " + processing_steps
+        if category:
+            process_description = "Category: " + category + " | " + process_description
+
+        if target_markets:
+            markets = [m for m in target_markets if m]
+        else:
+            markets = ["India", "United States", "Canada"]
 
         passport_id = str(uuid.uuid4())
+        unresolved: list[str] = []
+        if not solvent:
+            unresolved.append("extraction_solvent_verification")
+        if not ingredients:
+            unresolved.append("ingredients_unspecified")
+
         passport = InnovationPassport(
             id=passport_id,
             case_title=title,
-            product_form="Tablet (Vati)",
-            dosage_form="500mg Once or Twice Daily",
-            intended_use="Sleep support, stress reduction and mental calm",
+            product_form=product_form,
+            dosage_form=dosage_form,
+            intended_use=claims[0] if claims else "",
             proposed_claims=claims,
-            claimed_innovation="Synergistic adaptogenic botanical ratio for nervous relaxation",
-            process_description="Standardized aqueous extraction (Kwatha) spray-dried into tablet form",
+            claimed_innovation=f"{product_form} formulation of the botanicals described by the applicant",
+            process_description=process_description,
             ingredients=ingredients,
-            target_markets=["India", "United States", "Canada"],
+            target_markets=markets,
             business_role="Ayurveda Startup / MSME",
             biological_resource_origin="Domestic Cultivated (India)",
             version=1,
-            unresolved_clarifications=["extraction_solvent_verification"]
+            unresolved_clarifications=unresolved
         )
 
         cls._save_to_db(passport)
@@ -116,7 +163,7 @@ class PassportEngine:
             db = SessionLocal()
             try:
                 user = _get_or_create_anonymous_user(db)
-                db_passport = db.query(InnovationPassportDB).filter(
+                db_passport: Any = db.query(InnovationPassportDB).filter(
                     InnovationPassportDB.id == passport.id
                 ).first()
                 if not db_passport:
@@ -127,14 +174,14 @@ class PassportEngine:
                         product_form=passport.product_form,
                         dosage_form=passport.dosage_form,
                         intended_use=passport.intended_use,
-                        proposed_claims=passport.proposed_claims or list,
+                        proposed_claims=passport.proposed_claims or [],
                         claimed_innovation=passport.claimed_innovation,
                         process_description=passport.process_description,
-                        target_markets=passport.target_markets or list,
+                        target_markets=passport.target_markets or [],
                         business_role=passport.business_role,
                         biological_resource_origin=passport.biological_resource_origin,
                         version=passport.version,
-                        unresolved_clarifications=passport.unresolved_clarifications or list,
+                        unresolved_clarifications=passport.unresolved_clarifications or [],
                     )
                     db.add(db_passport)
                 else:
@@ -142,14 +189,14 @@ class PassportEngine:
                     db_passport.product_form = passport.product_form
                     db_passport.dosage_form = passport.dosage_form
                     db_passport.intended_use = passport.intended_use
-                    db_passport.proposed_claims = passport.proposed_claims or list
+                    db_passport.proposed_claims = passport.proposed_claims or []
                     db_passport.claimed_innovation = passport.claimed_innovation
                     db_passport.process_description = passport.process_description
-                    db_passport.target_markets = passport.target_markets or list
+                    db_passport.target_markets = passport.target_markets or []
                     db_passport.business_role = passport.business_role
                     db_passport.biological_resource_origin = passport.biological_resource_origin
                     db_passport.version = passport.version
-                    db_passport.unresolved_clarifications = passport.unresolved_clarifications or list
+                    db_passport.unresolved_clarifications = passport.unresolved_clarifications or []
 
                 db.flush()
 
@@ -176,7 +223,7 @@ class PassportEngine:
             print(f"Passport DB persistence skipped: {e}")
 
     @classmethod
-    def _from_db(cls, db_passport: InnovationPassportDB) -> InnovationPassport:
+    def _from_db(cls, db_passport: Any) -> InnovationPassport:
         ingredients = [
             IngredientEntry(
                 raw_name=ing.raw_name,
@@ -208,7 +255,7 @@ class PassportEngine:
         )
 
     @classmethod
-    def get_passport(cls, passport_id: str) -> Optional[InnovationPassport]:
+    def get_passport(cls, passport_id: str) -> InnovationPassport | None:
         cached = cls._passports_store.get(passport_id)
         if cached is not None:
             return cached
@@ -236,11 +283,27 @@ class PassportEngine:
         return passport
 
     @classmethod
-    def get_clarifications_for_passport(cls, passport: InnovationPassport) -> List[ClarificationQuery]:
+    def get_clarifications_for_passport(cls, passport: InnovationPassport) -> list[ClarificationQuery]:
         """
         Generates targeted clarification queries when a missing fact could change legal classification.
         """
         queries = []
+        if "ingredients_unspecified" in passport.unresolved_clarifications:
+            queries.append(ClarificationQuery(
+                id="CLARIFY-INGREDIENTS",
+                field_key="ingredients",
+                question_text={
+                    "en": "No botanical ingredients were detected in your description. Which herbs/ingredients does your formulation contain? (common name or botanical binomial)",
+                    "hi": "आपके विवरण में कोई वनस्पति घटक नहीं मिला। आपके फॉर्मूलेशन में कौन से जड़ी-बूटियाँ/घटक हैं? (सामान्य नाम या वानस्पतिक नाम)",
+                    "mr": "तुमच्या वर्णनात कोणतेही वनस्पती घटक आढळले नाहीत. तुमच्या फॉर्म्युलेशनमध्ये कोणत्या औषधी वनस्पती/घटकांचा समावेश आहे?"
+                },
+                options=[
+                    "I will provide botanical names",
+                    "Single-ingredient formulation",
+                    "Multi-ingredient formulation"
+                ],
+                severity="DECISION_CRITICAL"
+            ))
         if "extraction_solvent_verification" in passport.unresolved_clarifications:
             queries.append(ClarificationQuery(
                 id="CLARIFY-EXTRACTION-SOLVENT",

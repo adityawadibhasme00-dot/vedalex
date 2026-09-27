@@ -1,9 +1,11 @@
 import json
 import os
-from typing import Dict, Any, List
+from typing import Any
+
+from app.services.citation_validator import CitationValidator
 from app.services.passport_engine import PassportEngine
 from app.services.rule_engine import DeterministicRuleEngine
-from app.services.citation_validator import CitationValidator
+
 
 class BenchmarkRunner:
     """
@@ -12,20 +14,20 @@ class BenchmarkRunner:
     """
 
     @classmethod
-    def load_gold_cases(cls) -> List[Dict[str, Any]]:
+    def load_gold_cases(cls) -> list[dict[str, Any]]:
         path = os.path.join(os.path.dirname(__file__), "gold_cases.json")
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             return json.load(f)
 
     @classmethod
-    def run_benchmark(cls) -> Dict[str, Any]:
+    def run_benchmark(cls) -> dict[str, Any]:
         gold_cases = cls.load_gold_cases()
         total_cases = len(gold_cases)
         correct_classifications = 0
         total_findings = 0
         unsupported_claims = 0
 
-        lang_accuracy: Dict[str, Dict[str, int]] = {
+        lang_accuracy: dict[str, dict[str, int]] = {
             "en": {"correct": 0, "total": 0},
             "hi": {"correct": 0, "total": 0},
             "mr": {"correct": 0, "total": 0}

@@ -4,12 +4,14 @@ import { motion } from 'framer-motion';
 import {
   Sparkles, Loader2, ChevronRight, ChevronLeft, FlaskConical, Leaf,
   ShieldCheck, Languages, User, ClipboardList, Check, CheckCircle2, FileText,
+  AlertTriangle,
 } from 'lucide-react';
 import { parseFormulation } from '../lib/api';
 import { FormulationParseResponse } from '../types';
 import { GlassCard } from './ui/GlassCard';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
+import { SelectOrOther } from './ui/SelectOrOther';
 
 interface PassportFormProps {
   onSubmit: (data: any) => void;
@@ -181,22 +183,31 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
               <input value={formData.institution} onChange={(e) => handleInput('institution', e.target.value)} placeholder="e.g. NIPER, Startup, MSME" className={inputCls} />
             </div>
             <div>
-              <label className="text-xs text-slate-500 mb-1.5 block">Product Type</label>
-              <select value={formData.productType} onChange={(e) => handleInput('productType', e.target.value)} className={inputCls}>
-                <option>Nutraceutical</option><option>Ayurvedic Medicine</option><option>Cosmetic</option><option>Food Supplement</option><option>Herbal Supplement</option>
-              </select>
+              <SelectOrOther
+                label="Product Type"
+                options={['Nutraceutical', 'Ayurvedic Medicine', 'Cosmetic', 'Food Supplement', 'Herbal Supplement']}
+                value={formData.productType}
+                onChange={(v) => handleInput('productType', v)}
+                inputPlaceholder="Type the product type — e.g. Medicated Oil, or paste an official description/link"
+              />
             </div>
             <div>
-              <label className="text-xs text-slate-500 mb-1.5 block">Category</label>
-              <select value={formData.category} onChange={(e) => handleInput('category', e.target.value)} className={inputCls}>
-                <option>Herbal Supplement</option><option>Traditional Medicine</option><option>Cosmeceutical</option><option>Functional Food</option>
-              </select>
+              <SelectOrOther
+                label="Category"
+                options={['Herbal Supplement', 'Traditional Medicine', 'Cosmeceutical', 'Functional Food']}
+                value={formData.category}
+                onChange={(v) => handleInput('category', v)}
+                inputPlaceholder="Type the category — or paste an official reference/link"
+              />
             </div>
             <div className="md:col-span-2">
-              <label className="text-xs text-slate-500 mb-1.5 block">Target Market</label>
-              <select value={formData.targetMarket} onChange={(e) => handleInput('targetMarket', e.target.value)} className={inputCls}>
-                <option>India</option><option>United States</option><option>Canada</option><option>European Union</option><option>All (Global)</option>
-              </select>
+              <SelectOrOther
+                label="Target Market"
+                options={['India', 'United States', 'Canada', 'European Union', 'All (Global)']}
+                value={formData.targetMarket}
+                onChange={(v) => handleInput('targetMarket', v)}
+                inputPlaceholder="Type your target market(s) — e.g. India + UAE, or paste the official market authority link"
+              />
             </div>
           </div>
         </GlassCard>
@@ -246,8 +257,15 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
                 </thead>
                 <tbody className="divide-y divide-emerald-200">
                   {parsedFormulation.ingredients.map((ing, i) => (
-                    <tr key={i}>
-                      <td className="px-4 py-3 text-sm text-slate-900">{ing.raw_name}</td>
+                    <tr key={i} className={ing.status === 'unresolved' ? 'bg-amber-50/60' : ''}>
+                      <td className="px-4 py-3 text-sm text-slate-900">
+                        {ing.raw_name}
+                        {ing.status === 'unresolved' && (
+                          <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 bg-amber-100 rounded-full px-2 py-0.5">
+                            <AlertTriangle className="w-3 h-3" /> Not in glossary
+                          </span>
+                        )}
+                      </td>
                       <td className="px-4 py-3 text-xs font-semibold text-blue-600">{ing.botanical_name || '—'}</td>
                       <td className="px-4 py-3 text-[11px] text-slate-500">{ing.api_monograph_id || '—'}</td>
                     </tr>
@@ -267,16 +285,25 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-slate-500 mb-1.5 block">Extraction Method</label>
-              <select value={formData.extractionMethod} onChange={(e) => handleInput('extractionMethod', e.target.value)} className={inputCls}>
-                <option value="">Select method</option><option>Decoction (Kwatha)</option><option>Hydroalcoholic</option><option>Supercritical CO2</option><option>Cold Pressed</option><option>Steam Distillation</option><option>Soxhlet Extraction</option>
-              </select>
+              <SelectOrOther
+                label="Extraction Method"
+                options={['Decoction (Kwatha)', 'Hydroalcoholic', 'Supercritical CO2', 'Cold Pressed', 'Steam Distillation', 'Soxhlet Extraction']}
+                value={formData.extractionMethod}
+                onChange={(v) => handleInput('extractionMethod', v)}
+                placeholder="Select method"
+                inputPlaceholder="Type the extraction method — e.g. Maceration, or paste an official method/link"
+              />
             </div>
             <div>
-              <label className="text-xs text-slate-500 mb-1.5 block">Solvent</label>
-              <select value={formData.solvent} onChange={(e) => handleInput('solvent', e.target.value)} className={inputCls}>
-                <option value="">Select solvent</option><option>Water (Aqueous)</option><option>Ethanol 70%</option><option>Ethanol 95%</option><option>Methanol</option><option>CO2</option><option>Ghee / Oil</option>
-              </select>
+              <SelectOrOther
+                label="Solvent / Ethanol Content"
+                options={['Water (Aqueous)', 'Ethanol 70%', 'Ethanol 95%', 'Methanol', 'CO2', 'Ghee / Oil']}
+                value={formData.solvent}
+                onChange={(v) => handleInput('solvent', v)}
+                placeholder="Select solvent"
+                hint='Choose Other to type the exact composition — e.g. Ethanol 90% + Water 10%. If you do not have the data, type "official" or paste the official source link.'
+                inputPlaceholder='Type exact content — e.g. Ethanol 90% + Water 10%, "official", or paste the official source link'
+              />
             </div>
             <div>
               <label className="text-xs text-slate-500 mb-1.5 block">Temperature (°C)</label>

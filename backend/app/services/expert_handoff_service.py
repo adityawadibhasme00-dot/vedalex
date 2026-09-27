@@ -1,8 +1,8 @@
 import uuid
-import time
-from typing import Dict, Any
-from app.models.handoff import ExpertHandoffRequest, ExpertHandoffResponse
+
 from app.core.security import DPDPConsentLogger
+from app.models.handoff import ExpertHandoffRequest, ExpertHandoffResponse
+
 
 class ExpertHandoffService:
     """
@@ -14,7 +14,7 @@ class ExpertHandoffService:
     # ticket_id -> passport_id mapping (so the dossier endpoint can resolve
     # the originating passport). Persisted in-memory; the dossier itself is
     # regenerated on demand from the passport record.
-    _tickets: Dict[str, str] = {}
+    _tickets: dict[str, str] = {}
 
     @classmethod
     def dispatch_case(cls, req: ExpertHandoffRequest) -> ExpertHandoffResponse:

@@ -27,13 +27,12 @@ Key concept for judges:
 """
 
 import logging
-from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
+from typing import Any
 
-from app.rag.claim_extractor import extract_claims, Claim
-from app.rag.claim_verifier import verify_claims, VerificationTable, ClaimVerification
-from app.rag.citation_validity_checker import check_citation_validity, CitationValidityReport
-from app.rag.evidence_confidence_scorer import compute_evidence_confidence, EvidenceConfidence
+from app.rag.citation_validity_checker import CitationValidityReport, check_citation_validity
+from app.rag.claim_verifier import VerificationTable, verify_claims
+from app.rag.evidence_confidence_scorer import EvidenceConfidence, compute_evidence_confidence
 
 logger = logging.getLogger(__name__)
 
@@ -57,8 +56,8 @@ class VerificationResult:
     gate_reason: str
     regenerated: bool
     regeneration_count: int
-    removed_claims: List[str] = field(default_factory=list)
-    unsupported_claims: List[Dict[str, Any]] = field(default_factory=list)
+    removed_claims: list[str] = field(default_factory=list)
+    unsupported_claims: list[dict[str, Any]] = field(default_factory=list)
 
 
 def _filter_answer_by_verification(
@@ -127,10 +126,10 @@ def _determine_gate_pass(
 
 def run_verification(
     answer: str,
-    sources: List[Dict[str, Any]],
+    sources: list[dict[str, Any]],
     query: str,
-    rule_engine_pass: Optional[bool] = None,
-    grounding: Optional[Dict[str, Any]] = None,
+    rule_engine_pass: bool | None = None,
+    grounding: dict[str, Any] | None = None,
 ) -> VerificationResult:
     """
     Full verification pipeline.
@@ -182,12 +181,12 @@ def run_verification(
     regeneration_count = 0
     removed_claims = []
 
-    unsupported_claims = [
+    failed_claims = [
         v for v in table.claims
         if v.status in ("NOT_ENOUGH", "CONTRADICTED")
     ]
-    if unsupported_claims:
-        removed_claims = [v.claim_text for v in unsupported_claims]
+    if failed_claims:
+        removed_claims = [v.claim_text for v in failed_claims]
         filtered = _filter_answer_by_verification(answer, table)
         if filtered:
             final_answer = filtered
@@ -206,8 +205,8 @@ def run_verification(
     # If the gate failed and regeneration removed everything, refuse.
     if not passed and not final_answer:
         final_answer = (
-            "Insufficient verified information. "
-            "The available sources do not provide enough evidence to answer this reliably."
+            "No verified information found in the current IP-SAKTI knowledge base. "
+            "Please refine the query or consult an IP facilitator."
         )
         logger.warning("Verification gate failed and no supported claims remained — refusing")
 

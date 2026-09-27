@@ -28,8 +28,8 @@ stats = store.get_collection_stats()
 print("Fresh collection stats:", stats, flush=True)
 
 print("Running full reindex with BGE-M3...", flush=True)
-from app.rag.retrieval_pipeline import HybridRetriever
 from app.rag.embeddings import EmbeddingEngine
+from app.rag.retrieval_pipeline import HybridRetriever
 
 engine = EmbeddingEngine()
 print("Embedding provider:", engine.get_provider(), "| dim:", engine.get_dim(), flush=True)

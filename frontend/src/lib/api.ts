@@ -11,17 +11,34 @@ import {
   ClaimSafetyAnalysisResponse,
   EvidenceQualityIntelligenceResponse,
   BioResourceGraphResponse,
+  InnovationKnowledgeGraphResponse,
   ProductClassifierResponse,
   ExportReadinessResponse,
-  TerminologyMapResponse
+  TerminologyMapResponse,
+  WhiteSpaceMutation,
+  WhiteSpaceResponse,
+  ABSComplianceResponse,
 } from '../types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1';
 
+export interface PassportIntakeExtras {
+  product_type?: string;
+  category?: string;
+  target_markets?: string[];
+  extraction_method?: string;
+  solvent?: string;
+  temperature?: string;
+  time?: string;
+  processing_steps?: string;
+  proposed_claims?: string[];
+}
+
 export async function createPassportFromIntake(
   rawText: string,
   userLang: string = 'en',
-  title?: string
+  title?: string,
+  extras?: Partial<PassportIntakeExtras>
 ): Promise<InnovationPassport> {
   const res = await fetch(`${API_BASE_URL}/passport/create`, {
     method: 'POST',
@@ -29,7 +46,16 @@ export async function createPassportFromIntake(
     body: JSON.stringify({
       raw_text: rawText,
       user_lang: userLang,
-      case_title: title
+      case_title: title,
+      product_type: extras?.product_type,
+      category: extras?.category,
+      target_markets: extras?.target_markets,
+      extraction_method: extras?.extraction_method,
+      solvent: extras?.solvent,
+      temperature: extras?.temperature,
+      time: extras?.time,
+      processing_steps: extras?.processing_steps,
+      proposed_claims: extras?.proposed_claims
     })
   });
   if (!res.ok) throw new Error('Failed to create passport');
@@ -306,8 +332,29 @@ export async function getBioResourceIntelligence(passportId: string): Promise<Bi
   return res.json();
 }
 
+export async function getInnovationGraph(payload: {
+  ingredients: string[];
+  innovation_title?: string;
+  passport_id?: string;
+}): Promise<InnovationKnowledgeGraphResponse> {
+  const res = await fetch(`${API_BASE_URL}/intelligence/knowledge-graph`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error('Failed to fetch innovation knowledge graph');
+  return res.json();
+}
+
+export async function getPassportInnovationGraph(passportId: string): Promise<InnovationKnowledgeGraphResponse> {
+  const res = await fetch(`${API_BASE_URL}/intelligence/knowledge-graph/${passportId}`);
+  if (!res.ok) throw new Error('Failed to fetch passport knowledge graph');
+  return res.json();
+}
+
 export async function classifyProduct(payload: {
   passport_id?: string;
+  product_name?: string;
   product_form?: string;
   dosage_form?: string;
   intended_use?: string;
@@ -315,6 +362,15 @@ export async function classifyProduct(payload: {
   ingredients?: string[];
   process_description?: string;
   label_disclaimer?: string;
+  first_schedule?: boolean;
+  new_ingredient?: boolean;
+  extraction_method?: string;
+  novel_process?: boolean;
+  declared_use?: string;
+  ab_user_type?: string;
+  ab_turnover_inr?: number;
+  ab_wild_collected?: boolean;
+  ab_commercial_use?: boolean;
 }): Promise<ProductClassifierResponse> {
   const res = await fetch(`${API_BASE_URL}/intelligence/product-classify`, {
     method: 'POST',
@@ -322,6 +378,24 @@ export async function classifyProduct(payload: {
     body: JSON.stringify(payload)
   });
   if (!res.ok) throw new Error('Failed to classify product');
+  return res.json();
+}
+
+export async function checkABS(payload: {
+  ingredients?: string[];
+  passport_id?: string;
+  user_type?: string;
+  turnover_inr?: number;
+  codified_tk?: boolean;
+  wild_collected?: boolean;
+  commercial_use?: boolean;
+}): Promise<ABSComplianceResponse> {
+  const res = await fetch(`${API_BASE_URL}/intelligence/abs/check`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('Failed to check ABS compliance');
   return res.json();
 }
 
@@ -338,6 +412,32 @@ export async function mapTerminology(query: string): Promise<TerminologyMapRespo
     body: JSON.stringify({ query })
   });
   if (!res.ok) throw new Error('Failed to map terminology');
+  return res.json();
+}
+
+// ─── White Space Navigator ───────────────────────────────────────
+export async function getWhiteSpaceAnalysis(passportId: string): Promise<WhiteSpaceResponse> {
+  const res = await fetch(`${API_BASE_URL}/whitespace/${encodeURIComponent(passportId)}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.detail || 'Failed to fetch white space analysis');
+  }
+  return res.json();
+}
+
+export async function analyzeWhiteSpace(
+  passportId: string,
+  mutate?: WhiteSpaceMutation
+): Promise<WhiteSpaceResponse | { before: WhiteSpaceResponse; after: WhiteSpaceResponse; mutated: true }> {
+  const res = await fetch(`${API_BASE_URL}/whitespace/analyze`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ passport_id: passportId, mutate: mutate || null })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.detail || 'Failed to run white space analysis');
+  }
   return res.json();
 }
 
@@ -433,5 +533,53 @@ export async function getRAGStatus() {
 export async function reindexKnowledgeBase() {
   const res = await fetch(`${API_BASE_URL}/rag/reindex`, { method: 'POST' });
   if (!res.ok) throw new Error('Reindex failed');
+  return res.json();
+}
+
+// ─── Unified RAG Search (Hybrid / Production / Graph / Agentic) ─────────────
+export type RagArchitecture = 'hybrid' | 'production' | 'graph' | 'agentic' | 'auto';
+
+export interface RagSearchOptions {
+  jurisdiction?: string;
+  category?: string;
+  top_k?: number;
+  rag_type?: RagArchitecture;
+  filters?: Record<string, any>;
+  user_key?: string;
+}
+
+export async function ragSearch(query: string, options?: RagSearchOptions) {
+  const res = await fetch(`${API_BASE_URL}/rag/search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, ...options })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'RAG search failed');
+  }
+  return res.json();
+}
+
+export async function getRAGSearchStats() {
+  const res = await fetch(`${API_BASE_URL}/rag/search/stats`);
+  if (!res.ok) throw new Error('Failed to fetch RAG search stats');
+  return res.json();
+}
+
+export async function configureRAG(payload: {
+  rag_type?: RagArchitecture;
+  cache_ttl?: number;
+  rate_limit?: number;
+}) {
+  const res = await fetch(`${API_BASE_URL}/rag/configure`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'RAG configure failed');
+  }
   return res.json();
 }

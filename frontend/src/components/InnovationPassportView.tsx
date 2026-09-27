@@ -139,12 +139,12 @@ export default function InnovationPassportView({
                       {renderOriginBadge(ing.origin_status)}
                     </div>
                     <div className="text-xs text-emerald-600 font-mono italic">
-                      {ing.botanical_name || 'Withania somnifera'}
+                      {ing.botanical_name || 'Botanical name pending'}
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-500 pt-1 border-t border-emerald-200">
                       <div>
                         <span className="block text-slate-500">API Monograph:</span>
-                        <span className="font-semibold text-slate-600">{ing.api_monograph_id || 'API-VOL1-008'}</span>
+                        <span className="font-semibold text-slate-600">{ing.api_monograph_id || 'Not mapped'}</span>
                       </div>
                       <div>
                         <span className="block text-slate-500">Plant Part & Ratio:</span>
@@ -187,7 +187,7 @@ export default function InnovationPassportView({
           <h4 className="text-sm font-bold text-slate-900">Section 7.1.2 Sandboxed Document Intake & Adversarial Defense Test</h4>
         </div>
         <p className="text-xs text-slate-500 mb-3">
-          Upload certificates or lab reports. The sandboxing pipeline strictly strips imperative prompt injections (e.g. "ignore previous instructions") to ensure zero adversarial compromise of the legal reasoning engine.
+          Upload certificates or lab reports. The sandboxing pipeline strictly strips imperative prompt injections (e.g. &quot;ignore previous instructions&quot;) to ensure zero adversarial compromise of the legal reasoning engine.
         </p>
 
         <textarea

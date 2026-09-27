@@ -1,18 +1,19 @@
-import asyncio
-import threading
 import os
 import sys
+import threading
 
 _BACKEND_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _BACKEND_ROOT not in sys.path:
     sys.path.insert(0, _BACKEND_ROOT)
 
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import init_db
-from app.api.v1.router import api_router
 
 
 @asynccontextmanager
@@ -29,8 +30,19 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"RAG warm-up skipped: {e}")
 
+    try:
+        from app.services.ingestion_scheduler import start_ingestion_scheduler
+        start_ingestion_scheduler()
+    except Exception as e:
+        print(f"Ingestion scheduler skipped: {e}")
+
     yield
     # ---- shutdown (if needed) ----
+    try:
+        from app.services.ingestion_scheduler import stop_ingestion_scheduler
+        stop_ingestion_scheduler()
+    except Exception:
+        pass
 
 
 app = FastAPI(

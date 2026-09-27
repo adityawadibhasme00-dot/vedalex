@@ -1,15 +1,17 @@
-import re
-import os
 import glob
 import json
+import os
+import re
+from typing import Any
+
 import yaml
-from typing import List, Dict, Any, Optional, Tuple
+
+from app.core.confidence import ConfidenceEvaluator
 from app.models.passport import InnovationPassport
-from app.models.regulatory import RegulatoryFinding, RuleConditionState, StatutoryCitation
-from app.core.confidence import ConfidenceBand, ConfidenceEvaluator
-from app.services.retrieval_engine import HybridRetrievalEngine
+from app.models.regulatory import RegulatoryFinding, RuleConditionState
 from app.services.ingredient_resolver import IngredientResolverService
-from app.services.ingredient_legality import IngredientLegalityChecker
+from app.services.retrieval_engine import HybridRetrievalEngine
+
 
 class DeterministicRuleEngine:
     """
@@ -21,14 +23,14 @@ class DeterministicRuleEngine:
          (from the Excel "Rules" sheet) - condition -> outcome interpreter that runs
          BEFORE generation and refines requirements/citations.
     """
-    _yaml_packs_cache: Optional[Dict[str, List[Dict[str, Any]]]] = None
-    _dynamic_rules_cache: Optional[List[Dict[str, Any]]] = None
+    _yaml_packs_cache: list[dict[str, Any]] | None = None
+    _dynamic_rules_cache: list[dict[str, Any]] | None = None
 
     # ------------------------------------------------------------------
     # Declarative rules (YAML pack + Excel blueprint Rules sheet)
     # ------------------------------------------------------------------
     @classmethod
-    def _normalize_rule(cls, rule: Dict[str, Any]) -> Dict[str, Any]:
+    def _normalize_rule(cls, rule: dict[str, Any]) -> dict[str, Any]:
         """Translate the STEP-4 guide schema (``when``/``then``) into the
         engine's internal ``conditions``/``consequence`` shape, keeping the
         legacy schema intact. Both dialects run on the same interpreter."""
@@ -73,15 +75,15 @@ class DeterministicRuleEngine:
         return rule
 
     @classmethod
-    def _load_rule_packs(cls) -> List[Dict[str, Any]]:
+    def _load_rule_packs(cls) -> list[dict[str, Any]]:
         if cls._yaml_packs_cache is not None:
             return cls._yaml_packs_cache
 
-        packs: List[Dict[str, Any]] = []
+        packs: list[dict[str, Any]] = []
         rules_dir = os.path.join(os.path.dirname(__file__), "..", "rules")
         for ypath in sorted(glob.glob(os.path.join(rules_dir, "*.yaml"))):
             try:
-                with open(ypath, "r", encoding="utf-8") as f:
+                with open(ypath, encoding="utf-8") as f:
                     data = yaml.safe_load(f)
                 if isinstance(data, dict) and isinstance(data.get("rules"), list):
                     for rule in data["rules"]:
@@ -102,14 +104,14 @@ class DeterministicRuleEngine:
         return packs
 
     @classmethod
-    def _load_dynamic_rules(cls) -> List[Dict[str, Any]]:
+    def _load_dynamic_rules(cls) -> list[dict[str, Any]]:
         if cls._dynamic_rules_cache is not None:
             return cls._dynamic_rules_cache
         path = os.path.join(os.path.dirname(__file__), "..", "knowledge", "blueprint_rules.json")
-        rules: List[Dict[str, Any]] = []
+        rules: list[dict[str, Any]] = []
         if os.path.exists(path):
             try:
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     data = json.load(f)
                 if isinstance(data, list):
                     rules = data
@@ -122,10 +124,10 @@ class DeterministicRuleEngine:
     def _build_facts(
         cls,
         passport: InnovationPassport,
-        resolved_ingredients: List[Any],
+        resolved_ingredients: list[Any],
         has_disease_claim: bool,
         has_canonical: bool,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         claims_text = " ".join(passport.proposed_claims).lower()
         resolved_names = " ".join(
             str(getattr(ing, "canonical_name", "") or "") for ing in resolved_ingredients
@@ -177,13 +179,13 @@ class DeterministicRuleEngine:
         }
 
     @classmethod
-    def _eval_condition(cls, condition: Dict[str, Any], facts: Dict[str, Any]) -> bool:
+    def _eval_condition(cls, condition: dict[str, Any], facts: dict[str, Any]) -> bool:
         if not isinstance(condition, dict):
             return True
         key = condition.get("fact_key") or condition.get("key")
         op = (condition.get("operator") or "equals").lower().replace("_", " ")
-        expected = condition.get("expected_value")
-        actual = facts.get(key)
+        expected: Any = condition.get("expected_value")
+        actual: Any = facts.get(key) if key is not None else None
 
         if op in ("equals", "eq", "is"):
             return actual == expected
@@ -206,7 +208,7 @@ class DeterministicRuleEngine:
         return False
 
     @classmethod
-    def _eval_text_condition(cls, condition: str, facts: Dict[str, Any], jurisdiction: str) -> bool:
+    def _eval_text_condition(cls, condition: str, facts: dict[str, Any], jurisdiction: str) -> bool:
         """Best-effort interpreter for free-text Excel 'Rules' sheet conditions."""
         c = condition.lower()
         if not c:
@@ -221,8 +223,8 @@ class DeterministicRuleEngine:
         return hit >= max(1, len(tokens)) or (len(tokens) >= 2 and hit >= len(tokens) - 1)
 
     @classmethod
-    def _fired_rules(cls, facts: Dict[str, Any], jurisdiction: str) -> List[Dict[str, Any]]:
-        fired: List[Dict[str, Any]] = []
+    def _fired_rules(cls, facts: dict[str, Any], jurisdiction: str) -> list[dict[str, Any]]:
+        fired: list[dict[str, Any]] = []
         for rule in cls._load_rule_packs():
             rule_jur = (rule.get("jurisdiction") or "").lower()
             if rule_jur and rule_jur != jurisdiction.lower() and \
@@ -247,13 +249,13 @@ class DeterministicRuleEngine:
         return fired
 
     @classmethod
-    def _merge_yaml_into(cls, finding: RegulatoryFinding, fired: List[Dict[str, Any]]) -> RegulatoryFinding:
+    def _merge_yaml_into(cls, finding: RegulatoryFinding, fired: list[dict[str, Any]]) -> RegulatoryFinding:
         if not fired:
             return finding
-        extra_requirements: List[str] = []
-        fired_names: List[str] = []
+        extra_requirements: list[str] = []
+        fired_names: list[str] = []
         risk_ranks = {"critical": 4, "high": 3, "medium": 2, "low": 1}
-        applied_rules: List[Dict[str, Any]] = []
+        applied_rules: list[dict[str, Any]] = []
         requires_human_review = finding.requires_human_review
         risk_level = finding.risk_level
         for rule in fired:
@@ -331,8 +333,10 @@ class DeterministicRuleEngine:
     def evaluate_passport(
         cls,
         passport: InnovationPassport,
-        target_markets: List[str] = ["India", "United States", "Canada"]
-    ) -> List[RegulatoryFinding]:
+        target_markets: list[str] | None = None
+    ) -> list[RegulatoryFinding]:
+        if target_markets is None:
+            target_markets = ["India", "United States", "Canada"]
         findings = []
 
         # 1. Resolve Canonical Ingredients

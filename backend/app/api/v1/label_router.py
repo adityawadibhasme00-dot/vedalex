@@ -1,13 +1,13 @@
+
 from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import List, Optional, Dict
 
 router = APIRouter(prefix="/label", tags=["Claim Firewall"])
 
 class LabelAnalyzeRequest(BaseModel):
     label_text: str
-    product_type: Optional[str] = "ayurvedic_drug"
-    target_markets: Optional[List[str]] = ["India"]
+    product_type: str | None = "ayurvedic_drug"
+    target_markets: list[str] | None = ["India"]
 
 class ClaimResult(BaseModel):
     claim_text: str
@@ -19,7 +19,7 @@ class ClaimResult(BaseModel):
 class LabelAnalyzeResponse(BaseModel):
     overall_status: str
     overall_color: str
-    claims: List[ClaimResult]
+    claims: list[ClaimResult]
     summary: str
 
 THERAPEUTIC_KEYWORDS = [
@@ -34,13 +34,12 @@ SAFE_CLAIMS = [
 ]
 
 @router.post("/analyze", response_model=LabelAnalyzeResponse)
-async def analyze_label(req: LabelAnalyzeRequest):
+def analyze_label(req: LabelAnalyzeRequest):
     claims = []
     label_lower = req.label_text.lower()
-    words = label_lower.split()
+    label_lower.split()
 
     has_therapeutic = False
-    has_safety_disclaimer = False
     has_dosage = False
     has_manufacturer = False
 
@@ -66,7 +65,7 @@ async def analyze_label(req: LabelAnalyzeRequest):
             ))
 
     if "disclaimer" in label_lower or "not evaluated" in label_lower:
-        has_safety_disclaimer = True
+        pass
     else:
         if has_therapeutic:
             claims.append(ClaimResult(

@@ -1,0 +1,50 @@
+[
+  {
+    "query": "Can a process of mixing turmeric and neem be patented under Section 3(p) of the Patents Act?",
+    "language": "en",
+    "expected_source": "India Code",
+    "relevant_substrings": ["section 3", "3(p)", "turmeric", "neem"]
+  },
+  {
+    "query": "What documentation does an application to the National Biodiversity Authority require under the Access and Benefit Sharing framework?",
+    "language": "en",
+    "expected_source": "NBA",
+    "relevant_substrings": ["benefit sharing", "biodiversity", "biological resource", "nba"]
+  },
+  {
+    "query": "How is a dietary supplement regulated by the US FDA under DSHEA?",
+    "language": "en",
+    "expected_source": "FDA",
+    "relevant_substrings": ["dietary supplement", "dshea", "fda"]
+  },
+  {
+    "query": "How does TKDL help prevent misappropriation of traditional knowledge as prior art?",
+    "language": "en",
+    "expected_source": "TKDL",
+    "relevant_substrings": ["traditional knowledge", "prior art", "tkdl"]
+  },
+  {
+    "query": "What are the botanical synonyms and identity of Withania somnifera used in Ayurvedic formulations?",
+    "language": "en",
+    "expected_source": "canonical",
+    "relevant_substrings": ["withania", "somnifera", "ashwagandha"]
+  },
+  {
+    "query": "एलोवेरा जेल को कैसे पेटेंट करें? क्या जांच होती है?",
+    "language": "hi",
+    "expected_source": "India Code",
+    "relevant_substrings": ["पेटेंट", "section 3", "aloe"]
+  },
+  {
+    "query": "What are the quality standards and specification tests for Ashwagandha churna in the Ayurvedic Pharmacopoeia of India?",
+    "language": "en",
+    "expected_source": "AYUSH",
+    "relevant_substrings": ["ashwagandha", "churna", "pharmacopoeia"]
+  },
+  {
+    "query": "Does the Natural Health Products Regulations (Canada) require a product licence for an herbal supplement?",
+    "language": "en",
+    "expected_source": "Health Canada",
+    "relevant_substrings": ["health canada", "product licence", "natural health products"]
+  }
+]

@@ -2,11 +2,23 @@ rule_pack_id: "RULE-IN-ASU-2024"
 jurisdiction: "India"
 authority: "Ministry of AYUSH"
 governing_act: "Drugs and Cosmetics Act, 1940 & Rules, 1945"
-version: "1.2.0"
+version: "1.3.0"
 rules:
   - id: "RULE_ASU_CLASSICAL"
     name: "Classical ASU Drug Classification"
     statute_ref: "Rule 158-B(a)"
+    rule_version: "1.3.0"
+    effective_from: "2010-08-10"
+    status: "active"
+    risk_level: "low"
+    requires_human_review: false
+    evidence:
+      source_id: "drugs_and_cosmetics_rule_158b_schedule_t"
+      locator: "Rule 158-B(a) & Schedule T"
+      authority: "Drugs and Cosmetics Rules, 1945"
+    explanation_template:
+      en: "Formulation based on a classical text codified in the First Schedule is treated as a Classical ASU Medicine. No patent-style novelty claim is needed, but the classical text reference must appear on the label."
+      hi: "प्रथम अनुसूची में संहिताबद्ध शास्त्रीय ग्रंथ पर आधारित फॉर्मूलेशन को शास्त्रीय आयुष औषध माना जाता है। पेटेंट-शैली की नवीनता आवश्यक नहीं, परंतु लेबल पर शास्त्रीय ग्रंथ का संदर्भ अनिवार्य है।"
     conditions:
       - fact_key: "ingredients_conform_to_first_schedule"
         operator: "equals"
@@ -24,6 +36,18 @@ rules:
   - id: "RULE_ASU_PROPRIETARY"
     name: "ASU Patent / Proprietary Medicine"
     statute_ref: "Rule 158-B(b)"
+    rule_version: "1.3.0"
+    effective_from: "2010-08-10"
+    status: "active"
+    risk_level: "high"
+    requires_human_review: true
+    evidence:
+      source_id: "drugs_and_cosmetics_rule_158b_schedule_t"
+      locator: "Rule 158-B(b)"
+      authority: "Drugs and Cosmetics Rules, 1945"
+    explanation_template:
+      en: "An innovated ratio, form or new process places the product in the proprietary ('Patent') ASU Drug category, requiring published safety evidence, effectiveness proof and Schedule T GMP compliance before State licensing."
+      hi: "नया अनुपात, रूप या प्रक्रिया उत्पाद को स्वामित्व ('पेटेंट') आयुष औषध श्रेणी में रखती है, जिसके लिए प्रकाशित सुरक्षा प्रमाण, प्रभावशीलता साक्ष्य और राज्य लाइसेंस से पहले अनुसूची T GMP अनुपालन आवश्यक है।"
     conditions:
       - fact_key: "contains_only_permitted_ayush_ingredients"
         operator: "equals"

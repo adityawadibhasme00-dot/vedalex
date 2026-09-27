@@ -12,11 +12,11 @@ Enterprise legal/patent RAG systems require strict guardrails:
 This module implements all guardrails as a pre-response validation layer.
 """
 
+import logging
 import re
-from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
-import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +35,8 @@ class HallucinationCheck:
     grounded: bool
     coverage_ratio: float
     citation_count: int
-    violations: List[str]
-    recommendations: List[str]
+    violations: list[str]
+    recommendations: list[str]
 
 
 # Patterns that indicate fabricated patent numbers
@@ -92,7 +92,7 @@ def _count_citations(text: str) -> int:
     return count
 
 
-def _detect_fabricated_patent_numbers(text: str, source_patent_numbers: List[str]) -> List[str]:
+def _detect_fabricated_patent_numbers(text: str, source_patent_numbers: list[str]) -> list[str]:
     """Check if the answer contains patent numbers not found in sources."""
     violations = []
     found_numbers = PATENT_NUMBER_PATTERN.findall(text)
@@ -104,7 +104,7 @@ def _detect_fabricated_patent_numbers(text: str, source_patent_numbers: List[str
     return violations
 
 
-def _detect_fabricated_dates(text: str, source_dates: List[str]) -> List[str]:
+def _detect_fabricated_dates(text: str, source_dates: list[str]) -> list[str]:
     """Check if the answer contains dates not found in sources."""
     violations = []
     found_dates = DATE_PATTERN.findall(text)
@@ -116,7 +116,7 @@ def _detect_fabricated_dates(text: str, source_dates: List[str]) -> List[str]:
     return violations
 
 
-def _detect_unsupported_claims(text: str, sources: List[Dict[str, Any]]) -> List[str]:
+def _detect_unsupported_claims(text: str, sources: list[dict[str, Any]]) -> list[str]:
     """Check for absolute claims without source support."""
     violations = []
     absolute_patterns = [
@@ -139,9 +139,9 @@ _PMID_PATTERN = re.compile(r"\bPMID[:#]?\s*(\d{1,18})\b", re.IGNORECASE)
 _PUBCHEM_PATTERN = re.compile(r"\bPubChem\s+(?:CID)?\s*#{0,1}\s*(\d{1,12})\b", re.IGNORECASE)
 
 
-def _collect_omics_identifiers(sources: List[Dict[str, Any]]) -> Dict[str, set]:
+def _collect_omics_identifiers(sources: list[dict[str, Any]]) -> dict[str, set]:
     """Collect verified omics identifiers from retrieved source payloads."""
-    verified = {
+    verified: dict[str, set[str]] = {
         "uniprot": set(),
         "pmid": set(),
         "pubchem": set(),
@@ -163,8 +163,8 @@ def _collect_omics_identifiers(sources: List[Dict[str, Any]]) -> Dict[str, set]:
 
 def _detect_fabricated_omics_identifiers(
     text: str,
-    sources: List[Dict[str, Any]],
-) -> List[str]:
+    sources: list[dict[str, Any]],
+) -> list[str]:
     """Flag UniProt accessions / PMIDs / PubChem CIDs that are not in sources.
 
     This enforces the zero-hallucination rule for multi-omics evidence: any
@@ -192,11 +192,11 @@ def _detect_fabricated_omics_identifiers(
 
 def validate_answer(
     answer: str,
-    sources: List[Dict[str, Any]],
+    sources: list[dict[str, Any]],
     query: str,
     confidence: float,
-    source_patent_numbers: Optional[List[str]] = None,
-    source_dates: Optional[List[str]] = None,
+    source_patent_numbers: list[str] | None = None,
+    source_dates: list[str] | None = None,
 ) -> HallucinationCheck:
     """
     Comprehensive hallucination validation on a generated answer.
@@ -246,14 +246,21 @@ def validate_answer(
     omics_violations = _detect_fabricated_omics_identifiers(answer, sources)
     violations.extend(omics_violations)
 
-    # 7. Answer length vs source length ratio (too long = likely hallucinated)
+    # 7. Answer length vs source length ratio (too long = likely hallucinated).
+    #    Structured, source-quoted answers legitimately run longer than a single
+    #    passage — only flag bloated prose that quotes nothing and cites nothing.
     avg_source_len = sum(len(s.get("content", "")) for s in sources) / max(1, len(sources))
-    if len(answer) > avg_source_len * 5 and avg_source_len > 0:
+    quoted = answer.count("\u201c") + answer.count("\u201d") + answer.count('"')
+    structured = "EVIDENCE CITED" in answer or "WHAT THE RULES SAY" in answer or citation_count > 0
+    if (
+        len(answer) > avg_source_len * 5 and avg_source_len > 0
+        and not structured and quoted == 0
+    ):
         violations.append("Answer significantly longer than source material")
         recommendations.append("Keep answers grounded in retrieved content length")
 
     # Risk assessment
-    risk_score = 0
+    risk_score: float = 0
     risk_score += len(violations) * 15
     risk_score += max(0, (1 - coverage) * 30)
     risk_score += max(0, (1 - confidence) * 20)
@@ -304,7 +311,7 @@ def should_refuse_answer(
     min_coverage: float = 0.4,
     min_confidence: float = 0.2,
     min_sources: int = 2,
-) -> Tuple[bool, str]:
+) -> tuple[bool, str]:
     """
     Decision gate: should the system refuse to answer?
 
@@ -331,8 +338,8 @@ def should_refuse_answer(
 
 def build_grounding_check(
     query: str,
-    sources: List[Dict[str, Any]],
-) -> Dict[str, Any]:
+    sources: list[dict[str, Any]],
+) -> dict[str, Any]:
     """
     Pre-generation grounding check — validates retrieval quality
     before the LLM generates an answer.

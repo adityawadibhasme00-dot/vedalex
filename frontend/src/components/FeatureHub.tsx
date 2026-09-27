@@ -63,6 +63,16 @@ const FEATURES: FeatureDef[] = [
     steps: ['Prior Art', 'ABS', 'Patent', 'Evidence', 'Compliance', 'Market'],
   },
   {
+    id: 'whitespace',
+    title: 'White Space Navigator',
+    description: 'Find less-crowded patent & delivery windows for your formulation.',
+    category: 'Discovery',
+    categoryColor: 'emerald',
+    icon: <Sparkles className="w-5 h-5" />,
+    api: 'GET /whitespace/{id}',
+    steps: ['Opportunity grid', 'TK risk & Section 3(p)', 'Ranked opportunity cards'],
+  },
+  {
     id: 'abs',
     title: 'Bio-Resource Ledger',
     description: 'Track ingredient lineage and ABS compliance.',

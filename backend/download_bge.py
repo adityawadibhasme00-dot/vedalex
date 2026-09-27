@@ -1,4 +1,5 @@
 import os
+
 os.environ["IPSAKTI_USE_BGE_M3"] = "1"
 
 from sentence_transformers import SentenceTransformer

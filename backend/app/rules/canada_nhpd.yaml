@@ -2,11 +2,23 @@ rule_pack_id: "RULE-CA-NHPD-2004"
 jurisdiction: "Canada"
 authority: "Health Canada (NNHPD)"
 governing_act: "Natural Health Products Regulations (NHPR / SOR/2003-196)"
-version: "1.0.0"
+version: "1.1.0"
 rules:
   - id: "RULE_CA_NHP_MONOGRAPH"
     name: "Health Canada Class I / II NHP License"
     statute_ref: "SOR/2003-196 Part 1"
+    rule_version: "1.1.0"
+    effective_from: "2004-01-01"
+    status: "active"
+    risk_level: "medium"
+    requires_human_review: false
+    evidence:
+      source_id: "canada_nhpr_natural_health_products"
+      locator: "SOR/2003-196 Part 1 (Product Licence)"
+      authority: "Health Canada (NNHPD)"
+    explanation_template:
+      en: "Herbal ingredients matching an NHPID monograph qualify for Class I/II licensing under SOR/2003-196 Part 1, yielding an 8-digit NPN; importation requires a Canadian Site Licence with GMP equivalence."
+      hi: "NHPID मोनोग्राफ से मेल खाने वाली जड़ी-बूटियाँ SOR/2003-196 भाग 1 के तहत Class I/II लाइसेंस के लिए पात्र हैं; आयात के लिए Canadian Site Licence ज़रूरी है।"
     conditions:
       - fact_key: "ingredients_on_nhpid_list"
         operator: "equals"

@@ -1,6 +1,7 @@
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+
 from app.services.passport_engine import PassportEngine
 from app.services.retrieval_engine import HybridRetrievalEngine
 
@@ -8,7 +9,7 @@ router = APIRouter(prefix="/fto", tags=["Freedom to Operate"])
 
 class FTOCheckRequest(BaseModel):
     passport_id: str
-    target_markets: Optional[List[str]] = ["India", "United States", "Canada"]
+    target_markets: list[str] | None = ["India", "United States", "Canada"]
 
 class SimilarPatent(BaseModel):
     patent_id: str
@@ -20,12 +21,12 @@ class SimilarPatent(BaseModel):
 
 class FTOCheckResponse(BaseModel):
     passport_id: str
-    similar_patents: List[SimilarPatent]
+    similar_patents: list[SimilarPatent]
     overall_risk: str
     recommendation: str
 
 @router.post("/check", response_model=FTOCheckResponse)
-async def check_fto(req: FTOCheckRequest):
+def check_fto(req: FTOCheckRequest):
     passport = PassportEngine.get_passport(req.passport_id)
     if not passport:
         raise HTTPException(status_code=404, detail="Passport not found")
@@ -33,7 +34,7 @@ async def check_fto(req: FTOCheckRequest):
     ingredient_names = [ing.botanical_name or ing.raw_name for ing in passport.ingredients]
     query = " ".join(ingredient_names) + " " + (passport.claimed_innovation or "")
 
-    statutory = HybridRetrievalEngine.search_passages(query, jurisdiction="India", top_k=3)
+    HybridRetrievalEngine.search_passages(query, jurisdiction="India", top_k=3)
 
     similar_patents = [
         SimilarPatent(

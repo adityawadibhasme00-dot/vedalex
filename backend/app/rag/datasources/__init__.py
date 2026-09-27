@@ -18,7 +18,7 @@ official APIs when network access is available. API calls are guarded,
 rate-limited and never block knowledge base loading.
 """
 
-from typing import List, Dict, Any
+from typing import Any
 
 from .seed.curated import build_omics_seed_documents
 
@@ -28,9 +28,9 @@ __all__ = ["harvest_multiomics", "build_omics_seed_documents"]
 def harvest_multiomics(
     include_live: bool = False,
     timeout: int = 10,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Return all multi-omics documents (curated seed + optional live data)."""
-    docs: List[Dict[str, Any]] = build_omics_seed_documents()
+    docs: list[dict[str, Any]] = build_omics_seed_documents()
 
     if include_live:
         for _harvester in (
@@ -53,21 +53,21 @@ def harvest_multiomics(
 # knowledge base is never blocked by network issues / rate limits.
 # ---------------------------------------------------------------------------
 
-def _fetch_ncbi_live(timeout: int = 10) -> List[Dict[str, Any]]:
+def _fetch_ncbi_live(timeout: int = 10) -> list[dict[str, Any]]:
     return []
 
 
-def _fetch_uniprot_live(timeout: int = 10) -> List[Dict[str, Any]]:
+def _fetch_uniprot_live(timeout: int = 10) -> list[dict[str, Any]]:
     return []
 
 
-def _fetch_pharmgkb_live(timeout: int = 10) -> List[Dict[str, Any]]:
+def _fetch_pharmgkb_live(timeout: int = 10) -> list[dict[str, Any]]:
     return []
 
 
-def _fetch_metabolomics_live(timeout: int = 10) -> List[Dict[str, Any]]:
+def _fetch_metabolomics_live(timeout: int = 10) -> list[dict[str, Any]]:
     return []
 
 
-def _fetch_pathway_live(timeout: int = 10) -> List[Dict[str, Any]]:
+def _fetch_pathway_live(timeout: int = 10) -> list[dict[str, Any]]:
     return []

@@ -1,0 +1,143 @@
+name: Quality
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: ipsakti_test
+          POSTGRES_PASSWORD: ipsakti_test
+          POSTGRES_DB: ipsakti_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ipsakti_test -d ipsakti_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      qdrant:
+        image: qdrant/qdrant:v1.12.1
+        ports:
+          - 6333:6333
+          - 6334:6334
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      ENVIRONMENT: test
+      TEST_DATABASE_URL: postgresql+psycopg2://ipsakti_test:ipsakti_test@127.0.0.1:5432/ipsakti_test
+      TEST_QDRANT_URL: http://127.0.0.1:6333
+      TEST_REDIS_URL: redis://127.0.0.1:6379/15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - name: Install backend test dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements-test.txt
+      - name: Lint backend
+        run: ruff check app tests scripts
+      - name: Type-check backend
+        run: mypy app
+      - name: Test backend with coverage
+        if: always()
+        run: pytest tests --cov=app --cov-report=term-missing --cov-report=xml
+      - name: Run Bandit
+        if: always()
+        run: bandit -r app -ll -f json -o bandit-report.json
+      - name: Upload backend reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-reports
+          path: |
+            backend/coverage.xml
+            backend/bandit-report.json
+          if-no-files-found: ignore
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: Lint frontend
+        run: npm run lint
+      - name: Type-check frontend
+        run: npm run typecheck
+      - name: Test frontend with coverage
+        if: always()
+        run: npm run test:coverage -- --runInBand
+      - name: Install Playwright browsers
+        if: always()
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Run browser matrix
+        if: always()
+        run: npm run test:e2e
+      - name: Upload frontend reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-reports
+          path: |
+            frontend/coverage
+            frontend/playwright-report
+            frontend/test-results
+          if-no-files-found: ignore
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Audit Python dependencies
+        if: always()
+        run: pip install pip-audit && pip-audit -r backend/requirements-test.txt
+      - name: Audit npm dependencies
+        if: always()
+        working-directory: frontend
+        run: npm ci && npm audit --audit-level=high

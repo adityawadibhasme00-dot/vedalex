@@ -2,11 +2,23 @@ rule_pack_id: "RULE-US-FDA-DSHEA"
 jurisdiction: "United States"
 authority: "US Food and Drug Administration (FDA)"
 governing_act: "Dietary Supplement Health and Education Act of 1994 (DSHEA) & 21 CFR 101.93"
-version: "1.0.0"
+version: "1.1.0"
 rules:
   - id: "RULE_US_DSHEA_COMPLIANT"
     name: "DSHEA Structure/Function Dietary Supplement"
     statute_ref: "21 U.S.C. 343(r)(6) & 21 CFR 101.93"
+    rule_version: "1.1.0"
+    effective_from: "1994-10-15"
+    status: "active"
+    risk_level: "medium"
+    requires_human_review: false
+    evidence:
+      source_id: "us_fda_dshea_structure_function_claims"
+      locator: "21 U.S.C. 343(r)(6) / 21 CFR 101.93"
+      authority: "US FDA (DSHEA 1994)"
+    explanation_template:
+      en: "Botanicals marketed in the US before 15 October 1994 qualify as old dietary ingredients; structure/function claims require the 21 CFR 101.93 disclaimer and cGMP compliance, with a 30-day post-marketing notification."
+      hi: "15 अक्टूबर 1994 से पहले अमेरिका में विपणित वनस्पतियाँ पुराने आहारीय संघटक हैं; संरचना/कार्य दावों के लिए 21 CFR 101.93 अस्वीकरण और cGMP अनुपालन आवश्यक है।"
     conditions:
       - fact_key: "claim_contains_disease_treatment"
         operator: "equals"
@@ -25,6 +37,18 @@ rules:
   - id: "RULE_US_UNAPPROVED_NEW_DRUG"
     name: "FDA Unapproved New Drug Classification"
     statute_ref: "21 U.S.C. 321(g)(1)(B) & 21 U.S.C. 355"
+    rule_version: "1.1.0"
+    effective_from: "1938-06-25"
+    status: "active"
+    risk_level: "high"
+    requires_human_review: true
+    evidence:
+      source_id: "us_fda_dshea_structure_function_claims"
+      locator: "21 U.S.C. 321(g)(1)(B) / 21 U.S.C. 355"
+      authority: "US FDA (FD&C Act 1938)"
+    explanation_template:
+      en: "A disease treatment claim classifies the product as a drug under 21 U.S.C. 321(g)(1)(B), requiring a pre-market New Drug Application under 21 U.S.C. 355. Reformulate claims or file an IND."
+      hi: "रोग-चिकित्सा दावा उत्पाद को 21 U.S.C. 321(g)(1)(B) के तहत औषध बनाता है, जिसके लिए 21 U.S.C. 355 के तहत पूर्व-विपणन नई-औषध आवेदन आवश्यक है।"
     conditions:
       - fact_key: "claim_contains_disease_treatment"
         operator: "equals"

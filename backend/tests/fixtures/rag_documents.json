@@ -1,0 +1,32 @@
+[
+  {
+    "document_id": "test-patent-3p",
+    "text": "Section 3(p) addresses inventions involving biological material and traditional knowledge.",
+    "title": "Synthetic Patents Act Section 3(p)",
+    "source": "test-india-code",
+    "category": "patents",
+    "authority": "Parliament of India",
+    "jurisdiction": "India",
+    "year": 2026
+  },
+  {
+    "document_id": "test-fssai-supplement",
+    "text": "A food supplement label must not claim diagnosis, cure, mitigation, or treatment of disease.",
+    "title": "Synthetic FSSAI Label Requirement",
+    "source": "test-fssai",
+    "category": "regulations",
+    "authority": "FSSAI",
+    "jurisdiction": "India",
+    "year": 2026
+  },
+  {
+    "document_id": "test-abs-benefit-sharing",
+    "text": "Access to biological resources and traditional knowledge may require benefit sharing.",
+    "title": "Synthetic ABS Requirement",
+    "source": "test-nba",
+    "category": "regulations",
+    "authority": "National Biodiversity Authority",
+    "jurisdiction": "India",
+    "year": 2026
+  }
+]

@@ -11,9 +11,9 @@ Uses BAAI/bge-reranker-v2-m3 by default (multilingual, cross-encoder).
 Falls back to a score-preserving passthrough if model is unavailable.
 """
 
-import os
 import logging
-from typing import List, Dict, Any, Optional, Tuple
+import os
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -69,10 +69,10 @@ class Reranker:
     def rerank(
         self,
         query: str,
-        passages: List[Dict[str, Any]],
+        passages: list[dict[str, Any]],
         top_k: int = 5,
         content_key: str = "content",
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Rerank passages by cross-encoder relevance to query.
 
@@ -96,7 +96,7 @@ class Reranker:
             scores = self._model.predict(pairs, show_progress_bar=False)
 
             scored_passages = []
-            for i, (passage, score) in enumerate(zip(passages, scores)):
+            for i, (passage, score) in enumerate(zip(passages, scores, strict=False)):
                 scored_passages.append({
                     **passage,
                     "rerank_score": float(score),
@@ -111,8 +111,8 @@ class Reranker:
             return self._passthrough_rerank(passages, top_k)
 
     def _passthrough_rerank(
-        self, passages: List[Dict[str, Any]], top_k: int
-    ) -> List[Dict[str, Any]]:
+        self, passages: list[dict[str, Any]], top_k: int
+    ) -> list[dict[str, Any]]:
         """When reranker is unavailable, preserve original ranking but add score field."""
         result = []
         for i, p in enumerate(passages[:top_k]):

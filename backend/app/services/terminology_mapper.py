@@ -2,13 +2,13 @@ import difflib
 import json
 import os
 import unicodedata
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Any
 
 from app.models.intelligence import TerminologyMapResponse
 
 _KNOWLEDGE = os.path.join(os.path.dirname(__file__), "..", "knowledge")
 
-TRANSLITERATIONS: Dict[str, List[str]] = {
+TRANSLITERATIONS: dict[str, list[str]] = {
     "ING-ASHWAGANDHA": ["Aśvagandhā", "Aśvagandha", "Ashwagandha", "Ashvagandha", "Withania somnifera"],
     "ING-BRAHMI": ["Brāhmī", "Brahmi", "Bacopa monnieri", "Nīlabrāhmī"],
     "ING-SHANKHAPUSHPI": ["Śaṅkhapuṣpī", "Shankhapushpi", "Shankhpushpi", "Shankha-pushpi", "Convolvulus pluricaulis"],
@@ -25,10 +25,10 @@ class TerminologyMapper:
     entity key — the same canonical_id consumed by the passport and RAG index.
     """
 
-    _synonyms: Dict[str, Dict[str, Any]] = {}
-    _monographs: Dict[str, Dict[str, Any]] = {}
-    _alias_lookup: Dict[str, str] = {}
-    _alias_surface: List[str] = []
+    _synonyms: dict[str, dict[str, Any]] = {}
+    _monographs: dict[str, dict[str, Any]] = {}
+    _alias_lookup: dict[str, str] = {}
+    _alias_surface: list[str] = []
 
     @classmethod
     def load_data(cls):
@@ -37,12 +37,12 @@ class TerminologyMapper:
         if not cls._synonyms:
             path = os.path.join(_KNOWLEDGE, "botanical_synonyms.json")
             if os.path.exists(path):
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     cls._synonyms = json.load(f)
         if not cls._monographs:
             path = os.path.join(_KNOWLEDGE, "api_monographs.json")
             if os.path.exists(path):
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     for item in json.load(f):
                         cls._monographs[item["canonical_id"]] = item
 
@@ -89,13 +89,13 @@ class TerminologyMapper:
         entry = cls._synonyms.get(canonical_id or "", {})
         monograph = cls._monographs.get(canonical_id or "", {})
 
-        names: Dict[str, List[str]] = {}
+        names: dict[str, list[str]] = {}
         for lang, lst in entry.items():
             if lang in ("canonical_id", "botanical_name"):
                 continue
             names[lang] = lst
 
-        nearest_possible: List[str] = []
+        nearest_possible: list[str] = []
         if not canonical_id:
             close = difflib.get_close_matches(norm_q, cls._alias_surface, n=3, cutoff=0.45)
             nearest_possible = [s for s in close]

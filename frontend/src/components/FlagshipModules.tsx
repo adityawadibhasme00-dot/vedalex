@@ -173,15 +173,15 @@ export default function FlagshipModules() {
                   <div className="p-3 rounded-xl bg-red-50/70 border border-red-500/30">
                     <span className="text-[10px] font-bold uppercase text-red-600 block mb-1">Disallowed Disease Claims (High Warning Risk)</span>
                     <ul className="space-y-1 text-red-700">
-                      <li>❌ "Treats clinical insomnia"</li>
-                      <li>❌ "Cures chronic anxiety disorder"</li>
+                      <li>❌ &quot;Treats clinical insomnia&quot;</li>
+                      <li>❌ &quot;Cures chronic anxiety disorder&quot;</li>
                     </ul>
                   </div>
                   <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-500/30">
                     <span className="text-[10px] font-bold uppercase text-emerald-600 block mb-1">Firewall-Sanitized Permitted Claims</span>
                     <ul className="space-y-1 text-emerald-700">
-                      <li>✅ "Supports healthy, restful sleep"</li>
-                      <li>✅ "Promotes natural relaxation & mental calm"</li>
+                      <li>✅ &quot;Supports healthy, restful sleep&quot;</li>
+                      <li>✅ &quot;Promotes natural relaxation & mental calm&quot;</li>
                     </ul>
                   </div>
                 </div>

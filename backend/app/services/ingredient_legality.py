@@ -1,5 +1,7 @@
-from typing import Dict, List, Any
+from typing import Any
+
 from app.models.canonical import CanonicalIngredient
+
 
 class IngredientLegalityChecker:
     """
@@ -11,9 +13,9 @@ class IngredientLegalityChecker:
     """
     @staticmethod
     def check_jurisdiction_legality(
-        canonical_ingredients: List[CanonicalIngredient],
+        canonical_ingredients: list[CanonicalIngredient],
         jurisdiction: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         results = []
         all_permitted = True
 

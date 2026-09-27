@@ -7,24 +7,127 @@ Replaces FAISS with a production-grade vector database that supports:
   - Hybrid search (dense vectors + sparse/keyword)
   - Collection management and incremental updates
   - Multi-tenancy via payload filters
+  - Six curated domain collections (regulations, patents, biodiversity,
+    traditional_knowledge, quality_standards, safety) with automatic
+    category-to-collection routing at upsert time and cross-collection
+    fan-out at search time.
 
 Collection schema:
   - Vectors: 1024-dim (BGE-M3) dense embeddings
   - Payload: source, category, doc_id, title, authority, jurisdiction,
             authority_level, section_heading, patent_number, publication_year,
-            source_url, effective_date, chunk_index
+            source_url, effective_date, chunk_index, domain
 """
 
+import logging
 import os
 import uuid
-import numpy as np
-from typing import List, Dict, Any, Optional
-import logging
+from typing import TYPE_CHECKING, Any, Optional, cast
+
+if TYPE_CHECKING:
+    from qdrant_client import QdrantClient
 
 logger = logging.getLogger(__name__)
 
 QDRANT_URL_DEFAULT = "http://localhost:6333"
-COLLECTION_NAME = "ipsakti_knowledge"
+LEGACY_COLLECTION = "ipsakti_knowledge"
+
+# Curated domain collections (IP-SAKTI knowledge domains). Every ingested chunk
+# is routed to exactly one of these collections via ``resolve_collection``.
+QDRANT_COLLECTIONS: list[str] = [
+    "regulations",
+    "patents",
+    "biodiversity",
+    "traditional_knowledge",
+    "quality_standards",
+    "safety",
+]
+
+# Source-id registry overrides win over category heuristics.
+SOURCE_DOMAIN_OVERRIDES: list[tuple] = [
+    ("tkdl", "traditional_knowledge"),
+    ("wipo", "patents"),
+    ("fda_us", "safety"),
+    ("us_fda", "safety"),
+    ("health_canada", "safety"),
+    ("nba", "biodiversity"),
+    ("pharmacopoeia", "quality_standards"),
+    ("api", "quality_standards"),
+]
+
+# category / document_type / taxonomy -> collection routing table.
+DOMAIN_BY_CATEGORY: dict[str, str] = {
+    "regulatory": "regulations",
+    "regulations": "regulations",
+    "statutory": "regulations",
+    "acts_and_gazettes": "regulations",
+    "official": "regulations",
+    "export_market_requirements": "regulations",
+    "claim_alternatives": "regulations",
+    "white_space": "regulations",
+    "evidence_ladders": "regulations",
+    "patent": "patents",
+    "patents": "patents",
+    "patent_statute": "regulations",
+    "tkdl": "traditional_knowledge",
+    "traditional_knowledge": "traditional_knowledge",
+    "classical": "traditional_knowledge",
+    "classical_texts": "traditional_knowledge",
+    "ayurveda": "traditional_knowledge",
+    "pharmacopoeia": "quality_standards",
+    "api_monographs": "quality_standards",
+    "api": "quality_standards",
+    "biodiversity": "biodiversity",
+    "abs": "biodiversity",
+    "nba": "biodiversity",
+    "safety": "safety",
+    "who": "safety",
+    "pubmed": "safety",
+    "academic_research": "safety",
+    "academic": "safety",
+    "multiomics": "safety",
+    "safety_signals": "safety",
+}
+
+
+def resolve_collection(doc: dict[str, Any]) -> str:
+    """Route a document/payload to one of the six curated Qdrant collections."""
+    source_id = str(doc.get("source_id") or doc.get("source") or "").lower()
+    for token, domain in SOURCE_DOMAIN_OVERRIDES:
+        if token in source_id:
+            return domain
+
+    fields = ("category", "document_type", "taxonomy")
+    values = [str(doc.get(f) or "").lower().strip() for f in fields]
+    for value in values:
+        if value and value in DOMAIN_BY_CATEGORY:
+            return DOMAIN_BY_CATEGORY[value]
+    for value in values:
+        if not value:
+            continue
+        for part, domain in DOMAIN_BY_CATEGORY.items():
+            if part and part in value:
+                return domain
+    return "regulations"
+
+
+def _extract_vector_dim(info) -> int | None:
+    """Best-effort vector dimension extraction from a Qdrant collection info."""
+    try:
+        cfg = getattr(info, "config", None)
+        params = getattr(cfg, "params", None)
+        vectors = getattr(params, "vectors", None)
+        if vectors is not None and hasattr(vectors, "size"):
+            return vectors.size
+        if isinstance(vectors, dict):
+            first_v = next(iter(vectors.values()), None)
+            if first_v is not None and hasattr(first_v, "size"):
+                return first_v.size
+        if params is not None and hasattr(params, "size"):
+            return params.size
+    except Exception:
+        pass
+    return None
 
 
 class QdrantVectorStore:
@@ -33,9 +136,15 @@ class QdrantVectorStore:
     """
 
     _instance: Optional["QdrantVectorStore"] = None
-    _client = None
+    _client: "QdrantClient | None" = None
     _collection_ready = False
     _dim = 1024
+
+    def _require_client(self) -> "QdrantClient":
+        client = self._client
+        if client is None:
+            raise RuntimeError("Qdrant client is not initialised")
+        return client
 
     def __new__(cls):
         if cls._instance is None:
@@ -53,7 +162,6 @@ class QdrantVectorStore:
 
         try:
             from qdrant_client import QdrantClient
-            from qdrant_client.models import VectorParams, Distance
 
             url = os.environ.get("QDRANT_URL", QDRANT_URL_DEFAULT)
             api_key = os.environ.get("QDRANT_API_KEY", "")
@@ -82,94 +190,110 @@ class QdrantVectorStore:
                         logger.warning(f"Local Qdrant locked ({e_local}) — using in-memory mode")
 
 
-            self._ensure_collection()
-            logger.info(f"Qdrant connected: {url} (collection={COLLECTION_NAME})")
+            self._ensure_collections()
+            logger.info(f"Qdrant connected: {url} (collections={', '.join(QDRANT_COLLECTIONS)})")
 
         except Exception as e:
             logger.error(f"Qdrant connection failed: {e}")
             self._client = None
 
-    def _ensure_collection(self):
-        """Create collection if it doesn't exist (recreating if dim mismatch)."""
-        from qdrant_client.models import VectorParams, Distance, PayloadSchemaType
+    def _ensure_collections(self):
+        """Create each of the six domain collections if it doesn't exist
+        (recreating any whose vector dimension mismatches the engine)."""
+        from qdrant_client.models import (
+            Distance,
+            OptimizersConfigDiff,
+            PayloadSchemaType,
+            VectorParams,
+        )
 
         try:
-            collections = self._client.get_collections()
+            client = self._require_client()
+            collections = client.get_collections()
             existing = {c.name for c in collections.collections}
 
-            needs_recreate = False
-            if COLLECTION_NAME in existing:
-                # Verify existing collection dim matches engine dim (BGE-M3 <> fallback)
-                try:
-                    info = self._client.get_collection(COLLECTION_NAME)
-                    actual_dim = None
+            for collection_name in QDRANT_COLLECTIONS:
+                needs_recreate = False
+                if collection_name in existing:
                     try:
-                        cfg = getattr(info, "config", None)
-                        params = getattr(cfg, "params", None)
-                        vectors = getattr(params, "vectors", None)
-                        if hasattr(vectors, "size"):
-                            actual_dim = vectors.size
-                        elif isinstance(vectors, dict):
-                            first_v = next(iter(vectors.values()), None)
-                            if hasattr(first_v, "size"):
-                                actual_dim = first_v.size
-                        elif hasattr(params, "size"):
-                            actual_dim = params.size
+                        info = client.get_collection(collection_name)
+                        actual_dim = _extract_vector_dim(info)
+                        if actual_dim and actual_dim != self._dim:
+                            logger.warning(
+                                f"Collection {collection_name} dim {actual_dim} != engine dim {self._dim} — recreating"
+                            )
+                            needs_recreate = True
                     except Exception as e:
-                        logger.warning(f"Could not verify collection dim: {e}")
-                    if actual_dim and actual_dim != self._dim:
-                        logger.warning(
-                            f"Collection dim {actual_dim} != engine dim {self._dim} — recreating"
-                        )
-                        needs_recreate = True
-                except Exception as e:
-                    logger.warning(f"Could not verify collection dim: {e}")
+                        logger.warning(f"Could not verify collection dim {collection_name}: {e}")
 
-            if COLLECTION_NAME in existing and needs_recreate:
-                self._client.delete_collection(COLLECTION_NAME)
-                existing.discard(COLLECTION_NAME)
-                logger.info(f"Deleted stale collection {COLLECTION_NAME} for dim {self._dim}")
+                if collection_name in existing and needs_recreate:
+                    client.delete_collection(collection_name)
+                    existing.discard(collection_name)
+                    logger.info(f"Deleted stale collection {collection_name} for dim {self._dim}")
 
-            if COLLECTION_NAME not in existing:
-                self._client.create_collection(
-                    collection_name=COLLECTION_NAME,
-                    vectors_config=VectorParams(
-                        size=self._dim,
-                        distance=Distance.COSINE,
-                    ),
-                    optimizers_config={
-                        "indexing_threshold": 20000,
-                    },
-                )
-                # Create payload indexes for metadata filtering
-                for field, schema_type in [
-                    ("category", PayloadSchemaType.KEYWORD),
-                    ("authority", PayloadSchemaType.KEYWORD),
-                    ("jurisdiction", PayloadSchemaType.KEYWORD),
-                    ("authority_level", PayloadSchemaType.INTEGER),
-                    ("patent_number", PayloadSchemaType.KEYWORD),
-                    ("publication_year", PayloadSchemaType.INTEGER),
-                    ("source", PayloadSchemaType.KEYWORD),
-                    ("doc_id", PayloadSchemaType.KEYWORD),
-                ]:
-                    try:
-                        self._client.create_payload_index(
-                            collection_name=COLLECTION_NAME,
-                            field_name=field,
-                            field_schema=schema_type,
-                        )
-                    except Exception:
-                        pass
+                if collection_name not in existing:
+                    client.create_collection(
+                        collection_name=collection_name,
+                        vectors_config=VectorParams(
+                            size=self._dim,
+                            distance=Distance.COSINE,
+                        ),
+                        optimizers_config=OptimizersConfigDiff(
+                            indexing_threshold=20000,
+                        ),
+                    )
+                    for field, schema_type in [
+                        ("category", PayloadSchemaType.KEYWORD),
+                        ("domain", PayloadSchemaType.KEYWORD),
+                        ("authority", PayloadSchemaType.KEYWORD),
+                        ("jurisdiction", PayloadSchemaType.KEYWORD),
+                        ("authority_level", PayloadSchemaType.INTEGER),
+                        ("patent_number", PayloadSchemaType.KEYWORD),
+                        ("publication_year", PayloadSchemaType.INTEGER),
+                        ("source", PayloadSchemaType.KEYWORD),
+                        ("doc_id", PayloadSchemaType.KEYWORD),
+                    ]:
+                        try:
+                            client.create_payload_index(
+                                collection_name=collection_name,
+                                field_name=field,
+                                field_schema=schema_type,
+                            )
+                        except Exception:
+                            pass
 
-                logger.info(f"Created collection: {COLLECTION_NAME} (dim={self._dim})")
-            else:
-                logger.info(f"Collection exists: {COLLECTION_NAME}")
+                    logger.info(f"Created collection: {collection_name} (dim={self._dim})")
 
+            # Preserve read access to a pre-existing single-schema collection
+            # so previously indexed data is never silently lost.
             self._collection_ready = True
 
         except Exception as e:
             logger.error(f"Collection setup failed: {e}")
             self._collection_ready = False
+
+    def _existing_collections(self, domains: list[str] | None = None) -> list[str]:
+        """Collections to search/scroll — the six curated domains plus a
+        legacy single-schema collection when present.
+
+        When ``domains`` is given only those curated collections are returned.
+        If none of the requested domains exist on disk the method falls back to
+        every available collection so a warm table is never silently skipped.
+        """
+        try:
+            client = self._require_client()
+            collections = client.get_collections()
+            existing = {c.name for c in collections.collections}
+        except Exception:
+            return list(QDRANT_COLLECTIONS)
+        names = [c for c in QDRANT_COLLECTIONS if c in existing]
+        if LEGACY_COLLECTION in existing and LEGACY_COLLECTION not in names:
+            names.append(LEGACY_COLLECTION)
+        if domains:
+            wanted = [d for d in domains if d in names]
+            if wanted:
+                return wanted
+        return names or list(QDRANT_COLLECTIONS)
 
     @classmethod
     def is_available(cls) -> bool:
@@ -183,11 +307,11 @@ class QdrantVectorStore:
 
     def upsert_documents(
         self,
-        documents: List[Dict[str, Any]],
+        documents: list[dict[str, Any]],
         batch_size: int = 100,
     ) -> int:
         """
-        Embed and upsert documents into Qdrant.
+        Embed and upsert documents into their domain Qdrant collections.
         Returns number of documents upserted.
         """
         if not self.is_available():
@@ -196,6 +320,7 @@ class QdrantVectorStore:
 
         from app.rag.embeddings import EmbeddingEngine
         engine = EmbeddingEngine()
+        from qdrant_client.models import PointStruct
 
         total_upserted = 0
         for batch_start in range(0, len(documents), batch_size):
@@ -209,6 +334,7 @@ class QdrantVectorStore:
 
             points = []
             for i, doc in enumerate(batch):
+                domain = resolve_collection(doc)
                 point_id = str(uuid.uuid5(
                     uuid.NAMESPACE_URL,
                     f"{doc.get('source', '')}:{doc.get('doc_id', '')}:{doc.get('chunk_index', i)}"
@@ -216,6 +342,7 @@ class QdrantVectorStore:
                 payload = {
                     "content": doc.get("content", "")[:4000],
                     "source": doc.get("source", ""),
+                    "source_id": doc.get("source_id", "ingestion"),
                     "category": doc.get("category", ""),
                     "doc_id": doc.get("doc_id", ""),
                     "title": doc.get("title", ""),
@@ -229,6 +356,8 @@ class QdrantVectorStore:
                     "effective_date": doc.get("effective_date", ""),
                     "chunk_index": int(doc.get("chunk_index", i)),
                     "content_preview": doc.get("content", "")[:200],
+                    "domain": domain,
+                    "access_mode": doc.get("access_mode", "public"),
                     "omics_type": doc.get("omics_type", ""),
                     "organism": doc.get("organism", ""),
                     "compound": doc.get("compound", ""),
@@ -244,49 +373,51 @@ class QdrantVectorStore:
                     {
                         "id": point_id,
                         "vector": embeddings[i].tolist(),
+                        "collection": domain,
                         "payload": payload,
                     }
                 )
 
-            try:
-                import qdrant_client
-                from qdrant_client.models import PointStruct
+            grouped: dict[str, list[dict[str, Any]]] = {}
+            for p in points:
+                grouped.setdefault(p["collection"], []).append(p)
 
-                point_objects = []
-                for p in points:
-                    ps = PointStruct(
-                        id=p["id"],
-                        vector=p["vector"],
-                        payload=p["payload"],
+            for collection_name, group in grouped.items():
+                try:
+                    client = self._require_client()
+                    point_objects = [
+                        PointStruct(id=p["id"], vector=p["vector"], payload=p["payload"])
+                        for p in group
+                    ]
+                    client.upsert(
+                        collection_name=collection_name,
+                        points=point_objects,
                     )
-                    point_objects.append(ps)
+                    total_upserted += len(point_objects)
+                except Exception as e:
+                    logger.error(f"Upsert batch to {collection_name} failed: {e}")
 
-                self._client.upsert(
-                    collection_name=COLLECTION_NAME,
-                    points=point_objects,
-                )
-                total_upserted += len(points)
-            except Exception as e:
-                logger.error(f"Upsert batch failed: {e}")
-
-        logger.info(f"Upserted {total_upserted} documents to Qdrant")
+        logger.info(f"Upserted {total_upserted} documents to Qdrant domain collections")
         return total_upserted
 
     def search(
         self,
         query: str,
         top_k: int = 10,
-        filters: Optional[Dict[str, Any]] = None,
+        filters: dict[str, Any] | None = None,
         score_threshold: float = 0.3,
-    ) -> List[Dict[str, Any]]:
+        domains: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
         """
-        Semantic search with optional metadata filtering.
+        Semantic search across domain collections with optional metadata filtering.
 
         Args:
             query: User query string
             top_k: Number of results to return
             filters: Metadata filters, e.g. {"category": "patent", "jurisdiction": "India"}
             score_threshold: Minimum cosine similarity score
+            domains: Restrict search to these curated collections (intent-relevant
+                collections only). None searches every available collection.
 
         Returns:
             List of matching documents with scores
@@ -294,8 +425,9 @@ class QdrantVectorStore:
         if not self.is_available():
             return []
 
+        from qdrant_client.models import FieldCondition, Filter, MatchValue, Range
+
         from app.rag.embeddings import EmbeddingEngine
-        from qdrant_client.models import Filter, FieldCondition, MatchValue, Range
 
         engine = EmbeddingEngine()
         query_embedding = engine.embed_query(query)
@@ -323,36 +455,53 @@ class QdrantVectorStore:
                         FieldCondition(key=key, match=MatchValue(value=value))
                     )
             if conditions:
-                qdrant_filter = Filter(must=conditions)
+                qdrant_filter = Filter(must=cast(Any, conditions))
 
         try:
-            # qdrant-client >=1.10 uses query_points; older versions use search
-            if hasattr(self._client, "query_points"):
-                qres = self._client.query_points(
-                    collection_name=COLLECTION_NAME,
-                    query=query_embedding[0].tolist(),
-                    limit=top_k,
-                    query_filter=qdrant_filter,
-                    score_threshold=score_threshold,
-                )
-                results = qres.points if hasattr(qres, "points") else (qres or [])
-            else:
-                results = self._client.search(
-                    collection_name=COLLECTION_NAME,
-                    query_vector=query_embedding[0].tolist(),
-                    limit=top_k,
-                    query_filter=qdrant_filter,
-                    score_threshold=score_threshold,
-                )
-
+            client = self._require_client()
             documents = []
-            for hit in results:
-                doc = hit.payload.copy()
-                doc["score"] = hit.score
-                doc["point_id"] = str(hit.id)
-                documents.append(doc)
+            results: list[Any]
+            for collection_name in self._existing_collections(domains):
+                # qdrant-client >=1.10 uses query_points; older versions use search
+                if hasattr(client, "query_points"):
+                    qres = client.query_points(
+                        collection_name=collection_name,
+                        query=query_embedding[0].tolist(),
+                        limit=top_k,
+                        query_filter=qdrant_filter,
+                        score_threshold=score_threshold,
+                    )
+                    results = cast(
+                        list[Any],
+                        qres.points if hasattr(qres, "points") else (qres or []),
+                    )
+                else:
+                    results = cast(Any, client).search(
+                        collection_name=collection_name,
+                        query_vector=query_embedding[0].tolist(),
+                        limit=top_k,
+                        query_filter=qdrant_filter,
+                        score_threshold=score_threshold,
+                    )
 
-            return documents
+                for hit in results:
+                    doc = hit.payload.copy()
+                    doc["score"] = hit.score
+                    doc["point_id"] = str(hit.id)
+                    doc["collection"] = collection_name
+                    documents.append(doc)
+
+            seen = set()
+            deduped = []
+            for doc in documents:
+                dedup_key = (doc.get("doc_id", ""), doc.get("content", "")[:80])
+                if dedup_key in seen:
+                    continue
+                seen.add(dedup_key)
+                deduped.append(doc)
+
+            deduped.sort(key=lambda x: x.get("score", 0), reverse=True)
+            return deduped[:top_k]
 
         except Exception as e:
             logger.error(f"Qdrant search failed: {e}")
@@ -362,13 +511,16 @@ class QdrantVectorStore:
         self,
         query: str,
         top_k: int = 10,
-        filters: Optional[Dict[str, Any]] = None,
-    ) -> List[Dict[str, Any]]:
+        filters: dict[str, Any] | None = None,
+        domains: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Combined semantic + keyword search.
         Semantic results get score boost from keyword overlap.
         """
-        semantic_results = self.search(query, top_k=top_k * 2, filters=filters)
+        semantic_results = self.search(
+            query, top_k=top_k * 2, filters=filters, domains=domains
+        )
 
         query_tokens = set(query.lower().split())
         for doc in semantic_results:
@@ -381,71 +533,69 @@ class QdrantVectorStore:
         return semantic_results[:top_k]
 
     def delete_by_source(self, source: str) -> int:
-        """Delete all documents from a specific source."""
+        """Delete all documents from a specific source across all collections."""
         if not self.is_available():
             return 0
 
-        from qdrant_client.models import Filter, FieldCondition, MatchValue, PointIdsList
+        from qdrant_client.models import FieldCondition, Filter, MatchValue, PointIdsList
 
-        try:
-            results = self._client.scroll(
-                collection_name=COLLECTION_NAME,
-                scroll_filter=Filter(
-                    must=[FieldCondition(key="source", match=MatchValue(value=source))]
-                ),
-                limit=10000,
-            )
-            points = [p.id for p in results[0]]
-            if points:
-                self._client.delete(
-                    collection_name=COLLECTION_NAME,
-                    points_selector=PointIdsList(points=points),
+        total_deleted = 0
+        for collection_name in self._existing_collections():
+            try:
+                client = self._require_client()
+                results = client.scroll(
+                    collection_name=collection_name,
+                    scroll_filter=Filter(
+                        must=[FieldCondition(key="source", match=MatchValue(value=source))]
+                    ),
+                    limit=10000,
                 )
-            return len(points)
-        except Exception as e:
-            logger.error(f"Delete failed: {e}")
-            return 0
+                points = [p.id for p in results[0]]
+                if points:
+                    client.delete(
+                        collection_name=collection_name,
+                        points_selector=PointIdsList(points=points),
+                    )
+                total_deleted += len(points)
+            except Exception as e:
+                logger.error(f"Delete failed in {collection_name}: {e}")
+        return total_deleted
 
-    def get_collection_stats(self) -> Dict[str, Any]:
-        """Return collection statistics."""
+    def get_collection_stats(self) -> dict[str, Any]:
+        """Return aggregate statistics across all domain collections."""
         if not self.is_available():
             return {"status": "unavailable"}
 
         try:
-            info = self._client.get_collection(COLLECTION_NAME)
-            points_count = getattr(info, "points_count", 0)
-            vectors_count = getattr(info, "vectors_count", points_count)
-            status_str = getattr(info, "status", "unknown")
-            optimizer = getattr(info, "optimizer_status", "unknown")
-            actual_dim = self._dim
-            try:
-                cfg = getattr(info, "config", None)
-                params = getattr(cfg, "params", None)
-                vectors = getattr(params, "vectors", None)
-                if hasattr(vectors, "size"):
-                    actual_dim = vectors.size
-                elif isinstance(vectors, dict):
-                    first_v = next(iter(vectors.values()), None)
-                    if hasattr(first_v, "size"):
-                        actual_dim = first_v.size
-                elif hasattr(params, "size"):
-                    actual_dim = params.size
-            except Exception:
-                pass
+            client = self._require_client()
+            total_points = 0
+            status_str = "unknown"
+            per_collection = []
+            for name in self._existing_collections():
+                try:
+                    info = client.get_collection(name)
+                    points_count = getattr(info, "points_count", 0) or 0
+                    total_points += points_count
+                    status_str = getattr(info, "status", "unknown")
+                    per_collection.append({
+                        "collection": name,
+                        "total_points": points_count,
+                        "status": str(status_str),
+                    })
+                except Exception as e:
+                    per_collection.append({"collection": name, "total_points": 0, "status": "error", "error": str(e)})
             return {
                 "status": "available",
-                "collection": COLLECTION_NAME,
-                "total_points": points_count,
-                "vectors_size": vectors_count,
+                "collection": LEGACY_COLLECTION,
+                "collections": per_collection,
+                "total_points": total_points,
+                "vectors_size": total_points,
                 "status_str": str(status_str),
-                "optimizer_status": str(optimizer),
+                "optimizer_status": "n/a",
                 "config": {
-                    "dim": actual_dim,
-                    "distance": getattr(
-                        getattr(getattr(info, "config", None) or {}, "params", None),
-                        "distance",
-                        "COSINE",
-                    ),
+                    "dim": self._dim,
+                    "distance": "COSINE",
+                    "domains": QDRANT_COLLECTIONS,
                 },
             }
         except Exception as e:
@@ -453,14 +603,14 @@ class QdrantVectorStore:
 
     def get_all_documents(
         self,
-        category: Optional[str] = None,
+        category: str | None = None,
         limit: int = 1000,
-    ) -> List[Dict[str, Any]]:
-        """Retrieve documents, optionally filtered by category."""
+    ) -> list[dict[str, Any]]:
+        """Retrieve documents across all collections, optionally filtered by category."""
         if not self.is_available():
             return []
 
-        from qdrant_client.models import Filter, FieldCondition, MatchValue
+        from qdrant_client.models import FieldCondition, Filter, MatchValue
 
         scroll_filter = None
         if category:
@@ -469,14 +619,32 @@ class QdrantVectorStore:
             )
 
         try:
-            points, _ = self._client.scroll(
-                collection_name=COLLECTION_NAME,
-                scroll_filter=scroll_filter,
-                limit=limit,
-                with_payload=True,
-                with_vectors=False,
-            )
-            return [p.payload for p in points]
+            client = self._require_client()
+            all_payloads = []
+            for collection_name in self._existing_collections():
+                points, _ = client.scroll(
+                    collection_name=collection_name,
+                    scroll_filter=scroll_filter,
+                    limit=limit,
+                    with_payload=True,
+                    with_vectors=False,
+                )
+                for p in points:
+                    payload = p.payload
+                    if payload is None:
+                        continue
+                    payload["collection"] = collection_name
+                    all_payloads.append(payload)
+
+            seen = set()
+            deduped = []
+            for payload in all_payloads:
+                key = payload.get("doc_id", payload.get("id", ""))
+                if key in seen:
+                    continue
+                seen.add(key)
+                deduped.append(payload)
+            return deduped[:limit]
         except Exception as e:
             logger.error(f"Scroll failed: {e}")
             return []

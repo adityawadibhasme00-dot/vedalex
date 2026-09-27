@@ -1,28 +1,30 @@
 import hashlib
 import json
 import os
-from typing import Optional, Dict, List, Tuple, Any
+from typing import Any
+
 from app.models.canonical import CanonicalIngredient, FormulationFingerprint
 from app.services.multilingual_nlp import MultilingualNLPEngine
+
 
 class IngredientResolverService:
     """
     Canonical botanical ingredient resolution & formulation fingerprinting engine (Section 7.2.1).
     Maps vernacular, Sanskrit, and trade names to standard Ayurvedic Pharmacopoeia of India (API) monographs.
     """
-    _monographs: Dict[str, Dict] = {}
+    _monographs: dict[str, dict] = {}
 
     @classmethod
     def load_data(cls):
         if not cls._monographs:
             monograph_path = os.path.join(os.path.dirname(__file__), "..", "knowledge", "api_monographs.json")
             if os.path.exists(monograph_path):
-                with open(monograph_path, "r", encoding="utf-8") as f:
+                with open(monograph_path, encoding="utf-8") as f:
                     raw_list = json.load(f)
                     cls._monographs = {item["canonical_id"]: item for item in raw_list}
 
     @classmethod
-    def resolve(cls, raw_name: str) -> Optional[CanonicalIngredient]:
+    def resolve(cls, raw_name: str) -> CanonicalIngredient | None:
         cls.load_data()
         normalized_matches = MultilingualNLPEngine.normalize_botanical_mentions(raw_name)
 
@@ -65,7 +67,7 @@ class IngredientResolverService:
     @classmethod
     def generate_formulation_fingerprint(
         cls,
-        ingredients: List[Dict[str, Any]],
+        ingredients: list[dict[str, Any]],
         process_desc: str
     ) -> FormulationFingerprint:
         """

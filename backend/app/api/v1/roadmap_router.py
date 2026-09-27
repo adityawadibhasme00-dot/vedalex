@@ -1,11 +1,12 @@
+
 from fastapi import APIRouter, HTTPException
-from typing import List, Dict, Any
+
 from app.services.passport_engine import PassportEngine
 
 router = APIRouter(prefix="/roadmap", tags=["Regulatory Roadmap"])
 
 @router.get("/{passport_id}")
-async def get_roadmap(passport_id: str):
+def get_roadmap(passport_id: str):
     passport = PassportEngine.get_passport(passport_id)
     if not passport:
         raise HTTPException(status_code=404, detail="Passport not found")

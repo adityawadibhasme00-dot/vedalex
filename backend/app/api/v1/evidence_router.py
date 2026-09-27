@@ -1,19 +1,20 @@
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
-from app.models.evidence import EvidenceItem, EvidenceGapSummary, EvidenceLifecycle
+
+from app.models.evidence import EvidenceGapSummary, EvidenceItem, EvidenceLifecycle
 
 router = APIRouter(prefix="/evidence", tags=["Evidence & Action Engine"])
 
 class EvidenceStatusUpdateRequest(BaseModel):
     status: EvidenceLifecycle
-    supplied_filename: Optional[str] = None
+    supplied_filename: str | None = None
 
 # In-memory store for demonstration
 _evidence_store: dict = {}
 
 @router.get("/{passport_id}", response_model=EvidenceGapSummary)
-async def get_evidence_gaps(passport_id: str):
+def get_evidence_gaps(passport_id: str):
     if passport_id not in _evidence_store:
         items = [
             EvidenceItem(
@@ -78,8 +79,8 @@ async def get_evidence_gaps(passport_id: str):
     )
 
 @router.put("/item/{item_id}/lifecycle", response_model=EvidenceItem)
-async def update_lifecycle(item_id: str, req: EvidenceStatusUpdateRequest):
-    for passport_id, items in _evidence_store.items():
+def update_lifecycle(item_id: str, req: EvidenceStatusUpdateRequest):
+    for _passport_id, items in _evidence_store.items():
         for item in items:
             if item.id == item_id:
                 item.status = req.status

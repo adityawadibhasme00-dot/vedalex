@@ -35,7 +35,7 @@ export default function RedTeamModal({
                 Section 6.7 Pre-Filing Objections Simulator
               </span>
               <h3 className="text-lg font-bold text-slate-900 font-display">
-                "Challenge My Innovation" (Patent Examiner Red-Team)
+                &quot;Challenge My Innovation&quot; (Patent Examiner Red-Team)
               </h3>
             </div>
           </div>

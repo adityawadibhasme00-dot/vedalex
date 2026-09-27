@@ -1,5 +1,7 @@
-from typing import List, Dict, Any
+from typing import Any
+
 from app.models.passport import InnovationPassport
+
 
 class RedTeamModule:
     """
@@ -9,7 +11,7 @@ class RedTeamModule:
     """
 
     @classmethod
-    def challenge_innovation(cls, passport: InnovationPassport) -> Dict[str, Any]:
+    def challenge_innovation(cls, passport: InnovationPassport) -> dict[str, Any]:
         objections = []
 
         # 1. Section 3(p) Traditional Knowledge Objection

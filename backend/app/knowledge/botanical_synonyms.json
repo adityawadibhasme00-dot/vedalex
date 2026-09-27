@@ -68,5 +68,61 @@
     "gujarati": ["તુલસી", "Tulsi"],
     "malayalam": ["തുളസി", "Thulasi"],
     "english": ["Holy Basil", "Sacred Basil", "Tulsi"]
+  },
+  "ING-GUGGULU": {
+    "canonical_id": "ING-GUGGULU",
+    "botanical_name": "Commiphora wightii (Arn.) Bhandari",
+    "sanskrit": ["गुग्गुलु", "गुग्गुल", "पुरम", "Guggulu"],
+    "hindi": ["गुग्गुल", "गुगुल", "Guggul"],
+    "marathi": ["गुग्गुल", "गुगुल", "Guggul"],
+    "tamil": ["குக்கில்", "மகுளம்", "Guggulu", "Mukulam"],
+    "telugu": ["గుగ్గిలము", "Guggilamu"],
+    "kannada": ["ಗುಗ್ಗುಲ", "Guggulu"],
+    "bengali": ["গুগ্গুল", "Guggul"],
+    "gujarati": ["ગુગ્ગળ", "Guggul"],
+    "malayalam": ["കുന്തുരുക്കം", "Guggulu", "Kunturukkam"],
+    "english": ["Guggul", "Gum Guggulu", "Indian Bdellium", "Commiphora"]
+  },
+  "ING-NEEM": {
+    "canonical_id": "ING-NEEM",
+    "botanical_name": "Azadirachta indica A. Juss.",
+    "sanskrit": ["निम्ब", "निंब", "निम्बक", "Nimba"],
+    "hindi": ["नीम", "निब", "Neem"],
+    "marathi": ["कडूनिंब", "लिंब", "बाळंतनिंब", "Limb"],
+    "tamil": ["வேம்பு", "Vembu", "Veppam"],
+    "telugu": ["వేప", "Vepa"],
+    "kannada": ["ಬೇವು", "Bevu"],
+    "bengali": ["নিম", "Nim"],
+    "gujarati": ["લીમડો", "Limdo"],
+    "malayalam": ["വേപ്പ്", "Veppu"],
+    "english": ["Neem", "Indian Lilac", "Margosa", "Azadirachta"]
+  },
+  "ING-SHATAVARI": {
+    "canonical_id": "ING-SHATAVARI",
+    "botanical_name": "Asparagus racemosus Willd.",
+    "sanskrit": ["शतावरी", "शतमूली", "भीरु", "Shatavari"],
+    "hindi": ["शतावरी", "शतमूल", "Satavari", "Satawari"],
+    "marathi": ["शतावरी", "शतमूली", "Satavari"],
+    "tamil": ["சாத்தாவரி", "தண்ணீர்விட்டான்", "Thanneervittan", "Satavari"],
+    "telugu": ["శతావరి", "పిల్లిగడ్డలు", "Pilligaddalu", "Satavari"],
+    "kannada": ["ಶತಾವರಿ", "ಮಜ್ಜಿಗೆಗಡ್ಡೆ", "Majjigegadde", "Shatavari"],
+    "bengali": ["শতমূলী", "শতমূল", "Satamuli"],
+    "gujarati": ["શતાવરી", "આસવેર", "Satavari"],
+    "malayalam": ["ശതാവരി", "Satavari"],
+    "english": ["Shatavari", "Wild Asparagus", "Asparagus root"]
+  },
+  "ING-SARPAGANDHA": {
+    "canonical_id": "ING-SARPAGANDHA",
+    "botanical_name": "Rauvolfia serpentina (L.) Benth. ex Kurz",
+    "sanskrit": ["सर्पगन्धा", "सर्पसुक", "चन्द्रिका", "Sarpagandha"],
+    "hindi": ["सर्पगंधा", "सर्पनाथ", "चन्द्रभागा", "Sarpagandha"],
+    "marathi": ["सर्पगंधा", "चंद्रिका", "Sarpagandha"],
+    "tamil": ["சர்பகந்தி", "சிவமுள்", "சூரியன் குஞ்சுகம்", "Sarpagandhi"],
+    "telugu": ["సర్పగంధ", "పాటాలగరుడ", "Sarpagandha"],
+    "kannada": ["ಸರ್ಪಗಂಧ", "ಪಾರ್ವತಿ ತಾಳಿ", "Sarpagandha"],
+    "bengali": ["সর্পগন্ধা", "সর্পগন্ধ", "Sarpagandha"],
+    "gujarati": ["સર્પગંધા", "ચંદ્રિકા", "Sarpagandha"],
+    "malayalam": ["ശാരിബക്കഷണം", "വത്സനാഭി", "അമലപോരി", "Chuvannakilukiluppa"],
+    "english": ["Indian Snakeroot", "Devil Pepper", "Asrol", "Rauvolfia"]
   }
 }

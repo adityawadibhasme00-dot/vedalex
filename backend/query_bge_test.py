@@ -1,6 +1,6 @@
+import json
 import os
 import sys
-import json
 
 os.environ["IPSAKTI_USE_BGE_M3"] = "1"
 os.environ["IPSAKTI_USE_RERANKER"] = "0"

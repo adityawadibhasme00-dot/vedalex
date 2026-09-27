@@ -1,0 +1,116 @@
+rule_pack_id: "RULE-IN-IP-SUITE"
+jurisdiction: "India"
+authority: "Office of the Controller General of Patents, Designs and Trade Marks (CGPDTM)"
+governing_act: "Trade Marks Act, 1999 | Designs Act, 2000 | Copyright Act, 1957 | G.I. Act, 1999"
+version: "1.0.0"
+rules:
+  - id: "RULE_TM_GENERIC_NAME_BAR"
+    name: "Trademark Distinctiveness Requirement (Section 9)"
+    statute_ref: "Trade Marks Act, 1999"
+    rule_version: "1.0.0"
+    effective_from: "2003-09-15"
+    status: "active"
+    risk_level: "high"
+    requires_human_review: true
+    evidence:
+      source_id: "blueprint_sources_trademarks"
+      locator: "Section 9 (Absolute grounds: absence of distinctive character)"
+      authority: "Trade Marks Act, 1999"
+    explanation_template:
+      en: "A purely generic product name is not distinctive and is barred as an absolute ground of refusal. A coined/fanciful brand increases registrability. Search the Trade Marks Registry before filing."
+      hi: "विशुद्ध रूप से सामान्य (जेनेरिक) उत्पाद नाम में विशिष्टता नहीं होती और यह पंजीकरण के पूर्ण आधार पर अस्वीकृति का कारण बनता है। निर्मित/काल्पनिक ब्रांड नाम पंजीकरण की संभावना बढ़ाता है। दाखिल करने से पहले व्यापार-चिह्न रजिस्ट्री खोज लें।"
+    conditions:
+      - fact_key: "product_name_is_generic"
+        operator: "equals"
+        expected_value: true
+    consequence:
+      category: "Trademark Registration Risk (Generic Name)"
+      requirements:
+        - "Conduct Trade Marks Registry availability search (public search) before filing"
+        - "Adopt a coined / fanciful brandable name evidencing distinctiveness"
+        - "Classify under appropriate Nice class (e.g. Class 5 for ASU drugs/supplements)"
+        - "Service/association marks under section 9(2) still require distinctiveness"
+
+  - id: "RULE_GI_INDIAN_ORIGIN_ELIGIBILITY"
+    name: "Geographical Indication Eligibility Pointer (Section 3)"
+    statute_ref: "Geographical Indications of Goods (Registration and Protection) Act, 1999"
+    rule_version: "1.0.0"
+    effective_from: "1999-12-01"
+    status: "active"
+    risk_level: "low"
+    requires_human_review: true
+    evidence:
+      source_id: "blueprint_sources_gi"
+      locator: "Section 3 (GI application) & Rules 2002"
+      authority: "GI Registry, CGPDTM"
+    explanation_template:
+      en: "Single-origin botanical resources produced in a defined Indian geography with inherent quality linked to origin may qualify for collective/producer GI registration — a formal application by an association/producer group is required."
+      hi: "किसी परिभाषित भारतीय भौगोलिक क्षेत्र में उत्पादित, जिसकी गुणवत्ता उत्पत्ति स्थल से जुड़ी हो, एकल-उत्पत्ति वनस्पति संसाधन सामूहिक/उत्पादक GI पंजीकरण के लिए पात्र हो सकते हैं — किसी संघ/उत्पादक समूह द्वारा औपचारिक आवेदन आवश्यक है।"
+    conditions:
+      - fact_key: "geographic_origin_is_indian"
+        operator: "equals"
+        expected_value: true
+      - fact_key: "product_is_single_ingredient"
+        operator: "equals"
+        expected_value: true
+    consequence:
+      category: "Geographical Indication Potential (Producer/Collective Application)"
+      requirements:
+        - "Confirm biological resource is grown/produced in the defined Indian geographical region"
+        - "Form a producer association / society eligible to file a GI application"
+        - "File Form GI-1 with statement of case under GI Rules, 2002"
+        - "Distinguish from trademark rights; GI protects origin-linked quality, not a brand"
+
+  - id: "RULE_DESIGN_NOVEL_CONFIGURATION"
+    name: "Design Registration for Novel Physical Configuration (Section 4)"
+    statute_ref: "Designs Act, 2000"
+    rule_version: "1.0.0"
+    effective_from: "2001-05-11"
+    status: "active"
+    risk_level: "low"
+    requires_human_review: false
+    evidence:
+      source_id: "blueprint_sources_designs"
+      locator: "Section 4 (novelty) & Section 2(d) (design definition)"
+      authority: "Designs Act, 2000"
+    explanation_template:
+      en: "A novel physical configuration of the product or its packaging (shape, pattern, ornament) may be registrable as an industrial design for 10 (+5 renewable) years, provided it is not purely functional."
+      hi: "उत्पाद या उसकी पैकेजिंग का नवीन भौतिक विन्यास (आकार, पैटर्न, अलंकरण) 10 (+5 नवीकरणीय) वर्षों के लिए औद्योगिक डिज़ाइन के रूप में पंजीकृत हो सकता है, बशर्ते यह विशुद्ध रूप से कार्यात्मक न हो।"
+    conditions:
+      - fact_key: "is_novel_ratio_or_form"
+        operator: "equals"
+        expected_value: true
+    consequence:
+      category: "Design Registration Potential"
+      requirements:
+        - "Confirm the shape/configuration is novel and not dictated solely by function"
+        - "File design application within 6 months of first publication/disclosure"
+        - "Term: 10 years, renewable for 5 more years under Designs Act, 2000"
+        - "Registering a design bars late patent claims on the same shape"
+
+  - id: "RULE_COPYRIGHT_LABEL_LITERATURE"
+    name: "Copyright in Product Label, Literature and Art (Section 13)"
+    statute_ref: "Copyright Act, 1957"
+    rule_version: "1.0.0"
+    effective_from: "1957-01-21"
+    status: "active"
+    risk_level: "low"
+    requires_human_review: false
+    evidence:
+      source_id: "blueprint_sources_copyright"
+      locator: "Section 13 (works in which copyright subsists) & Section 14"
+      authority: "Copyright Act, 1957"
+    explanation_template:
+      en: "Original labels, artwork, marketing literature and product compendiums receive automatic copyright protection from creation — no registration is mandatory, though registration eases enforcement."
+      hi: "मूल लेबल, कलाकृति, विपणन साहित्य और उत्पाद संग्रह को रचना से ही स्वतः कॉपीराइट संरक्षण मिलता है — अनिवार्य पंजीकरण नहीं है, परंतु पंजीकरण प्रवर्तन को आसान बनाता है।"
+    conditions:
+      - fact_key: "has_traditional_origin_claim"
+        operator: "equals"
+        expected_value: true
+    consequence:
+      category: "Copyright Protection Applicable (Automatic)"
+      requirements:
+        - "Assert copyright ownership in label copy, product literature and packaging artwork"
+        - "Optional registration with Copyright Office strengthens evidentiary value"
+        - "Avoid copying competitor Ayurveda literature verbatim (infringement risk under Section 51)"
+        - "Document authorship + creation date to establish first-use evidence"

@@ -45,9 +45,9 @@ export function exportInnovationPassportPDF(passport: InnovationPassport, findin
   doc.setFontSize(8);
   doc.setTextColor(241, 245, 249);
   passport.ingredients.forEach((ing, i) => {
-    doc.text(`${i + 1}. ${ing.raw_name} (${ing.botanical_name || 'Withania somnifera'}) — ${ing.quantity_percentage}%`, 18, y);
+    doc.text(`${i + 1}. ${ing.raw_name} (${ing.botanical_name || 'Botanical name pending'}) — ${ing.quantity_percentage}%`, 18, y);
     doc.setTextColor(148, 163, 184);
-    doc.text(`   API ID: ${ing.api_monograph_id || 'API-VOL1-008'} | Part: ${ing.plant_part} | Solvent: ${ing.preparation_method}`, 18, y + 4);
+    doc.text(`   API ID: ${ing.api_monograph_id || 'Not mapped'} | Part: ${ing.plant_part} | Solvent: ${ing.preparation_method}`, 18, y + 4);
     doc.setTextColor(241, 245, 249);
     y += 10;
   });

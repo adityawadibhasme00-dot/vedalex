@@ -1,8 +1,9 @@
-from typing import List, Dict, Any, Optional
 from collections import Counter
+from typing import Any
+
 from app.rag.faiss_retriever import FAISSIndex
-from app.services.retrieval_engine import HybridRetrievalEngine
 from app.rag.kb import find_relevant_images
+from app.services.retrieval_engine import HybridRetrievalEngine
 
 GUIDANCE = (
     "The above is drawn directly from the authoritative sources retrieved for this question "
@@ -11,13 +12,8 @@ GUIDANCE = (
 )
 
 NO_EVIDENCE_ANSWER = (
-    "Mujhe nahi pata — mere knowledge base mein is sawal ka jawab dene ke liye "
-    "koi verified document nahi mila (I don't know; no verified document was found "
-    "in my knowledge base to answer this safely). "
-    "Main sirf un official documents se jawab deta hoon jo corpus mein hain (TKDL, WIPO, "
-    "Patents Act, AYUSH, WHO, PubMed, NCISM). Agar aapka answer derive ho sakta hai toh "
-    "us document ko knowledge base mein add karke re-index karein, phir dobara poochhein. "
-    "Main guess nahi karta, aur na hi galat jawab banata hoon."
+    "No verified information found in the current IP-SAKTI knowledge base. "
+    "Please refine the query or consult an IP facilitator."
 )
 
 STOPWORDS = {
@@ -25,13 +21,13 @@ STOPWORDS = {
     "was", "be", "been", "by", "at", "from", "as", "it", "its", "this", "that", "what",
     "which", "does", "do", "how", "my", "i", "we", "you", "would", "please", "help",
     "about", "can", "not", "no", "yes", "me", "us", "them", "their", "they", "there",
-    "then", "than", "if", "when", "will", "all", "do", "does", "did", "need",
-    "from", "for", "i", "me", "my", "our", "you", "your", "its", "am", "are",
+    "then", "than", "if", "when", "will", "all", "did", "need",
+    "our", "your", "am",
 }
 
 
 class AICopilot:
-    _faiss_index: Optional[FAISSIndex] = None
+    _faiss_index: FAISSIndex | None = None
 
     @classmethod
     def get_index(cls) -> FAISSIndex:
@@ -45,16 +41,16 @@ class AICopilot:
         cls._faiss_index = None
 
     @classmethod
-    def query(cls, question: str, passport_context: Optional[Dict] = None) -> Dict[str, Any]:
+    def query(cls, question: str, passport_context: dict | None = None) -> dict[str, Any]:
         index = cls.get_index()
         retrieved = index.search(question, top_k=8)
 
         # Statutory retrieval refuses (empty result) below the min_score floor.
         statutory = HybridRetrievalEngine.search_passages(question, top_k=3, min_score=2.5)
 
-        rank_query = set(question.lower().split())
+        set(question.lower().split())
 
-        sources: List[Dict[str, Any]] = []
+        sources: list[dict[str, Any]] = []
         for doc in retrieved:
             sources.append(cls._build_source(doc, kind="knowledge"))
         for cit in statutory:
@@ -86,7 +82,7 @@ class AICopilot:
         if not grounded:
             answers_unavailable = NO_EVIDENCE_ANSWER
             base_conf = 0.08
-            used_sources: List[Dict[str, Any]] = []
+            used_sources: list[dict[str, Any]] = []
         else:
             answers_unavailable = cls._generate_answer(question, sources[:5])
             denominator = max(1, len(meaningful))
@@ -107,7 +103,7 @@ class AICopilot:
         }
 
     @classmethod
-    def _build_source(cls, doc: Dict[str, Any], kind: str) -> Dict[str, Any]:
+    def _build_source(cls, doc: dict[str, Any], kind: str) -> dict[str, Any]:
         return {
             "content": doc.get("content", "")[:600],
             "source": doc.get("source", "unknown"),
@@ -122,12 +118,12 @@ class AICopilot:
         }
 
     @classmethod
-    def _build_charts(cls, question: str, sources: List[Dict[str, Any]], coverage_ratio: float = 0.0) -> List[Dict[str, Any]]:
+    def _build_charts(cls, question: str, sources: list[dict[str, Any]], coverage_ratio: float = 0.0) -> list[dict[str, Any]]:
         import zlib
-        charts: List[Dict[str, Any]] = []
+        charts: list[dict[str, Any]] = []
         seed = zlib.crc32((question or "generic").encode("utf-8"))
 
-        def pick(variants: List[str]) -> str:
+        def pick(variants: list[str]) -> str:
             return variants[seed % len(variants)]
 
         if sources:
@@ -207,7 +203,7 @@ class AICopilot:
         return charts
 
     @classmethod
-    def _generate_answer(cls, question: str, sources: List[Dict[str, Any]]) -> str:
+    def _generate_answer(cls, question: str, sources: list[dict[str, Any]]) -> str:
         q_lower = question.lower()
 
         if not sources:
@@ -251,7 +247,7 @@ def os_label(path: str) -> str:
     return base if base else str(path)
 
 
-def _format_citation(source: Dict[str, Any]) -> str:
+def _format_citation(source: dict[str, Any]) -> str:
     parts = []
     act = source.get("act_title") or source.get("title") or ""
     if act:

@@ -1,7 +1,9 @@
 import os
 import uuid
-from fastapi import APIRouter, UploadFile, File, HTTPException
-from typing import Optional
+from typing import cast
+
+from fastapi import APIRouter, File, HTTPException, UploadFile
+
 from app.core.sandboxing import DocumentSanitizer
 
 router = APIRouter(prefix="/upload", tags=["File Upload"])
@@ -9,12 +11,13 @@ router = APIRouter(prefix="/upload", tags=["File Upload"])
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "..", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-ALLOWED_EXTENSIONS = {".pdf", ".docx", ".ppt", ".pptx", ".txt", ".png", ".jpg", ".jpeg"}
+ALLOWED_EXTENSIONS = {".pdf", ".docx", ".ppt", ".pptx", ".txt", ".csv", ".png", ".jpg", ".jpeg"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 @router.post("/disclosure-check")
 async def upload_disclosure_check(file: UploadFile = File(...)):
-    ext = os.path.splitext(file.filename)[1].lower()
+    filename = cast(str, file.filename)
+    ext = os.path.splitext(filename)[1].lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=400, detail=f"File type {ext} not allowed. Supported: {', '.join(ALLOWED_EXTENSIONS)}")
 
@@ -23,7 +26,7 @@ async def upload_disclosure_check(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="File size exceeds 10MB limit")
 
     file_id = str(uuid.uuid4())[:8]
-    safe_filename = f"{file_id}_{file.filename}"
+    safe_filename = f"{file_id}_{filename}"
     filepath = os.path.join(UPLOAD_DIR, safe_filename)
     with open(filepath, "wb") as f:
         f.write(content)
@@ -31,6 +34,9 @@ async def upload_disclosure_check(file: UploadFile = File(...)):
     extracted_text = ""
     if ext == ".txt":
         extracted_text = content.decode("utf-8", errors="ignore")
+    elif ext == ".csv":
+        from app.ingestion.fetchers import csv_to_text
+        extracted_text = csv_to_text(content)
     elif ext == ".pdf":
         try:
             import fitz
@@ -47,9 +53,15 @@ async def upload_disclosure_check(file: UploadFile = File(...)):
         except Exception:
             extracted_text = "[DOCX content - install python-docx for extraction]"
     else:
-        extracted_text = "[Image file uploaded - OCR available with EasyOCR]"
+        from app.ingestion.fetchers import ocr_image
+        ocr_text = ocr_image(content)
+        extracted_text = (
+            ocr_text
+            if ocr_text
+            else "[Image file uploaded - OCR unavailable (install EasyOCR + models)]"
+        )
 
-    cleaned_text, threats = DocumentSanitizer.sanitize(extracted_text, file.filename)
+    cleaned_text, threats = DocumentSanitizer.sanitize(extracted_text, filename)
 
     return {
         "status": "success",

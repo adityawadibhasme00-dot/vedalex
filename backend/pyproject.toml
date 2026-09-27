@@ -1,0 +1,83 @@
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-ra --strict-config --strict-markers"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+  "unit: isolated component or function tests",
+  "integration: tests requiring application and infrastructure integration",
+  "e2e: reserved for complete system tests",
+  "security: security regression tests",
+  "performance: local performance benchmark tests",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["app"]
+
+[tool.coverage.report]
+fail_under = 80.0
+precision = 1
+show_missing = true
+skip_covered = false
+exclude_also = [
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+exclude = [
+  ".pytest_cache",
+  "venv",
+  "data",
+  "exports",
+  "uploads",
+  "app/rag/faiss_index",
+]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "B", "UP", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+"app/main.py" = ["E402"]
+"run.py" = ["E402"]
+"reindex_bge.py" = ["E402"]
+"reindex_omics.py" = ["E402"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+  "fastapi.Depends",
+  "fastapi.Query",
+  "fastapi.Path",
+  "fastapi.File",
+  "fastapi.Form",
+  "fastapi.Header",
+  "fastapi.Cookie",
+  "fastapi.Body",
+  "fastapi.UploadFile",
+  "fastapi.Security",
+  "fastapi.HTTPBearer",
+  "fastapi.HTTPBasic",
+  "fastapi.security.HTTPBearer",
+  "fastapi.security.HTTPBasic",
+  "fastapi.security.APIKeyHeader",
+  "fastapi.security.APIKeyQuery",
+  "fastapi.security.OAuth2PasswordBearer",
+]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+check_untyped_defs = true
+explicit_package_bases = true
+namespace_packages = true
+exclude = [
+  "venv",
+  "data",
+  "exports",
+  "uploads",
+]

@@ -1,11 +1,12 @@
-from app.services.passport_engine import PassportEngine
-from app.services.rule_engine import DeterministicRuleEngine
-from app.services.citation_validator import CitationValidator
-from app.services.what_if_engine import WhatIfSimulatorEngine
-from app.services.red_team_module import RedTeamModule
-from app.services.provenance_engine import ProvenanceEngine
-from app.services.expert_handoff_service import ExpertHandoffService
 from app.models.handoff import ExpertHandoffRequest
+from app.services.citation_validator import CitationValidator
+from app.services.expert_handoff_service import ExpertHandoffService
+from app.services.passport_engine import PassportEngine
+from app.services.provenance_engine import ProvenanceEngine
+from app.services.red_team_module import RedTeamModule
+from app.services.rule_engine import DeterministicRuleEngine
+from app.services.what_if_engine import WhatIfSimulatorEngine
+
 
 def test_complete_sih_10_step_demonstration_workflow():
     """

@@ -13,11 +13,12 @@ Why BGE-M3?
   - Produces both dense + sparse embeddings for hybrid search
 """
 
-import os
 import hashlib
-import numpy as np
-from typing import List, Optional
 import logging
+import os
+from typing import Optional
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +98,7 @@ class EmbeddingEngine:
             "Set IPSAKTI_USE_BGE_M3=1 or provide OPENAI_API_KEY for real embeddings."
         )
 
-    def embed(self, texts: List[str]) -> np.ndarray:
+    def embed(self, texts: list[str]) -> np.ndarray:
         """Embed a batch of texts and return (N, dim) float32 array."""
         if self._provider == "bge-m3" and self._model is not None:
             return self._embed_bge(texts)
@@ -110,8 +111,11 @@ class EmbeddingEngine:
         """Embed a single query string. Returns (1, dim) array."""
         return self.embed([query])
 
-    def _embed_bge(self, texts: List[str]) -> np.ndarray:
-        embeddings = self._model.encode(
+    def _embed_bge(self, texts: list[str]) -> np.ndarray:
+        model = self._model
+        if model is None:
+            raise RuntimeError("BGE-M3 embedding model is not loaded")
+        embeddings = model.encode(
             texts,
             normalize_embeddings=True,
             show_progress_bar=False,
@@ -119,13 +123,16 @@ class EmbeddingEngine:
         )
         return np.array(embeddings, dtype=np.float32)
 
-    def _embed_openai(self, texts: List[str]) -> np.ndarray:
+    def _embed_openai(self, texts: list[str]) -> np.ndarray:
         """OpenAI API has a batch limit of 2048 texts."""
+        client = self._openai_client
+        if client is None:
+            raise RuntimeError("OpenAI embedding client is not initialised")
         all_embeddings = []
         batch_size = 200
         for i in range(0, len(texts), batch_size):
             batch = texts[i:i + batch_size]
-            response = self._openai_client.embeddings.create(
+            response = client.embeddings.create(
                 model="text-embedding-3-large",
                 input=batch,
             )
@@ -148,5 +155,5 @@ class EmbeddingEngine:
         norm = np.linalg.norm(vec)
         return vec / norm if norm > 0 else vec
 
-    def _embed_hashing(self, texts: List[str]) -> np.ndarray:
+    def _embed_hashing(self, texts: list[str]) -> np.ndarray:
         return np.array([self._hash_embedding(t) for t in texts], dtype=np.float32)

@@ -6,3 +6,6 @@ export { StatCard } from './StatCard';
 export { Toast } from './Toast';
 export { PageHeader } from './PageHeader';
 export { ScoreRing } from './ScoreRing';
+export { SelectOrOther } from './SelectOrOther';
+export { NavItem } from './NavItem';
+export { JurisdictionToggle } from './JurisdictionToggle';

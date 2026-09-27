@@ -1,5 +1,6 @@
 from app.core.sandboxing import DocumentSanitizer
 
+
 def test_adversarial_prompt_injection_stripping():
     malicious_input = (
         "This product is an herbal formulation of Ashwagandha 500mg. "

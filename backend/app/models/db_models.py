@@ -1,8 +1,11 @@
-from sqlalchemy import Column, String, Integer, Float, Text, ForeignKey, DateTime, JSON, Boolean
+import uuid
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
 from app.core.database import Base
-import uuid
+
 
 def generate_uuid():
     return str(uuid.uuid4())
@@ -130,6 +133,9 @@ class ChatHistory(Base):
     response = Column(Text, nullable=False)
     sources = Column(JSON, default=list)
     confidence = Column(Float, default=0.0)
+    consent_record = Column(Boolean, default=False, nullable=False)
+    query_hash = Column(String(64), nullable=True, index=True)
+    retention_until = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="chat_history")
@@ -151,4 +157,109 @@ class OpportunityAnalysis(Base):
     status = Column(String(50), default="Moderate")
     recommendations = Column(JSON, default=list)
     snapshot = Column(JSON, default=dict)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class AuditLogEntry(Base):
+    """Append-only, hash-chained audit log (DPDP accountability, B4).
+
+    Each entry links to its predecessor via ``prev_hash``; ``entry_hash``
+    covers the previous hash, timestamp, event type, actor hash and payload,
+    so any tampering breaks verification. Stores hashes and metadata only —
+    never raw personal data.
+    """
+
+    __tablename__ = "audit_log"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ts = Column(String(40), nullable=False)
+    event_type = Column(String(64), nullable=False, index=True)
+    actor_hash = Column(String(64), nullable=False)
+    payload = Column(Text, nullable=False)
+    prev_hash = Column(String(64), nullable=False)
+    entry_hash = Column(String(64), nullable=False, unique=True)
+
+
+class LawSourceState(Base):
+    """Law-Change Sentinel state: last content hash + staleness per source."""
+
+    __tablename__ = "law_source_states"
+
+    source_id = Column(String(64), primary_key=True)
+    url = Column(String(500), nullable=False)
+    content_hash = Column(String(64), nullable=True)
+    last_checked_at = Column(String(40), nullable=True)
+    changed_at = Column(String(40), nullable=True)
+    last_status = Column(String(16), default="never", nullable=False)
+    last_error = Column(String(300), default="", nullable=False)
+    change_count = Column(Integer, default=0, nullable=False)
+    stale = Column(Boolean, default=False, nullable=False)
+    needs_reembed = Column(Boolean, default=False, nullable=False)
+
+class WatchProfile(Base):
+    """A2 - saved formulation profile monitored for new prior art."""
+
+    __tablename__ = "watch_profiles"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    user_id = Column(String, nullable=False, index=True)
+    passport_id = Column(String, ForeignKey("innovation_passports.id"), nullable=True)
+    title = Column(String(200), nullable=False)
+    ingredients = Column(JSON, default=list, nullable=False)
+    indication = Column(String(200), default="", nullable=False)
+    classical_ref = Column(String(300), default="", nullable=False)
+    status = Column(String(16), default="active", nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    last_checked_at = Column(String(40), nullable=True)
+
+
+class WatchHit(Base):
+    """A2 - one prior-art match found for a watch profile."""
+
+    __tablename__ = "watch_hits"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    profile_id = Column(String, ForeignKey("watch_profiles.id"), nullable=False, index=True)
+    patent_no = Column(String(64), nullable=False)
+    title = Column(String(400), default="", nullable=False)
+    match_kind = Column(String(16), default="partial", nullable=False)
+    overlap = Column(String(400), default="", nullable=False)
+    advice = Column(String(600), default="", nullable=False)
+    urgency = Column(String(8), default="LOW", nullable=False)
+    source_url = Column(String(500), default="", nullable=False)
+    detected_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class TrackedDeadline(Base):
+    """A3 - renewal / filing deadline with a reminder ladder."""
+
+    __tablename__ = "tracked_deadlines"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    user_id = Column(String, nullable=False, index=True)
+    kind = Column(String(32), nullable=False)
+    reference = Column(String(120), default="", nullable=False)
+    title = Column(String(200), default="", nullable=False)
+    due_date = Column(String(20), nullable=False, index=True)
+    reminder_days = Column(JSON, default=list, nullable=False)
+    status = Column(String(16), default="pending", nullable=False)
+    notes = Column(String(600), default="", nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class GeneratedDocumentDB(Base):
+    """A4/A6 - generated dossier or prefilled form (DRAFT until human sign-off)."""
+
+    __tablename__ = "generated_documents"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    passport_id = Column(String, ForeignKey("innovation_passports.id"), nullable=False, index=True)
+    user_id = Column(String, nullable=True, index=True)
+    kind = Column(String(24), nullable=False)
+    form_code = Column(String(16), default="", nullable=False)
+    doc_format = Column(String(8), default="json", nullable=False)
+    status = Column(String(16), default="DRAFT", nullable=False)
+    content_hash = Column(String(64), nullable=False, index=True)
+    citation_count = Column(Integer, default=0, nullable=False)
+    missing_field_count = Column(Integer, default=0, nullable=False)
+    summary = Column(JSON, default=dict, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

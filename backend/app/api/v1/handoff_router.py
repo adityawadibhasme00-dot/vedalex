@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
+
 from app.models.handoff import ExpertHandoffRequest, ExpertHandoffResponse
 from app.services.expert_handoff_service import ExpertHandoffService
 from app.services.passport_engine import PassportEngine
@@ -7,7 +8,7 @@ from app.services.passport_engine import PassportEngine
 router = APIRouter(prefix="/expert-handoff", tags=["Expert Handoff Bridge"])
 
 @router.post("/dispatch", response_model=ExpertHandoffResponse)
-async def dispatch_expert_handoff(req: ExpertHandoffRequest):
+def dispatch_expert_handoff(req: ExpertHandoffRequest):
     if not req.explicit_dpdp_consent or not req.liability_boundary_acknowledged:
         raise HTTPException(
             status_code=400,
@@ -17,7 +18,7 @@ async def dispatch_expert_handoff(req: ExpertHandoffRequest):
 
 
 @router.get("/dossier/{ticket_id}.pdf", response_class=HTMLResponse)
-async def get_handoff_dossier(ticket_id: str):
+def get_handoff_dossier(ticket_id: str):
     """Serve the handoff dossier for a dispatched ticket.
 
     The dossier is regenerated on demand from the origin passport so the

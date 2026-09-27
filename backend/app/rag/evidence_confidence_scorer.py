@@ -15,11 +15,11 @@ Signals combined:
   7. Evidence freshness (current statutes beat superseded ones)
 """
 
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
-from datetime import datetime
 import logging
 import re
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -36,13 +36,13 @@ class ConfidenceSignal:
 class EvidenceConfidence:
     overall: float
     band: str  # "HIGH", "MEDIUM", "LOW", "INSUFFICIENT"
-    signals: List[ConfidenceSignal]
+    signals: list[ConfidenceSignal]
     supported_ratio: float
     citation_validity: float
     retrieval_coverage: float
     source_authority: float
     source_diversity: float
-    rule_engine_pass: Optional[bool]
+    rule_engine_pass: bool | None
     source_freshness: float = 0.0
 
 
@@ -71,7 +71,7 @@ _AUTHORITY_SCORES = {
 }
 
 
-def _source_authority_score(sources: List[Dict[str, Any]]) -> float:
+def _source_authority_score(sources: list[dict[str, Any]]) -> float:
     """Compute average authority score across sources."""
     if not sources:
         return 0.0
@@ -103,7 +103,7 @@ def _source_authority_score(sources: List[Dict[str, Any]]) -> float:
     return sum(scores) / len(scores) if scores else 0.0
 
 
-def _source_diversity_score(sources: List[Dict[str, Any]]) -> float:
+def _source_diversity_score(sources: list[dict[str, Any]]) -> float:
     """Measure how many distinct source categories are represented."""
     if not sources:
         return 0.0
@@ -118,7 +118,7 @@ def _source_diversity_score(sources: List[Dict[str, Any]]) -> float:
 _FRESHNESS_FIELDS = ("effective_date", "updated_at", "published_date", "date", "year")
 
 
-def _parse_source_year(source: Dict[str, Any]) -> Optional[int]:
+def _parse_source_year(source: dict[str, Any]) -> int | None:
     """Extract a 4-digit year from the first available date-ish field."""
     for field in _FRESHNESS_FIELDS:
         val = source.get(field)
@@ -138,7 +138,7 @@ def _parse_source_year(source: Dict[str, Any]) -> Optional[int]:
     return None
 
 
-def _source_freshness_score(sources: List[Dict[str, Any]]) -> float:
+def _source_freshness_score(sources: list[dict[str, Any]]) -> float:
     """Freshness of dated sources: current = 1.0, < 2 years = 0.9, else = 0.5.
 
     Undated sources are neutral (0.7) so absence of a date never tanks
@@ -146,7 +146,7 @@ def _source_freshness_score(sources: List[Dict[str, Any]]) -> float:
     if not sources:
         return 0.0
     current_year = datetime.utcnow().year
-    scores: List[float] = []
+    scores: list[float] = []
     for s in sources:
         year = _parse_source_year(s)
         if year is None:
@@ -163,7 +163,7 @@ def _source_freshness_score(sources: List[Dict[str, Any]]) -> float:
 
 
 def _compute_overall(
-    signals: List[ConfidenceSignal],
+    signals: list[ConfidenceSignal],
 ) -> float:
     """Weighted average of all signals."""
     total_weight = sum(s.weight for s in signals)
@@ -185,11 +185,11 @@ def _score_to_band(score: float) -> str:
 
 
 def compute_evidence_confidence(
-    sources: List[Dict[str, Any]],
-    grounding: Optional[Dict[str, Any]] = None,
+    sources: list[dict[str, Any]],
+    grounding: dict[str, Any] | None = None,
     supported_ratio: float = 0.0,
     citation_validity: float = 0.0,
-    rule_engine_pass: Optional[bool] = None,
+    rule_engine_pass: bool | None = None,
 ) -> EvidenceConfidence:
     """
     Compute composite Evidence Confidence from all available signals.
@@ -204,7 +204,7 @@ def compute_evidence_confidence(
     Returns:
       EvidenceConfidence with overall score, band, and per-signal breakdown.
     """
-    signals: List[ConfidenceSignal] = []
+    signals: list[ConfidenceSignal] = []
 
     # 1. Retrieval coverage
     retrieval_cov = 0.0

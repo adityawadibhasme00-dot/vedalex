@@ -1,10 +1,12 @@
+import glob
 import json
 import os
 import re
-import glob
-from typing import List, Dict, Any, Optional
+from typing import Any
+
 from app.models.regulatory import StatutoryCitation
-from app.rag.kb import BACKEND_ROOT, _parse_metadata_headers, FOLDER_SOURCE_META
+from app.rag.kb import BACKEND_ROOT, FOLDER_SOURCE_META, _parse_metadata_headers
+
 
 class HybridRetrievalEngine:
     """
@@ -19,7 +21,7 @@ class HybridRetrievalEngine:
     If a query returns no passage above the minimum score, callers MUST refuse to
     answer instead of letting an LLM guess (zero-hallucination contract).
     """
-    _passages_db: List[Dict[str, Any]] = []
+    _passages_db: list[dict[str, Any]] = []
     _loaded = False
 
     #-------------------------------------------------------------------------
@@ -34,7 +36,7 @@ class HybridRetrievalEngine:
 
         gazette_path = os.path.join(os.path.dirname(__file__), "..", "knowledge", "acts_and_gazettes.json")
         if os.path.exists(gazette_path):
-            with open(gazette_path, "r", encoding="utf-8") as f:
+            with open(gazette_path, encoding="utf-8") as f:
                 data = json.load(f)
             if isinstance(data, list):
                 cls._passages_db.extend(data)
@@ -54,7 +56,7 @@ class HybridRetrievalEngine:
             abs_path = os.path.join(knowledge_dir, kfile)
             if abs_path == gazette_path or not os.path.exists(abs_path):
                 continue
-            with open(abs_path, "r", encoding="utf-8") as f:
+            with open(abs_path, encoding="utf-8") as f:
                 data = json.load(f)
             if isinstance(data, list):
                 for item in data:
@@ -84,7 +86,7 @@ class HybridRetrievalEngine:
     @classmethod
     def _register_text_passage(cls, filepath: str):
         try:
-            with open(filepath, "r", encoding="utf-8", errors="replace") as f:
+            with open(filepath, encoding="utf-8", errors="replace") as f:
                 content = f.read()
         except Exception:
             return
@@ -113,7 +115,7 @@ class HybridRetrievalEngine:
         })
 
     @classmethod
-    def add_passages(cls, passages: List[Dict[str, Any]]):
+    def add_passages(cls, passages: list[dict[str, Any]]):
         cls.load_database()
         cls._passages_db.extend(passages)
 
@@ -124,10 +126,10 @@ class HybridRetrievalEngine:
     def search_passages(
         cls,
         query: str,
-        jurisdiction: Optional[str] = None,
+        jurisdiction: str | None = None,
         top_k: int = 3,
         min_score: float = 1.0,
-    ) -> List[StatutoryCitation]:
+    ) -> list[StatutoryCitation]:
         cls.load_database()
         query_tokens = set(re.findall(r'\w+', query.lower()))
         if not query_tokens:
@@ -164,7 +166,7 @@ class HybridRetrievalEngine:
         top_items = scored_results[:top_k]
 
         citations = []
-        for score, neg_rank, idx, item in top_items:
+        for score, _neg_rank, _idx, item in top_items:
             if score < min_score:
                 continue
             citations.append(StatutoryCitation(
@@ -180,10 +182,9 @@ class HybridRetrievalEngine:
         return citations
 
     @classmethod
-    def resolve_conflict(cls, citations: List[StatutoryCitation]) -> StatutoryCitation:
+    def resolve_conflict(cls, citations: list[StatutoryCitation]) -> StatutoryCitation | None:
         """Legal Hierarchy Resolver: when several jurisdictions/authorities answer the
         same question, the highest-authority passage (lowest authority_rank) wins."""
         if not citations:
-            from app.models.regulatory import StatutoryCitation as SC
             return None
         return min(citations, key=lambda c: c.authority_rank)

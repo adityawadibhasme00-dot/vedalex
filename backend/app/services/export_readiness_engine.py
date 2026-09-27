@@ -1,17 +1,17 @@
 import json
 import os
-from typing import Dict, List, Any, Set
+from typing import Any
 
 from app.models.intelligence import (
+    ExportGap,
     ExportReadinessResponse,
     MarketReadinessItem,
-    ExportGap,
 )
-from app.services.passport_engine import PassportEngine
 from app.services.claim_safety_engine import ClaimSafetyEngine
 from app.services.evidence_quality_engine import EvidenceQualityEngine
-from app.services.product_classifier import ProductClassifier
 from app.services.ingredient_resolver import IngredientResolverService
+from app.services.passport_engine import PassportEngine
+from app.services.product_classifier import ProductClassifier
 
 _KNOWLEDGE = os.path.join(os.path.dirname(__file__), "..", "knowledge")
 
@@ -24,7 +24,7 @@ class ExportReadinessEngine:
     Deterministic and explainable — every gap carries an action and a source.
     """
 
-    _requirements: List[Dict[str, Any]] = []
+    _requirements: list[dict[str, Any]] = []
 
     DISCLAIMER = (
         "Export readiness is a deterministic planning score, not an approval. Requirements and authorities must be "
@@ -36,12 +36,12 @@ class ExportReadinessEngine:
         if not cls._requirements:
             path = os.path.join(_KNOWLEDGE, "export_market_requirements.json")
             if os.path.exists(path):
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     cls._requirements = json.load(f)
 
     @classmethod
-    def _resolved_status(cls, rule_key: str, ctx: Dict[str, Any]) -> str:
-        key_map: Dict[str, str] = {
+    def _resolved_status(cls, rule_key: str, ctx: dict[str, Any]) -> str:
+        key_map: dict[str, str] = {
             "requirement_satisfied": "satisfied",
             "requirement_partial": "partial",
             "requirement_missing": "missing",
@@ -91,8 +91,8 @@ class ExportReadinessEngine:
             for cell in ing.evidence_ladder
         )
 
-        all_ndi_old: Set[str] = set()
-        all_monographed: Set[str] = set()
+        all_ndi_old: set[str] = set()
+        all_monographed: set[str] = set()
         for ing in passport.ingredients:
             if not ing.canonical_id:
                 continue
@@ -104,7 +104,7 @@ class ExportReadinessEngine:
                     all_monographed.add(ing.canonical_id)
         resolved_set = {ing.canonical_id for ing in passport.ingredients if ing.canonical_id}
 
-        ctx: Dict[str, Any] = {
+        ctx: dict[str, Any] = {
             "claims_safe": "satisfied" if claim_analysis.overall_color == "green" else ("partial" if claim_analysis.overall_color == "yellow" else "missing"),
             "claims_structure_only": "satisfied" if all(c.risk_color == "green" for c in claim_analysis.claims) else ("partial" if claim_analysis.overall_color == "yellow" else "missing"),
             "quality_high": "satisfied" if quality_pct >= 60 else ("partial" if quality_pct >= 40 else "missing"),
@@ -117,9 +117,9 @@ class ExportReadinessEngine:
             "pathway_food": "satisfied" if pc.pathway_category in ("ayurveda_aahara", "nutraceutical") else "missing",
         }
 
-        markets_out: List[MarketReadinessItem] = []
+        markets_out: list[MarketReadinessItem] = []
         for market_def in cls._requirements:
-            gaps: List[ExportGap] = []
+            gaps: list[ExportGap] = []
             satisfied: int = 0
             for req in market_def.get("requirements", []):
                 status = cls._resolved_status(req["rule_key"], ctx)
@@ -163,7 +163,7 @@ class ExportReadinessEngine:
             f"tests and claim substantiation."
         )
 
-        next_actions: List[str] = []
+        next_actions: list[str] = []
         top_gap_areas = []
         for m in markets_out:
             missing = [g.area for g in m.gaps if g.status == "missing"]

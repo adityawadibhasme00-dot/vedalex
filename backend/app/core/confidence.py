@@ -1,7 +1,7 @@
-from enum import Enum
-from typing import Dict, Any, List
+from enum import StrEnum
 
-class ConfidenceBand(str, Enum):
+
+class ConfidenceBand(StrEnum):
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
     LOW = "LOW"
@@ -16,7 +16,7 @@ class ConfidenceEvaluator:
     @staticmethod
     def calculate(
         rule_satisfied: bool,
-        missing_critical_facts: List[str],
+        missing_critical_facts: list[str],
         citation_count: int,
         canonical_resolution_confidence: float,
         has_primary_statute: bool

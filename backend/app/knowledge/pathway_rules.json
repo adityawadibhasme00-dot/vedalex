@@ -70,5 +70,69 @@
     "conditions": { "claim_curative": true, "no_disclaimer": true },
     "reason": "Curative claims without a disclaimer signal an unregistered drug intent that must move to e-AUSHADHI licensing.",
     "source": "e-AUSHADHI licensing portal / CDSCO ASU-CC"
+  },
+  {
+    "id": "WIZARD_CLASSICAL_FIRST_SCHEDULE",
+    "pathway_key": "classical_medicine",
+    "weight": 28,
+    "conditions": { "wizard_first_schedule": true, "wizard_new_ingredient": false, "therapeutic_purpose": true },
+    "reason": "A formulation that reproduces a classical First Schedule text reference with known ingredients and medicinal use is a Classical Ayurvedic medicine — it is grandfathered as a scheduled medicine and does not need a full New Drug approval.",
+    "source": "Drugs and Cosmetics Rules, 1945 — Rule 2(ea) & First Schedule; AYUSH CCReM"
+  },
+  {
+    "id": "WIZARD_CLASSICAL_AHARA",
+    "pathway_key": "ayurveda_aahara",
+    "weight": 12,
+    "conditions": { "wizard_first_schedule": true, "intent_dietary": true, "therapeutic_purpose": false },
+    "reason": "A classical base carrying only dietary/wellness purpose is a food under the Ayurveda Aahara frame, not a drug.",
+    "source": "FSS (Ayurveda Aahara) Regulations, 2022"
+  },
+  {
+    "id": "WIZARD_NEW_INGREDIENT_DRUG",
+    "pathway_key": "new_drug",
+    "weight": 22,
+    "conditions": { "wizard_new_ingredient": true, "therapeutic_purpose": true },
+    "reason": "An ingredient NOT referenced in the First Schedule with therapeutic purpose makes the formulation a New Drug, including Ayurveda-based medicines under the Section 3(p) legal fiction.",
+    "source": "Drugs and Cosmetics Rules, 1945 — Rule 2(ea) new drug definition; Section 3(p) D&C Act 1940"
+  },
+  {
+    "id": "WIZARD_NEW_INGREDIENT_FOOD",
+    "pathway_key": "ayurveda_aahara",
+    "weight": 10,
+    "conditions": { "wizard_new_ingredient": true, "intent_dietary": true, "therapeutic_purpose": false },
+    "reason": "A novel ingredient carrying only daily-diet/wellness framing falls to the FSSAI Ayurveda Aahara/food pathway rather than the drug frame.",
+    "source": "FSS (Ayurveda Aahara) Regulations, 2022"
+  },
+  {
+    "id": "WIZARD_PHYTO_ADVANCED_EXTRACTION",
+    "pathway_key": "phytopharmaceutical",
+    "weight": 18,
+    "conditions": { "wizard_novel_extraction": true, "therapeutic_purpose": true, "prep_standardised": false },
+    "reason": "Known botanical material processed through a non-traditional (solvent/supercritical/enzyme) route with medicinal intent aligns with the Phytopharmaceutical New Drug frame.",
+    "source": "Drugs and Cosmetics Rules, 1945 — Rule 2(ea) Phytopharmaceutical; CDSCO guidance on phytopharmaceuticals"
+  },
+  {
+    "id": "WIZARD_PHYTO_STANDARDISED",
+    "pathway_key": "phytopharmaceutical",
+    "weight": 20,
+    "conditions": { "wizard_novel_extraction": true, "therapeutic_purpose": true, "prep_standardised": true },
+    "reason": "Standardised/titrated botanical extracts with quantified actives and medical claims map to the Phytopharmaceutical New Drug route.",
+    "source": "CDSCO Phytopharmaceutical guidance; Rule 2(ea) D&C Rules 1945"
+  },
+  {
+    "id": "WIZARD_PROCESS_PROPRIETARY",
+    "pathway_key": "proprietary_ayurveda",
+    "weight": 14,
+    "conditions": { "wizard_novel_process": true, "therapeutic_purpose": true, "wizard_new_ingredient": false },
+    "reason": "A novel/innovative manufacturing process applied to known Ayurvedic ingredients with therapeutic purpose keeps the product in the proprietary Ayurveda medicine (Schedule Z) frame requiring evidence of efficacy.",
+    "source": "Drugs and Cosmetics Act (Schedule Z proprietary Ayurveda medicines); e-AUSHADHI"
+  },
+  {
+    "id": "WIZARD_CLASSICAL_NEW_PROCESS",
+    "pathway_key": "proprietary_ayurveda",
+    "weight": 10,
+    "conditions": { "wizard_first_schedule": true, "wizard_novel_process": true },
+    "reason": "Even a classical base becomes a proprietary medicine when the manufacturing process is materially altered from the classical method.",
+    "source": "CDSCO ASU classification; e-AUSHADHI proprietary licences"
   }
 ]

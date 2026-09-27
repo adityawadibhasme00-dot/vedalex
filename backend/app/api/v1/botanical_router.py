@@ -1,29 +1,30 @@
+
 from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import Optional, List, Dict
-from app.services.multilingual_nlp import MultilingualNLPEngine
+
 from app.services.ingredient_resolver import IngredientResolverService
+from app.services.multilingual_nlp import MultilingualNLPEngine
 
 router = APIRouter(prefix="/botanical", tags=["Botanical Canonicalization"])
 
 class CanonicalizeRequest(BaseModel):
     raw_name: str
-    source_language: Optional[str] = "auto"
+    source_language: str | None = "auto"
 
 class CanonicalizeResponse(BaseModel):
     raw_input: str
     detected_language: str
-    canonical_id: Optional[str] = None
-    botanical_name: Optional[str] = None
-    api_monograph_id: Optional[str] = None
-    family: Optional[str] = None
-    plant_parts: List[str] = []
-    therapeutic_uses: List[str] = []
-    regulatory_status: Dict[str, str] = {}
+    canonical_id: str | None = None
+    botanical_name: str | None = None
+    api_monograph_id: str | None = None
+    family: str | None = None
+    plant_parts: list[str] = []
+    therapeutic_uses: list[str] = []
+    regulatory_status: dict[str, str] = {}
     confidence: float = 0.0
 
 @router.post("/canonicalize", response_model=CanonicalizeResponse)
-async def canonicalize_botanical(req: CanonicalizeRequest):
+def canonicalize_botanical(req: CanonicalizeRequest):
     detected_lang = MultilingualNLPEngine.detect_language(req.raw_name)
     resolved = IngredientResolverService.resolve(req.raw_name)
 

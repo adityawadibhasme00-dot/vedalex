@@ -11,15 +11,15 @@ import app.rag.qdrant_store as qs
 
 qs.QdrantVectorStore._instance = None
 
-from app.rag.retrieval_pipeline import HybridRetriever
-from app.rag.kb import collect_knowledge_documents
 from app.rag.embeddings import EmbeddingEngine
+from app.rag.kb import collect_knowledge_documents
+from app.rag.retrieval_pipeline import HybridRetriever
 
 engine = EmbeddingEngine()
 print("Embedding provider:", engine.get_provider(), "| dim:", engine.get_dim(), flush=True)
 
 docs = collect_knowledge_documents()
-categories = {}
+categories: dict[str, int] = {}
 for d in docs:
     categories[d.get("category", "?")] = categories.get(d.get("category", "?"), 0) + 1
 print("Total docs:", len(docs), flush=True)

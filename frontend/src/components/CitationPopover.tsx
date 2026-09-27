@@ -52,7 +52,7 @@ export default function CitationPopover({ citation, onClose }: CitationPopoverPr
           <div>
             <span className="text-xs text-slate-500 block mb-1.5 font-medium">Authoritative Statutory Text:</span>
             <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-300 text-xs text-slate-700 leading-relaxed font-mono">
-              "{citation.exact_passage}"
+              &quot;{citation.exact_passage}&quot;
             </div>
           </div>
 

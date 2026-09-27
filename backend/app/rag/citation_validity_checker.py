@@ -12,10 +12,10 @@ Checks performed:
   3. Does the retrieved passage actually support the claim tied to the citation?
 """
 
-import re
-from typing import List, Dict, Any, Optional, Tuple
-from dataclasses import dataclass, field
 import logging
+import re
+from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class CitationCheck:
     citation_text: str
     document_found: bool
     section_found: bool
-    source_matched: Optional[str] = None
+    source_matched: str | None = None
     passage_supports: bool = False
     valid: bool = False
     note: str = ""
@@ -33,7 +33,7 @@ class CitationCheck:
 
 @dataclass
 class CitationValidityReport:
-    checks: List[CitationCheck]
+    checks: list[CitationCheck]
     total_citations: int = 0
     valid_citations: int = 0
     invalid_citations: int = 0
@@ -66,7 +66,7 @@ _SECTION_PATTERNS = [
 ]
 
 
-def _extract_citations_from_answer(answer: str) -> List[str]:
+def _extract_citations_from_answer(answer: str) -> list[str]:
     """Extract all citation references mentioned in the answer."""
     citations = set()
     for pattern in _CITATION_DOC_PATTERNS:
@@ -75,7 +75,7 @@ def _extract_citations_from_answer(answer: str) -> List[str]:
     return list(citations)
 
 
-def _extract_sections_from_answer(answer: str) -> List[str]:
+def _extract_sections_from_answer(answer: str) -> list[str]:
     """Extract section references (e.g., '3(p)', '3(d)', '100')."""
     sections = set()
     for pattern in _SECTION_PATTERNS:
@@ -84,7 +84,7 @@ def _extract_sections_from_answer(answer: str) -> List[str]:
     return list(sections)
 
 
-def _source_text_lower(source: Dict[str, Any]) -> str:
+def _source_text_lower(source: dict[str, Any]) -> str:
     """Combine all text fields of a source for matching."""
     parts = []
     for key in ("content", "act_title", "title", "source", "section_heading",
@@ -97,8 +97,8 @@ def _source_text_lower(source: Dict[str, Any]) -> str:
 
 def _document_exists_in_sources(
     citation: str,
-    sources: List[Dict[str, Any]],
-) -> Tuple[bool, Optional[str]]:
+    sources: list[dict[str, Any]],
+) -> tuple[bool, str | None]:
     """Check if a cited document/act exists in any source."""
     citation_lower = citation.lower()
     for source in sources:
@@ -116,8 +116,8 @@ def _document_exists_in_sources(
 
 def _section_exists_in_sources(
     section: str,
-    sources: List[Dict[str, Any]],
-) -> Tuple[bool, Optional[str]]:
+    sources: list[dict[str, Any]],
+) -> tuple[bool, str | None]:
     """Check if a cited section exists in any source."""
     section_lower = section.lower()
     section_patterns = [
@@ -146,7 +146,7 @@ def _section_exists_in_sources(
 
 def check_citation_validity(
     answer: str,
-    sources: List[Dict[str, Any]],
+    sources: list[dict[str, Any]],
 ) -> CitationValidityReport:
     """
     Validate every citation in the answer against retrieved sources.
@@ -173,7 +173,7 @@ def check_citation_validity(
 
     # Merge document and section citations into unified checks
     all_refs = list(set(cited_docs + [f"Section {s}" for s in cited_sections]))
-    checks: List[CitationCheck] = []
+    checks: list[CitationCheck] = []
 
     for ref in all_refs:
         doc_found, doc_source = _document_exists_in_sources(ref, sources)

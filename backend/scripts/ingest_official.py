@@ -22,13 +22,13 @@ from collections import Counter
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from app.rag.kb import collect_knowledge_documents, blueprint_path, official_dir  # noqa: E402
+from app.rag.kb import blueprint_path, collect_knowledge_documents, official_dir  # noqa: E402
 
 
 def main():
     from app.rag.faiss_retriever import FAISSIndex
-    from app.services.retrieval_engine import HybridRetrievalEngine
     from app.services.ai_copilot import AICopilot
+    from app.services.retrieval_engine import HybridRetrievalEngine
 
     docs = collect_knowledge_documents()
     print(f"\nTotal chunks to index: {len(docs)}")

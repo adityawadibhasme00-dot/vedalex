@@ -1,9 +1,14 @@
-import os
-import json
-import pickle
 import hashlib
+import os
+import pickle
+from typing import TYPE_CHECKING, Any
+
 import numpy as np
-from typing import List, Dict, Any, Optional, Tuple
+
+if TYPE_CHECKING:
+    import faiss
+    from sentence_transformers import SentenceTransformer
+
 
 class FAISSIndex:
     """
@@ -14,15 +19,15 @@ class FAISSIndex:
     (or torch) is unavailable / too slow to load, so the RAG pipeline
     never blocks startup.
     """
-    def __init__(self, index_dir: str = None):
+    def __init__(self, index_dir: str | None = None):
         if index_dir is None:
             index_dir = os.path.join(os.path.dirname(__file__), "faiss_index")
         self.index_dir = index_dir
         self.index_path = os.path.join(index_dir, "index.faiss")
         self.metadata_path = os.path.join(index_dir, "metadata.pkl")
-        self.index = None
-        self.metadata: List[Dict[str, Any]] = []
-        self.model = None
+        self.index: faiss.Index | None = None
+        self.metadata: list[dict[str, Any]] = []
+        self.model: SentenceTransformer | None = None
         self.model_loaded = False
         self._dim = 192
         self._vocab_size = 4096
@@ -60,7 +65,7 @@ class FAISSIndex:
             self.model = None
         return False
 
-    def load_or_build(self, documents: List[Dict[str, Any]] = None):
+    def load_or_build(self, documents: list[dict[str, Any]] | None = None):
         import faiss
 
         if os.path.exists(self.index_path) and os.path.exists(self.metadata_path):
@@ -82,7 +87,7 @@ class FAISSIndex:
         if documents:
             self.build(documents)
 
-    def build(self, documents: List[Dict[str, Any]]):
+    def build(self, documents: list[dict[str, Any]]):
         import faiss
 
         self.metadata = documents
@@ -111,11 +116,10 @@ class FAISSIndex:
 
         print(f"Built FAISS index with {len(documents)} documents (dim={dimension}, model={'sentence-transformers' if self.model else 'hashing-fallback'})")
 
-    def _encode_fallback(self, texts: List[str]) -> np.ndarray:
+    def _encode_fallback(self, texts: list[str]) -> np.ndarray:
         return np.array([self._hash_embedding(t) for t in texts], dtype=np.float32)
 
-    def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
-        import faiss
+    def search(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
 
         if self.index is None:
             if self.metadata:
@@ -157,7 +161,7 @@ class FAISSIndex:
         except Exception:
             self.index = None
 
-    def _keyword_rank(self, query: str, docs: List[Dict[str, Any]], top_k: int) -> List[Dict[str, Any]]:
+    def _keyword_rank(self, query: str, docs: list[dict[str, Any]], top_k: int) -> list[dict[str, Any]]:
         query_toks = set(query.lower().split())
         scored = []
         for doc in docs:

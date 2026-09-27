@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-09-24 03:00:46",
+  "queries": [
+    "Can I patent an ashwagandha formulation?",
+    "What regulatory approvals do I need to sell a nutraceutical in India?",
+    "Does my formulation need FSSAI compliance before export?",
+    "Is prior art relevant if the ingredient is classical Ayurveda?",
+    "How do I register my product for ABS benefits sharing?",
+    "What is the patentability of a turmeric-based pain relief balm?",
+    "Which schedule applies to my ayurvedic Aahara product?",
+    "Can I use a trademark for my herbal brand in Canada?"
+  ],
+  "repeats": 2,
+  "architectures": {
+    "hybrid": {
+      "architecture": "hybrid",
+      "samples": 16,
+      "answered": 10,
+      "refusals": 6,
+      "errors": 0,
+      "latency_ms": {
+        "mean": 233.0,
+        "p50": 230.7,
+        "p95": 270.8
+      },
+      "sources": {
+        "avg": 5,
+        "max": 5
+      }
+    },
+    "production": {
+      "architecture": "production",
+      "samples": 16,
+      "answered": 10,
+      "refusals": 6,
+      "errors": 0,
+      "latency_ms": {
+        "mean": 85.6,
+        "p50": 0.1,
+        "p95": 223.1
+      },
+      "sources": {
+        "avg": 5,
+        "max": 5
+      }
+    },
+    "graph": {
+      "architecture": "graph",
+      "samples": 16,
+      "answered": 14,
+      "refusals": 2,
+      "errors": 0,
+      "latency_ms": {
+        "mean": 224.2,
+        "p50": 224.1,
+        "p95": 239.6
+      },
+      "sources": {
+        "avg": 5,
+        "max": 5
+      }
+    },
+    "agentic": {
+      "architecture": "agentic",
+      "samples": 16,
+      "answered": 16,
+      "refusals": 0,
+      "errors": 0,
+      "latency_ms": {
+        "mean": 243.9,
+        "p50": 231.2,
+        "p95": 333.2
+      },
+      "sources": {
+        "avg": 5,
+        "max": 5
+      }
+    }
+  }
+}

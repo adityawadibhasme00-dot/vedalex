@@ -1,0 +1,173 @@
+{
+  "_meta": {
+    "dataset": "CITES-listed Indian medicinal / aromatic plants relevant to IP-SAKTI Sahayak formulations",
+    "appendices_valid_from": "5 March 2026 (CITES Secretariat E-Appendices)",
+    "annotation_key": {
+      "#2": "All parts and derivatives except: (a) seeds and pollen; and (b) finished products packaged and ready for retail trade.",
+      "#14": "All parts and derivatives except: (a) seeds, spores and pollen (including pollinia); (b) seedling or tissue cultures obtained in vitro, in solid or liquid media, transported in sterile containers; (c) fruits, and parts and derivatives thereof, of artificially propagated plants; and (d) finished products packaged and ready for retail trade."
+    },
+    "disclaimer": "This is decision-support reference data mirrored from the CITES Appendices and MoEF&CC guidance. It is not a legal export/import opinion — always obtain current CITES permit advice from the CITES Management Authority in India.",
+    "_verified_sources": [
+      "CITES E-Appendices 2026-03-05",
+      "MoEF&CC list of 113 CITES-listed species requiring Certificate of Cultivation / Legal Procurement",
+      "EXIM Policy — export of whole plants of listed species prohibited",
+      "Gowthami et al. 2021, Genetic Resources and Crop Evolution (consolidated CITES list of Indian medicinal plants)"
+    ]
+  },
+  "plants": [
+    {
+      "latin_name": "Saussurea costus",
+      "synonyms": ["Saussurea lappa"],
+      "ayurvedic_names": ["Kuth", "कुट", "Kustha"],
+      "family": "Asteraceae",
+      "appendix": "I",
+      "annotation": null,
+      "plant_parts": ["Root", "Root oil"],
+      "verified_wild_caught_sources": ["Himalayas (J&K, HP, Uttarakhand)"],
+      "impact": "ONLY Indian medicinal plant in CITES Appendix I. International trade in wild specimens is prohibited except in exceptional circumstances with import/export permits from both parties.",
+      "permit_requirement": "CITES import + export permits for any commercial movement; effectively a trade ban for wild-harvested root.",
+      "india_controls": "Schedule VI Wild Life (Protection) Act, 1972; export of kuth roots prohibited under EXIM Policy unless cultivated with Certificate of Cultivation.",
+      "cultivation_note": "Cultivated kuth from registered farms may move with Certificate of Cultivation / Legal Procurement Certificate from State Forest Department — requires full provenance documentation."
+    },
+    {
+      "latin_name": "Nardostachys grandiflora",
+      "synonyms": ["Nardostachys jatamansi"],
+      "ayurvedic_names": ["Jatamansi", "जटामांसी", "Mamsi"],
+      "family": "Caprifoliaceae (Valerianaceae)",
+      "appendix": "II",
+      "annotation": "#2",
+      "plant_parts": ["Rhizome / root"],
+      "verified_wild_caught_sources": ["Alpine Himalaya (Uttarakhand, Sikkim)"],
+      "impact": "Appendix II: trade allowed but regulated — export/import needs a CITES permit; exporter must prove legal provenance.",
+      "permit_requirement": "CITES export permit required for international movement of whole/sliced roots and derivatives.",
+      "india_controls": "EXIM Policy bans export of raw wild jatamansi; Certificate of Cultivation required for cultivated material.",
+      "cultivation_note": "Prioritize cultivated/biodiversity-registered stock; document origin to avoid seizure at customs."
+    },
+    {
+      "latin_name": "Picrorhiza kurrooa",
+      "synonyms": ["Picrorhiza kurroa", "Picrorhiza kurrooa Royle ex Benth."],
+      "ayurvedic_names": ["Kutki", "कुटकी", "Katuki"],
+      "family": "Plantaginaceae (Scrophulariaceae)",
+      "appendix": "II",
+      "annotation": "#2",
+      "plant_parts": ["Rhizome"],
+      "verified_wild_caught_sources": ["Alpine Himalaya (HP, Uttarakhand)"],
+      "impact": "Appendix II — international trade regulated (enforced since CoP10, 1997).",
+      "permit_requirement": "CITES export permit for international movement.",
+      "india_controls": "Wild harvest & export restricted; cultivate-and-certify path recommended.",
+      "cultivation_note": "Cultivated kutki acceptable with Certificate of Cultivation; verify supplier holds legal procurement records."
+    },
+    {
+      "latin_name": "Rauvolfia serpentina",
+      "synonyms": ["Rauwolfia serpentina"],
+      "ayurvedic_names": ["Sarpagandha", "सर्पगन्धा", "Chandrika", "Indian Snakeroot", "Devil Pepper", "Asrol"],
+      "family": "Apocynaceae",
+      "appendix": "II",
+      "annotation": "#2",
+      "plant_parts": ["Root", "Root bark"],
+      "verified_wild_caught_sources": ["Sub-Himalayan tracts, Western Ghats, NE India forests"],
+      "impact": "Appendix II — heavily traded root; legal procurement + CITES export permit mandatory for international transfer.",
+      "permit_requirement": "CITES export permit; Legal Procurement Certificate from State Forest Department for wild origin.",
+      "india_controls": "Endangered under IUCN; EXIM Policy export restrictions; harvested mainly for reserpine alkaloid.",
+      "cultivation_note": "Cultivated sarpagandha from medicinal-plant boards is the compliant sourcing route."
+    },
+    {
+      "latin_name": "Taxus wallichiana",
+      "synonyms": ["Himalayan yew", "Taxus baccata subsp. wallichiana"],
+      "ayurvedic_names": ["Himalayan yew", "Thuner"],
+      "family": "Taxaceae",
+      "appendix": "II",
+      "annotation": "#2",
+      "plant_parts": ["Bark", "Needles (foliage)"],
+      "verified_wild_caught_sources": ["Himalayan forests"],
+      "impact": "Appendix II — whole trees/bark/derivatives regulated; source for taxol/paclitaxel extraction.",
+      "permit_requirement": "CITES export permit for bark/needle movement; proof of cultivation or legal forestry origin.",
+      "india_controls": "Harvest restrictions under State Forest Departments; often under Schedule of WLPA at state level.",
+      "cultivation_note": "Plantations/clonal origin with documented chain-of-custody accepted."
+    },
+    {
+      "latin_name": "Podophyllum hexandrum",
+      "synonyms": ["Sinopodophyllum hexandrum", "Podophyllum emodi"],
+      "ayurvedic_names": ["Bankakri", "बनककरी", "Indian podophyllum"],
+      "family": "Berberidaceae",
+      "appendix": "II",
+      "annotation": "#2",
+      "plant_parts": ["Rhizome", "Root"],
+      "verified_wild_caught_sources": ["Alpine Himalaya"],
+      "impact": "Appendix II — regulated rhizome trade; source of podophyllotoxin (anticancer precursor).",
+      "permit_requirement": "CITES export permit for wild-collected rhizome.",
+      "india_controls": "Heavily overharvested; cultivation/tissue-culture source preferred.",
+      "cultivation_note": "Ex-situ cultivated or licensed nursery source required for compliant supply."
+    },
+    {
+      "latin_name": "Dioscorea deltoidea",
+      "synonyms": ["Dioscorea deltoidea Wall. ex Kunth"],
+      "ayurvedic_names": ["Elephant foot yam (wild)", "Chhota gunch"],
+      "family": "Dioscoreaceae",
+      "appendix": "II",
+      "annotation": "#2",
+      "plant_parts": ["Tubers"],
+      "verified_wild_caught_sources": ["Himalayan forests"],
+      "impact": "Appendix II — source of diosgenin (steroid hormone precursor); regulated wild tuber trade.",
+      "permit_requirement": "CITES export permit; Legal Procurement Certificate for wild origin.",
+      "india_controls": "EXIM Policy excludes wild-collected tubers from free export.",
+      "cultivation_note": "Cultivated or certified wild-harvest only; maintain provenance records."
+    },
+    {
+      "latin_name": "Aquilaria malaccensis",
+      "synonyms": ["Aquilaria agallocha", "Aquilaria agallocha Roxb. ex DC."],
+      "ayurvedic_names": ["Agarwood", "Agalloch", "Agar", "अगर"],
+      "family": "Thymelaeaceae (Aquilariaceae)",
+      "appendix": "II",
+      "annotation": "#14",
+      "plant_parts": ["Resinous heartwood", "Resin (agar oil)"],
+      "verified_wild_caught_sources": ["Assam, Meghalaya, NE India"],
+      "impact": "Appendix II — entire species genus-regulated; agarwood resin/oil movement requires permits.",
+      "permit_requirement": "CITES export permit for resin/heartwood; imports require verifying exporting Party permit.",
+      "india_controls": "Cultivation promotion under CSIR/ICFRE; still export-regulated to protect wild populations.",
+      "cultivation_note": "Provenance from plantations + registered inventory critical; agar oil and chips both in-scope."
+    },
+    {
+      "latin_name": "Pterocarpus santalinus",
+      "synonyms": ["Red Sanders", "Red sandalwood"],
+      "ayurvedic_names": ["Raktachandan", "रक्तचन्दन"],
+      "family": "Fabaceae",
+      "appendix": "II",
+      "annotation": null,
+      "plant_parts": ["Heartwood"],
+      "verified_wild_caught_sources": ["Andhra Pradesh (endemic)"],
+      "impact": "Appendix II — well-known for smuggling-linked trade; strict export control context.",
+      "permit_requirement": "CITES export permit for heartwood and products; strong chain-of-custody proof.",
+      "india_controls": "A.P. forest department monopoly on sandalwood sales; e-auction of legal stock.",
+      "cultivation_note": "Only legally e-auctioned / cultivated stock is exportable."
+    },
+    {
+      "latin_name": "Cibotium barometz",
+      "synonyms": ["Dragon's blood fern", "Golden chicken fern"],
+      "ayurvedic_names": ["Dragon's blood"],
+      "family": "Cibotiaceae (Dicksoniaceae)",
+      "appendix": "II",
+      "annotation": "#2",
+      "plant_parts": ["Rhizome", "Fronds"],
+      "verified_wild_caught_sources": ["NE India (rare)"],
+      "impact": "Appendix II — rhizome trade regulated.",
+      "permit_requirement": "CITES export permit.",
+      "india_controls": "Kin now heavily restricted; licensed collection only.",
+      "cultivation_note": "Rare in trade; verify legitimate nursery origin."
+    },
+    {
+      "latin_name": "Cycas beddomei",
+      "synonyms": ["Cycas beddomei Dyer"],
+      "ayurvedic_names": ["Peritta (Telugu)", "Madana Kama"],
+      "family": "Cycadaceae",
+      "appendix": "II",
+      "annotation": "#2",
+      "plant_parts": ["Whole plant", "Female cones", "Seeds"],
+      "verified_wild_caught_sources": ["Eastern Ghats (Andhra Pradesh)"],
+      "impact": "Appendix II — cycad family regulated for ornamental/medicinal use.",
+      "permit_requirement": "CITES export permit.",
+      "india_controls": "Endemic & limited range; licensed nursery propagation only.",
+      "cultivation_note": "Ornamental-grade nursery stock only."
+    }
+  ]
+}

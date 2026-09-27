@@ -13,19 +13,19 @@ from memory: when retrieval coverage is insufficient the response is explicitly
 flagged as "Insufficient verified evidence" instead of guessing.
 """
 
-import re
 import json
 import os
-from typing import List, Dict, Any, Optional
+import re
+from typing import Any
 
-from app.services.ai_copilot import AICopilot, NO_EVIDENCE_ANSWER, STOPWORDS
+from app.services.ai_copilot import NO_EVIDENCE_ANSWER, STOPWORDS
+from app.services.multilingual_nlp import MultilingualNLPEngine
 from app.services.passport_engine import PassportEngine
 from app.services.patent_readiness_engine import PatentReadinessEngine
-from app.services.multilingual_nlp import MultilingualNLPEngine
 
 KNOWLEDGE_DIR = os.path.join(os.path.dirname(__file__), "..", "knowledge")
 
-LANGUAGE_NAMES: Dict[str, str] = {
+LANGUAGE_NAMES: dict[str, str] = {
     "en": "English", "hi": "Hindi", "mr": "Marathi", "ta": "Tamil",
     "te": "Telugu", "kn": "Kannada", "bn": "Bengali", "gu": "Gujarati",
     "ml": "Malayalam", "sa": "Sanskrit",
@@ -43,7 +43,7 @@ HINGLISH_MARKERS = (
 # Intent detection
 # ---------------------------------------------------------------------------
 
-INTENTS: List[Dict[str, Any]] = [
+INTENTS: list[dict[str, Any]] = [
     {"id": "white_space", "label": "White Space Navigator", "patterns": [
         "white space", "opportunit", "where can i innovate", "blue ocean",
         "new product idea", "diversif", "least crowded", "gap in"]},
@@ -81,7 +81,7 @@ FRAMING_WORDS = {
 }
 
 
-def classify_intent(question: str) -> Dict[str, Any]:
+def classify_intent(question: str) -> dict[str, Any]:
     q = question.lower()
     for intent in INTENTS:
         for pat in intent["patterns"]:
@@ -113,7 +113,7 @@ HINGLISH_STOPWORDS = {
 # Jurisdiction detection / filtering
 # ---------------------------------------------------------------------------
 
-JURISDICTION_KEYWORDS: Dict[str, List[str]] = {
+JURISDICTION_KEYWORDS: dict[str, list[str]] = {
     "India": [
         "india", "indian", "d&c act", "drugs and cosmetics act", "ayush",
         "fssai", "cdsco", "schedule t", "e-aushadhi", "nba", "biodiversity act",
@@ -143,7 +143,7 @@ JURISDICTION_KEYWORDS: Dict[str, List[str]] = {
 }
 
 
-def detect_jurisdiction(question: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+def detect_jurisdiction(question: str, context: dict[str, Any] | None = None) -> dict[str, Any]:
     """Detect the working jurisdiction from an explicit context / toggle first,
     then from question keywords. Returns matched jurisdiction, matched cue and
     the qdrant filter that should be applied to retrieval."""
@@ -178,15 +178,15 @@ def detect_jurisdiction(question: str, context: Optional[Dict[str, Any]] = None)
     }
 
 
-def _reorder_for_jurisdiction(sources: List[Dict[str, Any]],
-                              jurisdiction: str) -> List[Dict[str, Any]]:
+def _reorder_for_jurisdiction(sources: list[dict[str, Any]],
+                              jurisdiction: str) -> list[dict[str, Any]]:
     """Prefer sources whose jurisdiction matches the detected one; keep
     international/government sources as secondary evidence. Never drops
     sources outright — a neutral corpus can still answer across borders."""
     if not sources:
         return sources
 
-    def _jur(s: Dict[str, Any]) -> str:
+    def _jur(s: dict[str, Any]) -> str:
         return str(s.get("jurisdiction") or "").strip()
 
     if jurisdiction == "International":
@@ -197,22 +197,22 @@ def _reorder_for_jurisdiction(sources: List[Dict[str, Any]],
     return ship + rest
 
 
-def _authority_level(source: Dict[str, Any]) -> int:
+def _authority_level(source: dict[str, Any]) -> int:
     """Regulatory authority rank of a source — lower number = higher authority.
 
     ``authority_rank`` / ``authority_level`` come from the ingestion metadata
     (e.g. 1 for primary statutory acts, 2 for gazette notifications, 3+ for
     secondary guidance). Defaults to 3 when the source is unranked.
     """
-    raw = source.get("authority_rank", source.get("authority_level"))
+    raw: Any = source.get("authority_rank", source.get("authority_level"))
     try:
         return int(raw)
     except (TypeError, ValueError):
         return 3
 
 
-def _rank_by_authority(sources: List[Dict[str, Any]],
-                       jurisdiction: str) -> List[Dict[str, Any]]:
+def _rank_by_authority(sources: list[dict[str, Any]],
+                       jurisdiction: str) -> list[dict[str, Any]]:
     """Rank citations by regulatory authority before retrieval relevance.
 
     Sort order:
@@ -225,7 +225,7 @@ def _rank_by_authority(sources: List[Dict[str, Any]],
     if not sources:
         return sources
 
-    def _jur(s: Dict[str, Any]) -> str:
+    def _jur(s: dict[str, Any]) -> str:
         return str(s.get("jurisdiction") or "").strip()
 
     if jurisdiction == "International":
@@ -233,7 +233,7 @@ def _rank_by_authority(sources: List[Dict[str, Any]],
     else:
         preferred = {jurisdiction, "International"}
 
-    def _key(s: Dict[str, Any]) -> tuple:
+    def _key(s: dict[str, Any]) -> tuple:
         jur = _jur(s)
         bucket = 0 if jur in preferred else (1 if not jur else 2)
         statutory = 0 if (
@@ -249,7 +249,7 @@ def _rank_by_authority(sources: List[Dict[str, Any]],
     return sorted(sources, key=_key)
 
 
-def _source_kind(source: Dict[str, Any]) -> str:
+def _source_kind(source: dict[str, Any]) -> str:
     haystack = " ".join([
         str(source.get("source", "")),
         str(source.get("authority", "")),
@@ -267,7 +267,7 @@ def _source_kind(source: Dict[str, Any]) -> str:
     return "Official"
 
 
-def _source_display_name(source: Dict[str, Any]) -> str:
+def _source_display_name(source: dict[str, Any]) -> str:
     for key in ("act_title", "source", "title"):
         val = source.get(key)
         if val:
@@ -275,7 +275,7 @@ def _source_display_name(source: Dict[str, Any]) -> str:
     return "Retrieved Source"
 
 
-def _top_citation(sources: List[Dict[str, Any]]) -> str:
+def _top_citation(sources: list[dict[str, Any]]) -> str:
     if not sources:
         return ""
     src = sources[0]
@@ -300,7 +300,7 @@ DISCLAIMER = (
 # Rule-engine enrichments
 # ---------------------------------------------------------------------------
 
-def _get_passport(passport_id: Optional[str], question: str):
+def _get_passport(passport_id: str | None, question: str):
     if not passport_id:
         return None
     try:
@@ -312,7 +312,7 @@ def _get_passport(passport_id: Optional[str], question: str):
     return None
 
 
-def _readiness(passport) -> Optional[Dict[str, Any]]:
+def _readiness(passport) -> dict[str, Any] | None:
     try:
         return PatentReadinessEngine.compute(passport)
     except Exception:
@@ -323,7 +323,7 @@ def _load_knowledge_json(name: str) -> Any:
     path = os.path.join(KNOWLEDGE_DIR, name)
     if not os.path.exists(path):
         return None
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -331,7 +331,7 @@ def _load_knowledge_json(name: str) -> Any:
 # Chart builders
 # ---------------------------------------------------------------------------
 
-def _radar_chart(r: Dict[str, Any]) -> Dict[str, Any]:
+def _radar_chart(r: dict[str, Any]) -> dict[str, Any]:
     comp = {c["code"]: c for c in r["components"]}
     order = ["novelty", "prior_art", "section3p", "disclosure", "evidence",
              "ownership", "fto", "documentation"]
@@ -348,7 +348,7 @@ def _radar_chart(r: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _similarity_chart(r: Dict[str, Any]) -> Dict[str, Any]:
+def _similarity_chart(r: dict[str, Any]) -> dict[str, Any]:
     patents = r.get("similar_patents", [])[:5]
     labels = [p["title"][:34] for p in patents]
     values = [round(p["similarity"]) for p in patents]
@@ -362,7 +362,7 @@ def _similarity_chart(r: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _evidence_donut(r: Dict[str, Any]) -> Dict[str, Any]:
+def _evidence_donut(r: dict[str, Any]) -> dict[str, Any]:
     comp = {c["code"]: c for c in r["components"]}
     ev = comp["evidence"]
     gaps = max(0, ev["max"] - ev["earned"])
@@ -376,7 +376,7 @@ def _evidence_donut(r: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _compliance_gauge(r: Dict[str, Any]) -> Dict[str, Any]:
+def _compliance_gauge(r: dict[str, Any]) -> dict[str, Any]:
     comp = {c["code"]: c for c in r["components"]}
     scores = []
     for code in ("section3p", "disclosure", "documentation"):
@@ -393,7 +393,7 @@ def _compliance_gauge(r: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _timeline_chart(r: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+def _timeline_chart(r: dict[str, Any] | None) -> dict[str, Any]:
     def phase_status(name: str) -> str:
         if r is None:
             return "pending" if name != "Prior Art" else "completed"
@@ -431,7 +431,7 @@ def _timeline_chart(r: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
-def _india_heatmap() -> Dict[str, Any]:
+def _india_heatmap() -> dict[str, Any]:
     data = _load_knowledge_json("india_origin.json") or []
     states = [
         {
@@ -457,7 +457,7 @@ def _india_heatmap() -> Dict[str, Any]:
     }
 
 
-def _risk_matrix_chart(risk_summary: Dict[str, Any]) -> Dict[str, Any]:
+def _risk_matrix_chart(risk_summary: dict[str, Any]) -> dict[str, Any]:
     counts = risk_summary.get("counts", {"red": 0, "yellow": 0, "green": 0})
     current = 2 if counts["red"] > 0 else (1 if counts["yellow"] > 0 else 0)
     return {
@@ -471,7 +471,7 @@ def _risk_matrix_chart(risk_summary: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _white_space_chart() -> Dict[str, Any]:
+def _white_space_chart() -> dict[str, Any] | None:
     data = _load_knowledge_json("white_space.json")
     if not data:
         return None
@@ -511,7 +511,7 @@ REPLACEMENT_WORDING = {
 }
 
 
-def _claim_firewall(claims_texts: List[str]) -> Dict[str, Any]:
+def _claim_firewall(claims_texts: list[str]) -> dict[str, Any]:
     results = []
     red = yellow = green = 0
     for text in claims_texts:
@@ -551,7 +551,7 @@ def _claim_firewall(claims_texts: List[str]) -> Dict[str, Any]:
 # Answer builders (deterministic, retrieval-grounded)
 # ---------------------------------------------------------------------------
 
-def _general_grounded_summary(question: str, sources: List[Dict[str, Any]],
+def _general_grounded_summary(question: str, sources: list[dict[str, Any]],
                               loose: bool = False) -> str:
     """Build a grounded, citation-bound answer for general RAG questions.
 
@@ -596,7 +596,7 @@ def _general_grounded_summary(question: str, sources: List[Dict[str, Any]],
         # Prefer government/intergovernmental records (authority_rank <= 2)
         # over generic metabolomics/corpus hits so near-miss queries never
         # surface off-topic content as if it answered the question.
-        def _rank_key(s: Dict[str, Any]):
+        def _rank_key(s: dict[str, Any]):
             try:
                 rank = int(s.get("authority_rank") or 3)
             except Exception:
@@ -614,7 +614,7 @@ def _general_grounded_summary(question: str, sources: List[Dict[str, Any]],
     else:
         fallback_mode = False
 
-    bullets: List[str] = []
+    bullets: list[str] = []
     for s in relevant_sources[:4]:
         content = " ".join(str(s.get("content", "")).split())
         snippet = content[:220]
@@ -654,9 +654,9 @@ def _general_grounded_summary(question: str, sources: List[Dict[str, Any]],
     return summary
 
 
-def _source_bullets(sources: List[Dict[str, Any]], question: str, limit: int = 4) -> List[str]:
+def _source_bullets(sources: list[dict[str, Any]], question: str, limit: int = 4) -> list[str]:
     """Direct quoted passages from the evidence, each labelled with its source."""
-    bullets: List[str] = []
+    bullets: list[str] = []
     for s in sources[:limit]:
         content = " ".join(str(s.get("content", "")).split())
         snippet = content[:210]
@@ -672,9 +672,9 @@ def _source_bullets(sources: List[Dict[str, Any]], question: str, limit: int = 4
     return bullets
 
 
-def _source_citations(sources: List[Dict[str, Any]], limit: int = 6) -> List[str]:
+def _source_citations(sources: list[dict[str, Any]], limit: int = 6) -> list[str]:
     """Numbered evidence list the user can trace back to."""
-    lines: List[str] = []
+    lines: list[str] = []
     seen: set = set()
     for s in sources:
         name = _source_display_name(s)
@@ -697,11 +697,11 @@ def build_structured_answer(
     exec_summary: str,
     citation: str,
     disclaimer: str,
-    sources: List[Dict[str, Any]],
+    sources: list[dict[str, Any]],
     question: str,
     intent_id: str = "general",
-    r: Optional[Dict[str, Any]] = None,
-    claim: Optional[Dict[str, Any]] = None,
+    r: dict[str, Any] | None = None,
+    claim: dict[str, Any] | None = None,
     include_bullets: bool = True,
 ) -> str:
     """Structure the copilot reply into clear sections so the chat bubble reads
@@ -709,7 +709,7 @@ def build_structured_answer(
         SUMMARY -> WHAT THE RULES SAY (quoted passages)
         -> NEXT STEPS -> EVIDENCE CITED -> disclaimer.
     """
-    sections: List[str] = []
+    sections: list[str] = []
     summary = " ".join(str(exec_summary or "").split())
     refused = summary.startswith(NO_EVIDENCE_ANSWER)
 
@@ -739,7 +739,7 @@ def build_structured_answer(
     return joined.strip() or (NO_EVIDENCE_ANSWER if refused else (citation or "No evidence available."))
 
 
-def _executive_summary(intent: str, r: Optional[Dict[str, Any]], claim: Optional[Dict[str, Any]],
+def _executive_summary(intent: str, r: dict[str, Any] | None, claim: dict[str, Any] | None,
                        citation: str) -> str:
     if not r and intent in ("patentability", "prior_art", "compliance", "evidence_strength", "regulatory_roadmap"):
         return (
@@ -749,7 +749,7 @@ def _executive_summary(intent: str, r: Optional[Dict[str, Any]], claim: Optional
         )
 
     if intent == "patentability" and r:
-        weakest = min(r["components"], key=lambda c: c["earned"] / c["max"] if c["max"] else 1)
+        min(r["components"], key=lambda c: c["earned"] / c["max"] if c["max"] else 1)
         strongest = max(r["components"], key=lambda c: c["earned"] / c["max"] if c["max"] else 0)
         ready = "patent-ready" if r["patent_ready"] else "not yet patent-ready"
         return (
@@ -810,16 +810,17 @@ def _executive_summary(intent: str, r: Optional[Dict[str, Any]], claim: Optional
     if intent == "evidence_strength" and r:
         ev = next((c for c in r["components"] if c["code"] == "evidence"), None)
         earned = round(ev["earned"]) if ev else 0
+        evidence_pct = round(ev["pct"]) if ev else 0
         return (
             f"Evidence component scored {earned} of its 10 weight points "
-            f"({round(ev['pct'])}% of the evidence requirement). "
+            f"({evidence_pct}% of the evidence requirement). "
             "The engine finds these gaps: " + "; ".join(r.get("missing_evidence", [])) + "."
         )
 
     return citation if citation else "Grounded in the retrieved official sources."
 
 
-def _next_actions(intent: str, r: Optional[Dict[str, Any]], claim: Optional[Dict[str, Any]]) -> List[str]:
+def _next_actions(intent: str, r: dict[str, Any] | None, claim: dict[str, Any] | None) -> list[str]:
     if intent == "general":
         return [
             "Open the Patent Analysis tab to run the 8-engine readiness score.",
@@ -890,7 +891,7 @@ def _next_actions(intent: str, r: Optional[Dict[str, Any]], claim: Optional[Dict
 # Confidence calculation
 # ---------------------------------------------------------------------------
 
-def _compute_confidence(meaningful: set, sources: List[Dict[str, Any]],
+def _compute_confidence(meaningful: set, sources: list[dict[str, Any]],
                         coverage: float, intent: str) -> float:
     if not meaningful or not sources:
         return 0.08
@@ -914,10 +915,10 @@ def _compute_confidence(meaningful: set, sources: List[Dict[str, Any]],
 class AICopilotOrchestrator:
 
     @classmethod
-    def _get_fallback_sources(cls, question: str) -> List[Dict[str, Any]]:
+    def _get_fallback_sources(cls, question: str) -> list[dict[str, Any]]:
         """Legacy FAISS + statutory retrieval, used only when the hybrid
         pipeline returns no sources at all."""
-        sources: List[Dict[str, Any]] = []
+        sources: list[dict[str, Any]] = []
         try:
             from app.services.ai_copilot import AICopilot
             from app.services.retrieval_engine import HybridRetrievalEngine
@@ -942,7 +943,7 @@ class AICopilotOrchestrator:
         return sources
 
     @classmethod
-    def _dedupe(cls, sources: List[Dict[str, Any]], limit: int = 10) -> List[Dict[str, Any]]:
+    def _dedupe(cls, sources: list[dict[str, Any]], limit: int = 10) -> list[dict[str, Any]]:
         """De-duplicate on citation identity, keeping the strongest first."""
         seen, deduped = set(), []
         for s in sources:
@@ -954,9 +955,9 @@ class AICopilotOrchestrator:
         return deduped[:limit]
 
     @classmethod
-    def run(cls, question: str, passport_id: Optional[str] = None,
-            context: Optional[Dict[str, Any]] = None,
-            retrieved_sources: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+    def run(cls, question: str, passport_id: str | None = None,
+            context: dict[str, Any] | None = None,
+            retrieved_sources: list[dict[str, Any]] | None = None) -> dict[str, Any]:
         # 1. Retrieve evidence ONCE via the hybrid pipeline, then share the
         # result between the grounding path and the source list. The pipeline
         # (embedding + cross-encoder rerank) is the dominant cost on CPU, so
@@ -967,10 +968,10 @@ class AICopilotOrchestrator:
         # is restricted to the collections that match the user's intent and the
         # Patent Rule Engine is gated to Patent-domain queries only.
         from app.services.intent_classifier import (
+            PATENT_BAN_INSTRUCTION,
             classify_domain_intent,
             filter_sources_by_domain,
             strip_banned_patent_topics,
-            PATENT_BAN_INSTRUCTION,
         )
         domain_intent = classify_domain_intent(question)
         jurisdiction_info = detect_jurisdiction(question, context)
@@ -993,7 +994,7 @@ class AICopilotOrchestrator:
         # Bhashini API is configured, translate the query to English for retrieval
         # and later translate the answer back — while CITATION/statute tokens are
         # preserved verbatim. Falls back silently to the regex/glossary path.
-        bhashini_status: Dict[str, Any] = {"enabled": False, "query_translated": False}
+        bhashini_status: dict[str, Any] = {"enabled": False, "query_translated": False}
         retrieval_query = question
         try:
             from app.services.bhashini_client import BhashiniClient
@@ -1007,7 +1008,7 @@ class AICopilotOrchestrator:
             pass
 
         retrieval_result = {}
-        sources: List[Dict[str, Any]] = []
+        sources: list[dict[str, Any]] = []
         if retrieved_sources:
             sources = cls._dedupe(retrieved_sources)
         else:
@@ -1068,9 +1069,9 @@ class AICopilotOrchestrator:
         # queries — it must never fire on regulatory / FSSAI / ABS / trade-mark
         # / GI / export / safety / quality intents.
         passport = None
-        r: Optional[Dict[str, Any]] = None
-        claim: Optional[Dict[str, Any]] = None
-        charts: List[Dict[str, Any]] = []
+        r: dict[str, Any] | None = None
+        claim: dict[str, Any] | None = None
+        charts: list[dict[str, Any]] = []
         patent_scoring_intents = ("patentability", "prior_art", "compliance",
                                   "evidence_strength", "regulatory_roadmap")
         if intent_id in patent_scoring_intents and domain_intent["run_patent_engine"]:
@@ -1143,15 +1144,23 @@ class AICopilotOrchestrator:
 
         # 5. Check if retrieval pipeline refuses to answer.
         should_refuse = retrieval_result.get("should_refuse", False)
-        refusal_reason = retrieval_result.get("refusal_reason", "")
+        retrieval_result.get("refusal_reason", "")
         if should_refuse and not retrieval_grounded:
             grounded = False
 
         # 6. Executive summary + risk level + next actions.
         citation = _top_citation(sources)
+        has_official_votes = sum(
+            1 for s in sources
+            if s.get("retrieval_method") == "statutory"
+            or s.get("category") in (
+                "statutory", "official", "government", "regulatory",
+                "patent statute", "pharmacopoeia", "tkdl", "international ip", "who",
+            )
+        ) >= 2
         exec_summary = _executive_summary(intent_id, r, claim, citation)
         loose_used = False
-        if not grounded and sources and not should_refuse:
+        if not grounded and sources and not retrieval_grounded and not (should_refuse and not has_official_votes):
             # Retrieval coverage is weak (e.g. Hinglish/generic phrasing) but
             # documents DO exist. Rescue with a strictly source-bound summary —
             # the loose mode labels closest authorities, never invents content.
@@ -1211,7 +1220,7 @@ class AICopilotOrchestrator:
         # against evidence (semantic entailment), validate citations, and
         # compute Evidence Confidence. If the confidence gate fails, the
         # answer is regenerated by removing unsupported claims.
-        verification = {}
+        verification: dict[str, Any] = {}
         rule_pass = None
         if grounded and r is not None:
             rule_pass = r.get("patent_ready") if isinstance(r, dict) else None
@@ -1366,7 +1375,7 @@ class AICopilotOrchestrator:
         #     and a quick hallucination re-check rejects critical-risk drafts.
         #     Where the rule engines produced a scored verdict (charts/numbers)
         #     the deterministic text remains authoritative and no draft is used.
-        llm_draft_meta: Dict[str, Any] = {
+        llm_draft_meta: dict[str, Any] = {
             "generated": False, "provider": "off", "model": None,
             "reason": "not attempted",
         }
@@ -1491,12 +1500,12 @@ class AICopilotOrchestrator:
         #   Question -> Jurisdiction -> Intent -> Retrieval -> Rules Applied.
         # Rendered by the frontend as a collapsible "How was this determined?"
         # panel under every copilot answer.
-        decision_rules: List[Dict[str, Any]] = []
+        decision_rules: list[dict[str, Any]] = []
         decision_rules.append({
             "rule": "Language Detection",
             "status": "PASS",
             "detail": (
-                f"Hinglish query detected (Romanised Hindi transliteration)."
+                "Hinglish query detected (Romanised Hindi transliteration)."
                 if language_label == "Hinglish (Romanised)"
                 else (
                     f"Query primary language: {language_label}."
@@ -1587,7 +1596,7 @@ class AICopilotOrchestrator:
                 f"against retrieved evidence (threshold {threshold}/{len(meaningful) or 1})."
             ),
         })
-        decision_trace: Dict[str, Any] = {
+        decision_trace: dict[str, Any] = {
             "question": question,
             "language": {
                 "code": detected_language,
@@ -1657,7 +1666,7 @@ class AICopilotOrchestrator:
                 or sources[0].get("source")
                 or ""
             )
-        response_sections: Dict[str, Any] = {
+        response_sections: dict[str, Any] = {
             "direct_answer": answer,
             "supporting_evidence": [
                 {

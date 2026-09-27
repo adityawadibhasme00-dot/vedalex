@@ -1,5 +1,7 @@
-from typing import List, Tuple
-from app.models.regulatory import StatutoryCitation, RegulatoryFinding
+
+from app.core.confidence import ConfidenceBand
+from app.models.regulatory import RegulatoryFinding
+
 
 class CitationValidator:
     """
@@ -7,7 +9,7 @@ class CitationValidator:
     Enforces the Core Invariant: LLM explains results but must cite primary statutory passages.
     """
     @staticmethod
-    def audit_findings(findings: List[RegulatoryFinding]) -> Tuple[List[RegulatoryFinding], float]:
+    def audit_findings(findings: list[RegulatoryFinding]) -> tuple[list[RegulatoryFinding], float]:
         unsupported_count = 0
         total_statements = 0
 
@@ -17,7 +19,7 @@ class CitationValidator:
             if not finding.supporting_citations or len(finding.supporting_citations) == 0:
                 unsupported_count += 1
                 # Demote confidence if no citation is attached
-                finding.confidence = "INSUFFICIENT_EVIDENCE"
+                finding.confidence = ConfidenceBand.INSUFFICIENT_EVIDENCE
                 finding.explanation_text = "Abstaining: Finding lacks verifiable primary statutory citation in database."
             audited_findings.append(finding)
 

@@ -1,7 +1,7 @@
-import os
 import secrets
+
 from pydantic_settings import BaseSettings
-from typing import List
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "IP-SAKTI"
@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     # CORS — wildcard "*" is removed; it defeats allow_credentials and the
     # origin allow-list.  Set CORS_ORIGINS as a comma-separated env var for
     # production deployments.
-    CORS_ORIGINS: List[str] = [
+    CORS_ORIGINS: list[str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "https://ipsakti.in",
@@ -31,11 +31,16 @@ class Settings(BaseSettings):
     GRIEVANCE_OFFICER_NAME: str = "Aditya Sharma (Compliance Lead)"
     GRIEVANCE_OFFICER_EMAIL: str = "grievance@ipsakti.in"
     DATA_LOCALIZATION_REGION: str = "ap-south-1 (Mumbai, India)"
+    DPDP_RETENTION_DAYS: int = 90
     
     # Backend API Secret — must be overridden via BACKEND_API_KEY_SECRET env var
     # in production.  A random value is generated per-process if unset so that
     # committed defaults can never be used as a shared secret.
     BACKEND_API_KEY_SECRET: str = ""
+
+    # Innovation Lab feature flags — maps "agent.<slug>" (and "innolab.*") to
+    # enabled/disabled.  When empty, every agent defaults to its registry value.
+    FEATURE_FLAGS: dict[str, bool] = {}
 
     def __init__(self, **values):
         super().__init__(**values)

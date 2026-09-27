@@ -1,9 +1,9 @@
 import copy
-from typing import Dict, Any, List
-from app.models.passport import InnovationPassport
+
 from app.models.diff import WhatIfDiffItem, WhatIfSimulationResponse
+from app.models.passport import InnovationPassport
 from app.services.rule_engine import DeterministicRuleEngine
-from app.services.retrieval_engine import HybridRetrievalEngine
+
 
 class WhatIfSimulatorEngine:
     """
@@ -16,7 +16,7 @@ class WhatIfSimulatorEngine:
     def simulate_claim_mutation(
         cls,
         original_passport: InnovationPassport,
-        mutated_claims: List[str]
+        mutated_claims: list[str]
     ) -> WhatIfSimulationResponse:
         # Clone passport
         cloned_passport = copy.deepcopy(original_passport)
@@ -26,7 +26,7 @@ class WhatIfSimulatorEngine:
         orig_findings = DeterministicRuleEngine.evaluate_passport(original_passport)
         mutated_findings = DeterministicRuleEngine.evaluate_passport(cloned_passport)
 
-        diffs: List[WhatIfDiffItem] = []
+        diffs: list[WhatIfDiffItem] = []
         affected_count = 0
 
         orig_map = {f.jurisdiction: f for f in orig_findings}

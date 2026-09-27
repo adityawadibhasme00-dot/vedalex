@@ -1,5 +1,5 @@
 import re
-from typing import List, Tuple, Dict, Any
+from typing import Any
 
 ADVERSARIAL_INJECTION_PATTERNS = [
     r"(?i)\b(?:ignore|forget|disregard|override)\s+(?:all\s+)?(?:previous|prior|system)\s+instructions\b",
@@ -15,11 +15,11 @@ class DocumentSanitizer:
     Sandboxes raw extracted OCR/PDF/label text to prevent prompt-injection attacks
     (Section 7.1.2). Strips imperatival instructions and produces typed factual schemas only.
     """
-    _threat_log: List[Dict[str, Any]] = []
+    _threat_log: list[dict[str, Any]] = []
 
     @classmethod
-    def sanitize(cls, raw_text: str, source_filename: str = "document_upload") -> Tuple[str, List[str]]:
-        threats_found: List[str] = []
+    def sanitize(cls, raw_text: str, source_filename: str = "document_upload") -> tuple[str, list[str]]:
+        threats_found: list[str] = []
         cleaned_text = raw_text
 
         for pattern in ADVERSARIAL_INJECTION_PATTERNS:
@@ -38,5 +38,5 @@ class DocumentSanitizer:
         return cleaned_text, threats_found
 
     @classmethod
-    def get_security_threat_log(cls) -> List[Dict[str, Any]]:
+    def get_security_threat_log(cls) -> list[dict[str, Any]]:
         return cls._threat_log

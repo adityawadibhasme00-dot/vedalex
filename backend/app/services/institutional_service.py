@@ -1,5 +1,9 @@
-from typing import List, Dict, Any
-from app.models.institutional import InstitutionalDashboardData, IncubatorCaseSummary, CohortGapMetric
+from app.models.institutional import (
+    CohortGapMetric,
+    IncubatorCaseSummary,
+    InstitutionalDashboardData,
+)
+
 
 class InstitutionalService:
     """

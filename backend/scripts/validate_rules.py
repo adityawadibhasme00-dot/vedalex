@@ -21,12 +21,13 @@ CI-safe before it reaches the DeterministicRuleEngine:
 Exit code 0 = all valid, 1 = validation errors, 2 = missing rules dir.
 """
 
+import argparse
+import glob
+import json
 import os
 import re
 import sys
-import glob
-import json
-import argparse
+from typing import Any
 
 try:
     import yaml
@@ -81,7 +82,7 @@ def _load_corpus_citation_strings() -> list:
     if os.path.isdir(KNOWLEDGE_DIR):
         for f in glob.glob(os.path.join(KNOWLEDGE_DIR, "*.json")):
             try:
-                with open(f, "r", encoding="utf-8") as fh:
+                with open(f, encoding="utf-8") as fh:
                     data = json.load(fh)
             except Exception:
                 continue
@@ -154,7 +155,7 @@ def _citation_in_corpus(atom: str, index: list) -> bool:
 
 def validate_yaml_pack(path, findings: list) -> dict:
     try:
-        with open(path, "r", encoding="utf-8") as fh:
+        with open(path, encoding="utf-8") as fh:
             data = yaml.safe_load(fh)
     except yaml.YAMLError as exc:
         findings.append((ERR, f"{os.path.basename(path)} — YAML parse error: {exc}"))
@@ -235,7 +236,8 @@ def validate_rule(pack_file, rule, findings: list) -> None:
                               f"source_id/locator/authority"))
     else:
         for efield in ("source_id", "locator", "authority"):
-            if not isinstance(evidence.get(efield), str) or not evidence.get(efield).strip():
+            eval_ = evidence.get(efield)
+            if not isinstance(eval_, str) or not eval_.strip():
                 findings.append((ERR, f"{loc} — evidence.{efield} required"))
 
     exp = rule.get("explanation_template")
@@ -276,9 +278,9 @@ def validate_rule(pack_file, rule, findings: list) -> None:
 
 
 def check_conflicts(packs: list, findings: list) -> None:
-    seen_ids = {}
-    cond_signatures = {}
-    for path, data in packs:
+    seen_ids: dict[Any, Any] = {}
+    cond_signatures: dict[Any, tuple[Any, Any, Any]] = {}
+    for _path, data in packs:
         if not data:
             continue
         pk = data.get("rule_pack_id", "?")
@@ -349,12 +351,11 @@ def main(argv=None) -> int:
             continue
         for rule in data.get("rules", []):
             validate_rule(path, rule, findings)
-        validate_yaml_pack.__doc__  # no-op keep linters quiet
 
     check_conflicts(packs, findings)
 
     analytics = {"citations_ok": 0, "corpus": _build_corpus_index()}
-    for path, data in packs:
+    for _path, data in packs:
         validate_citations(data, analytics, findings)
 
     # Download / dynamic rules (Excel blueprint Rules sheet).
@@ -366,7 +367,7 @@ def main(argv=None) -> int:
             findings.append((ERR, f"blueprint_rules.json unreadable: {exc}"))
             dyn = []
         if isinstance(dyn, list):
-            for i, rule in enumerate(dyn):
+            for _i, rule in enumerate(dyn):
                 if isinstance(rule, dict) and not rule.get("rule_name"):
                     # empty placeholder rows are tolerated
                     continue

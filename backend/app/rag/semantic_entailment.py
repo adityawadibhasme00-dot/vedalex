@@ -19,18 +19,18 @@ rather than:
   "Does the source contain the exact same sentence?"
 """
 
-import re
+import logging
 import math
 import os
-from typing import List, Dict, Any, Optional, Tuple
+import re
 from dataclasses import dataclass
-from enum import Enum
-import logging
+from enum import StrEnum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-class EntailmentVerdict(str, Enum):
+class EntailmentVerdict(StrEnum):
     SUPPORTED = "SUPPORTED"
     CONTRADICTED = "CONTRADICTED"
     NOT_ENOUGH = "NOT_ENOUGH"
@@ -123,12 +123,12 @@ def _keyword_overlap_score(claim_tokens: set, evidence_tokens: set) -> float:
     return coverage
 
 
-def _cosine_similarity(vec_a: List[float], vec_b: List[float]) -> float:
+def _cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
     """Compute cosine similarity between two vectors."""
     if (vec_a is None or vec_b is None or len(vec_a) == 0 or len(vec_b) == 0
             or len(vec_a) != len(vec_b)):
         return 0.0
-    dot = sum(float(a) * float(b) for a, b in zip(vec_a, vec_b))
+    dot = sum(float(a) * float(b) for a, b in zip(vec_a, vec_b, strict=False))
     norm_a = math.sqrt(sum(float(a) * float(a) for a in vec_a))
     norm_b = math.sqrt(sum(float(b) * float(b) for b in vec_b))
     if norm_a == 0 or norm_b == 0:
@@ -144,7 +144,7 @@ def _cosine_similarity(vec_a: List[float], vec_b: List[float]) -> float:
 # sentence encoder (default: all-MiniLM-L6-v2) gives ~10x faster embedding
 # on CPU with comparable short-text cosine similarity. The cache is
 # keyed per model so mixed-model runs never corrupt each other.
-_EVIDENCE_VECTOR_CACHE: Dict[str, Any] = {}
+_EVIDENCE_VECTOR_CACHE: dict[str, Any] = {}
 _EVIDENCE_CACHE_MAX = 512
 
 
@@ -157,13 +157,13 @@ def _cache_evidence_vector(text: str, vector: Any, model_key: str) -> Any:
 
 def _get_evidence_vectors(
     engine: Any,
-    evidence_texts: List[str],
+    evidence_texts: list[str],
     model_key: str,
-) -> List[Any]:
+) -> list[Any]:
     """Return cached (or freshly embedded) vectors for the evidence texts."""
-    vectors: List[Any] = [None] * len(evidence_texts)
-    missing_idx: List[int] = []
-    missing_texts: List[str] = []
+    vectors: list[Any] = [None] * len(evidence_texts)
+    missing_idx: list[int] = []
+    missing_texts: list[str] = []
     for i, text in enumerate(evidence_texts):
         cache_key = f"{model_key}:{text}"
         if cache_key in _EVIDENCE_VECTOR_CACHE:
@@ -183,7 +183,7 @@ def _get_evidence_vectors(
 
 
 _FAST_MODEL_INSTANCE: Any = None
-_FAST_MODEL_NAME: Optional[str] = None
+_FAST_MODEL_NAME: str | None = None
 
 
 def _init_fast_embedder() -> str:
@@ -220,7 +220,7 @@ def _init_fast_embedder() -> str:
         return "primary"
 
 
-def _fast_embed(texts: List[str]):
+def _fast_embed(texts: list[str]):
     return _FAST_MODEL_INSTANCE.encode(
         texts,
         normalize_embeddings=True,
@@ -230,9 +230,9 @@ def _fast_embed(texts: List[str]):
 
 
 def check_entailments_batch(
-    claims: List[str],
-    evidence_chunks: List[Dict[str, Any]],
-) -> List[EntailmentResult]:
+    claims: list[str],
+    evidence_chunks: list[dict[str, Any]],
+) -> list[EntailmentResult]:
     """
     Batch entailment check: embed ALL claims and ALL evidence chunks in
     exactly two model calls (plus one for any uncached evidence vectors),
@@ -246,7 +246,7 @@ def check_entailments_batch(
     if not claims or not evidence_chunks:
         return []
 
-    claim_emb_scores: Optional[List[List[float]]] = None
+    claim_emb_scores: list[list[float]] | None = None
     model_key = _init_fast_embedder()
     try:
         if model_key.startswith("fast:"):
@@ -267,14 +267,14 @@ def check_entailments_batch(
         logger.warning(f"Batch embedding failed, keyword-only scoring: {e}")
         claim_emb_scores = None
 
-    results: List[EntailmentResult] = []
+    results: list[EntailmentResult] = []
     for ci, claim in enumerate(claims):
         if claim_emb_scores is None:
             emb_row = [0.0] * len(evidence_chunks)
         else:
             emb_row = claim_emb_scores[ci]
 
-        scored: List[Tuple[float, int]] = []
+        scored: list[tuple[float, int]] = []
         for j, chunk in enumerate(evidence_chunks):
             combined = _compute_entailment_score(
                 claim, chunk.get("content", ""), emb_row[j]
@@ -375,7 +375,7 @@ def _build_explanation(
 
 def check_entailment(
     claim: str,
-    evidence_chunks: List[Dict[str, Any]],
+    evidence_chunks: list[dict[str, Any]],
 ) -> EntailmentResult:
     """
     Check whether a claim is supported by any of the evidence chunks.

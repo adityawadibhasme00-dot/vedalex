@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from typing import List, Dict, Optional, Any
+from typing import Any
 
 from app.models.intelligence import (
     ClaimSafetyAnalysisResponse,
@@ -22,8 +22,8 @@ class ClaimSafetyEngine:
     Never invents legal conclusions: unmatched wording is flagged 'not_evaluated'.
     """
 
-    _claim_rules: List[Dict[str, Any]] = []
-    _safety_signals: List[Dict[str, Any]] = []
+    _claim_rules: list[dict[str, Any]] = []
+    _safety_signals: list[dict[str, Any]] = []
 
     DISCLAIMER = (
         "Suggested alternative wording is regulatory guidance only and does not constitute "
@@ -36,16 +36,16 @@ class ClaimSafetyEngine:
         if not cls._claim_rules:
             path = os.path.join(_KNOWLEDGE, "claim_alternatives.json")
             if os.path.exists(path):
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     cls._claim_rules = json.load(f)
         if not cls._safety_signals:
             path = os.path.join(_KNOWLEDGE, "safety_signals.json")
             if os.path.exists(path):
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     cls._safety_signals = json.load(f)
 
     @staticmethod
-    def _market_regulations(target_markets: List[str]) -> str:
+    def _market_regulations(target_markets: list[str]) -> str:
         anchors = []
         if any(m.lower().startswith("india") for m in target_markets):
             anchors.append("India: Drugs & Magic Remedies Act 1954 / CDSCO-ASU / FSSAI Ayurveda Aahara Reg. 4")
@@ -56,7 +56,7 @@ class ClaimSafetyEngine:
         return anchors[0] if len(anchors) == 1 else " | ".join(anchors)
 
     @classmethod
-    def _match_rule(cls, claim_lower: str) -> Optional[Dict[str, Any]]:
+    def _match_rule(cls, claim_lower: str) -> dict[str, Any] | None:
         for rule in cls._claim_rules:
             try:
                 if re.search(rule["pattern"], claim_lower):
@@ -66,8 +66,8 @@ class ClaimSafetyEngine:
         return None
 
     @classmethod
-    def _resolve_ingredients(cls, ingredient_hints: List[str]) -> List[str]:
-        canonical_ids: List[str] = []
+    def _resolve_ingredients(cls, ingredient_hints: list[str]) -> list[str]:
+        canonical_ids: list[str] = []
         for hint in ingredient_hints:
             resolved = IngredientResolverService.resolve(hint)
             if resolved:
@@ -75,8 +75,8 @@ class ClaimSafetyEngine:
         return canonical_ids
 
     @classmethod
-    def _safety_signals_for(cls, canonical_ids: List[str]) -> List[ClaimSafetySignal]:
-        out: List[ClaimSafetySignal] = []
+    def _safety_signals_for(cls, canonical_ids: list[str]) -> list[ClaimSafetySignal]:
+        out: list[ClaimSafetySignal] = []
         for entry in cls._safety_signals:
             if entry["canonical_id"] not in canonical_ids:
                 continue
@@ -94,20 +94,20 @@ class ClaimSafetyEngine:
     @classmethod
     def analyze(
         cls,
-        claims: List[str],
-        ingredients: List[str],
-        target_markets: List[str],
+        claims: list[str],
+        ingredients: list[str],
+        target_markets: list[str],
         product_type: str = "ayurvedic_drug",
-        passport_id: Optional[str] = None,
+        passport_id: str | None = None,
     ) -> ClaimSafetyAnalysisResponse:
         cls.load_data()
         resolved = cls._resolve_ingredients(ingredients)
         safety = cls._safety_signals_for(resolved)
         regulation = cls._market_regulations(target_markets)
 
-        results: List[ClaimSafetyResult] = []
-        flagged_misleading: List[str] = []
-        disease_flags: List[str] = []
+        results: list[ClaimSafetyResult] = []
+        flagged_misleading: list[str] = []
+        disease_flags: list[str] = []
 
         for claim in claims:
             claim_lower = claim.lower()
@@ -176,7 +176,7 @@ class ClaimSafetyEngine:
 
         alerts = [
             f"{len(safety)} pharmacovigilance signal(s) surfaced for formulated ingredients — review precaution wording on the label.",
-            "Market anchor batch: {0}".format(regulation),
+            f"Market anchor batch: {regulation}",
             "Structure/function and traditional-use claims require a compliant disclaimer (e.g., 21 CFR 101.93 / FSSAI).",
         ]
 

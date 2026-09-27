@@ -1,0 +1,135 @@
+{
+  "_meta": {
+    "schema_version": "1.0",
+    "curated": "2026-09-20",
+    "verification": "A treaty entry marked 'not in force' means the instrument has not met its entry-into-force threshold; it is distinct from India/national law and must never be presented as binding domestic law.",
+    "disclaimer": "Treaty texts and status may change. Verify current status with WIPO and the India Code before relying on any treaty obligation."
+  },
+  "treaties": [
+    {
+      "id": "WIPO_GRATK_2024",
+      "full_name": "WIPO Treaty on Intellectual Property, Genetic Resources and Associated Traditional Knowledge",
+      "short_name": "GRATK Treaty",
+      "adopted": "2024-05-24",
+      "signed_by": ["141 delegations signed the Final Act at adoption"],
+      "status": "NOT_IN_FORCE",
+      "entry_into_force_rule": "Article 17: 3 months after 15 eligible Parties have deposited instruments of ratification/accession.",
+      "ratifications_as_of_curation": ["Albania", "Malawi", "Peru (deposited 2026-07-08)", "Uganda"],
+      "key_articles": {
+        "art_2": "Definitions — genetic resources, traditional knowledge associated with genetic resources, source/country of origin.",
+        "art_3": "Disclosure requirement for patent applications based on genetic resources and/or associated traditional knowledge: disclose country of origin or source; if unknown, declaration to that effect allowed.",
+        "art_6": "Information systems — database of where disclosure obligations apply.",
+        "art_7": "Relationship with other international agreements (incl. TRIPS)."
+      },
+      "jurisdiction": "International",
+      "why_it_matters": "A future mandatory patent-disclosure obligation parallel to India's existing Section 10(4)(d)(ii) origin disclosure and Biological Diversity Act Section 6 approval.",
+      "source_url": "https://www.wipo.int/en/web/treaties/ip/gratk"
+    },
+    {
+      "id": "TRIPS_1995",
+      "full_name": "Agreement on Trade-Related Aspects of Intellectual Property Rights (TRIPS)",
+      "short_name": "TRIPS Agreement",
+      "adopted": "1994-04-15",
+      "effective_from": "1995-01-01",
+      "status": "IN_FORCE",
+      "key_articles": {
+        "art_27": "Patentable subject matter incl. exclusions for methods of medical treatment; biology-exclusion option.",
+        "art_28": "Rights conferred by a patent (India implemented via Patents Act 1970)",
+        "art_33": "20-year patent term (implemented in India by Patents (Amendment) Act 2002)"
+      },
+      "jurisdiction": "International (WTO)",
+      "why_it_matters": "Baseline minimum patent/TM/copyright standards binding on India and most export destinations.",
+      "source_url": "https://www.wto.org/english/docs_e/legal_e/27-trips_01_e.htm"
+    },
+    {
+      "id": "CBD_1992",
+      "full_name": "Convention on Biological Diversity",
+      "short_name": "CBD",
+      "adopted": "1992-05-22",
+      "effective_from": "1993-12-29",
+      "status": "IN_FORCE",
+      "key_articles": {
+        "art_15": "Access to genetic resources on mutually agreed terms / prior informed consent.",
+        "art_8j": "Respect and preserve traditional knowledge relevant to biodiversity."
+      },
+      "jurisdiction": "International",
+      "why_it_matters": "Foundational source of India's ABS obligations, reflected in the Biological Diversity Act 2002 and Rules 2024.",
+      "source_url": "https://www.cbd.int/convention/text/"
+    },
+    {
+      "id": "NAGOYA_2010",
+      "full_name": "Nagoya Protocol on Access to Genetic Resources and Fair and Equitable Sharing of Benefits Arising from their Utilization",
+      "short_name": "Nagoya Protocol",
+      "adopted": "2010-10-29",
+      "effective_from": "2014-10-12",
+      "status": "IN_FORCE",
+      "key_articles": {
+        "art_5": "Fair and equitable benefit-sharing.",
+        "art_6": "Prior informed consent for access.",
+        "art_12": "Consideration of Indigenous and local communities' customary laws and traditional knowledge."
+      },
+      "jurisdiction": "International",
+      "why_it_matters": "Operationalizes CBD access/benefit-sharing; informs India's ABS framework and cross-border utilization duties.",
+      "source_url": "https://www.cbd.int/abs/text/default.shtml"
+    },
+    {
+      "id": "PCT_1970",
+      "full_name": "Patent Cooperation Treaty",
+      "short_name": "PCT",
+      "adopted": "1970-06-19",
+      "effective_from": "1978-01-24",
+      "status": "IN_FORCE",
+      "key_articles": {
+        "art_4": "International application contents.",
+        "art_11": "Filing date — powers of receiving Office (India = CGPDTM).",
+        "art_22": "30-month national phase entry deadline."
+      },
+      "jurisdiction": "International (WIPO)",
+      "why_it_matters": "Route for international patent protection; India is a PCT receiving office; enabling reform was the 1999 Compliance Act.",
+      "source_url": "https://www.wipo.int/pct/en/texts/"
+    },
+    {
+      "id": "MADRID_1989",
+      "full_name": "Madrid Protocol Concerning the International Registration of Marks",
+      "short_name": "Madrid Protocol",
+      "adopted": "1989-06-27",
+      "effective_from": "1996-04-01",
+      "status": "IN_FORCE",
+      "key_articles": {
+        "art_3": "International registration effects.",
+        "art_5": "Examination in designated Contracting Parties."
+      },
+      "jurisdiction": "International (WIPO)",
+      "why_it_matters": "Single international trademark filing covering many countries; India acceded via the Trade Marks (Amendment) Act 2010.",
+      "source_url": "https://www.wipo.int/madrid/en/legal_texts/index.html"
+    },
+    {
+      "id": "HAGUE_1999",
+      "full_name": "Hague Agreement Concerning the International Registration of Industrial Designs (Geneva Act)",
+      "short_name": "Hague Agreement",
+      "adopted": "1999-07-02",
+      "effective_from": "2004-04-01",
+      "status": "IN_FORCE",
+      "key_articles": {
+        "art_1": "International registration for industrial designs."
+      },
+      "jurisdiction": "International (WIPO)",
+      "why_it_matters": "International design registration route; India is not yet party — Indian applicants use national Designs Act 2000 filing.",
+      "source_url": "https://www.wipo.int/hague/en/legal_texts/"
+    },
+    {
+      "id": "BUDAPEST_1977",
+      "full_name": "Budapest Treaty on the International Recognition of the Deposit of Microorganisms for the Purposes of Patent Procedure",
+      "short_name": "Budapest Treaty",
+      "adopted": "1977-04-28",
+      "effective_from": "1980-08-19",
+      "status": "IN_FORCE",
+      "key_articles": {
+        "art_3": "Recognition of microorganism deposits."
+      },
+      "jurisdiction": "International (WIPO)",
+      "why_it_matters": "Required deposit mechanism when a biotech/microbial formulation needs disclosure in patent practice.",
+      "source_url": "https://www.wipo.int/budapest/en/legal_texts/"
+    }
+  ]
+}

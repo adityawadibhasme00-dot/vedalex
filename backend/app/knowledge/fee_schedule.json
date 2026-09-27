@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "title": "IP-SAKTI official fee schedule reference (India)",
+    "as_of": "2026-09-26",
+    "note": "Indicative official government fee figures in INR used for estimation only. Always confirm on the official fee schedule before filing.",
+    "sources": {
+      "patents": "https://www.ipindia.gov.in/ (Patents Rules, official fee schedule)",
+      "trademarks": "https://www.ipindia.gov.in/ (Trade Marks Rules, official fee schedule)",
+      "gi": "https://ipindia.gov.in/ (Geographical Indications Registry)",
+      "nba_abs": "https://nbaindia.org/ (Biological Access licensing - NBA)"
+    }
+  },
+  "entity_classes": {
+    "individual": {"label": "Individual / natural person", "multiplier": 1.0},
+    "startup": {"label": "Startup (DPIIT recognised)", "multiplier": 0.2},
+    "small_entity": {"label": "Small entity", "multiplier": 0.5},
+    "large_entity": {"label": "Large entity / corporation", "multiplier": 1.0}
+  },
+  "routes": {
+    "patent": {
+      "label": "Patent filing (provisional + 2 years)",
+      "source_key": "patents",
+      "items": [
+        {"name": "Provisional application filing", "amount": 1600, "stage": "filing"},
+        {"name": "Complete specification filing (18 months)", "amount": 4000, "stage": "filing"},
+        {"name": "Examination request (7th year onwards)", "amount": 4000, "stage": "exam"},
+        {"name": "Publication fee", "amount": 1000, "stage": "publication"},
+        {"name": "Grant fee (optional, payable on grant)", "amount": 5000, "stage": "grant"}
+      ],
+      "currency": "INR"
+    },
+    "trademark": {
+      "label": "Trade mark registration (class-wise)",
+      "source_key": "trademarks",
+      "per_class": 4500,
+      "currency": "INR"
+    },
+    "gi": {
+      "label": "Geographical Indication application",
+      "source_key": "gi",
+      "items": [
+        {"name": "GI application (natural applicant)", "amount": 5000, "stage": "filing"},
+        {"name": "GI renewal (10 years)", "amount": 5000, "stage": "renewal"}
+      ],
+      "currency": "INR"
+    },
+    "abs": {
+      "label": "Biological Access (NBA) licensing",
+      "source_key": "nba_abs",
+      "items": [
+        {"name": "Form D / Form B application processing", "amount": 0, "stage": "filing"},
+        {"name": "Royalty / benefit-share terms (negotiated, no fixed fee)", "amount": 0, "stage": "negotiation"}
+      ],
+      "currency": "INR",
+      "note": "NBA charges are fee-based plus negotiated access terms; no statutory filing fee for the applicant."
+    }
+  }
+}

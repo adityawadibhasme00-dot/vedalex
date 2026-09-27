@@ -1,0 +1,10 @@
+{
+  "extends": "next/core-web-vitals",
+  "ignorePatterns": [
+    ".next/",
+    "coverage/",
+    "playwright-report/",
+    "test-results/",
+    "node_modules/"
+  ]
+}

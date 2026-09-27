@@ -1,6 +1,8 @@
-from typing import Dict, Any, List
+from typing import Any
+
 from app.models.passport import InnovationPassport
 from app.models.regulatory import RegulatoryFinding
+
 
 class ProvenanceEngine:
     """
@@ -13,7 +15,7 @@ class ProvenanceEngine:
         cls,
         passport: InnovationPassport,
         finding: RegulatoryFinding
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         nodes = []
         edges = []
 

@@ -26,11 +26,11 @@ a source from the other regime (e.g. an Indian Patent Act passage in
 International mode) is never cited — judged as evidence simply does not mix.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from app.services.copilot_orchestrator import JURISDICTION_KEYWORDS
 
-INDIA_FRAMEWORK: Dict[str, Any] = {
+INDIA_FRAMEWORK: dict[str, Any] = {
     "mode": "India",
     "label": "India Laws Only",
     "emoji": "🇮🇳",
@@ -54,7 +54,7 @@ INDIA_FRAMEWORK: Dict[str, Any] = {
     "retrieval_jurisdiction": "India",
 }
 
-INTERNATIONAL_FRAMEWORK: Dict[str, Any] = {
+INTERNATIONAL_FRAMEWORK: dict[str, Any] = {
     "mode": "International",
     "label": "International Laws Only",
     "emoji": "🌍",
@@ -79,13 +79,13 @@ INTERNATIONAL_FRAMEWORK: Dict[str, Any] = {
     "retrieval_jurisdiction": "International",
 }
 
-FRAMEWORKS: Dict[str, Dict[str, Any]] = {
+FRAMEWORKS: dict[str, dict[str, Any]] = {
     "India": INDIA_FRAMEWORK,
     "International": INTERNATIONAL_FRAMEWORK,
 }
 
 # Jurisdiction cues for keyword resolution when no explicit toggle is present.
-_INTERNATIONAL_CUES: List[str] = (
+_INTERNATIONAL_CUES: list[str] = (
     JURISDICTION_KEYWORDS.get("United States", [])
     + JURISDICTION_KEYWORDS.get("Canada", [])
     + JURISDICTION_KEYWORDS.get("International", [])
@@ -97,7 +97,7 @@ _INTERNATIONAL_CUES: List[str] = (
 _INTERNATIONAL_CUES = sorted(set(c.lower() for c in _INTERNATIONAL_CUES))
 
 
-def is_official_explicit(context: Optional[Dict[str, Any]]) -> Optional[str]:
+def is_official_explicit(context: dict[str, Any] | None) -> str | None:
     """Read the jurisdiction toggle sent by the UI, if any."""
     if not context:
         return None
@@ -111,7 +111,7 @@ def is_official_explicit(context: Optional[Dict[str, Any]]) -> Optional[str]:
     return None
 
 
-def _keyword_hint(question: str) -> Optional[str]:
+def _keyword_hint(question: str) -> str | None:
     q = question.lower()
     found_intl = any(cue in q for cue in _INTERNATIONAL_CUES)
     found_ind = any(cue in q for cue in JURISDICTION_KEYWORDS.get("India", []))
@@ -129,7 +129,7 @@ def _keyword_hint(question: str) -> Optional[str]:
 
 
 def resolve_jurisdiction(question: str,
-                         context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                         context: dict[str, Any] | None = None) -> dict[str, Any]:
     """
     Decide the governing legal framework.
 
@@ -161,7 +161,7 @@ def resolve_jurisdiction(question: str,
 
     # Ambiguous and no toggle: never guess a legal framework the user did not
     # choose — ask, exactly like a careful legal assistant would.
-    res: Dict[str, Any] = {
+    res: dict[str, Any] = {
         **FRAMEWORKS["India"],
         "mode": None,
         "resolved_via": "clarification",
@@ -177,8 +177,8 @@ def resolve_jurisdiction(question: str,
     return res
 
 
-def filter_sources_by_jurisdiction(sources: List[Dict[str, Any]],
-                                   mode: str) -> List[Dict[str, Any]]:
+def filter_sources_by_jurisdiction(sources: list[dict[str, Any]],
+                                   mode: str) -> list[dict[str, Any]]:
     """
     Hard jurisdiction gate. Sources whose jurisdiction belongs to the OTHER
     regime are never cited — India and International law are never mixed.
@@ -197,7 +197,7 @@ def filter_sources_by_jurisdiction(sources: List[Dict[str, Any]],
 
 
 def apply_rule_engines_for(mode: str,
-                           passport) -> List[Dict[str, Any]]:
+                           passport) -> list[dict[str, Any]]:
     """Run the jurisdiction-appropriate deterministic rule engine on a
     passport. Returns plain finding summaries (never raises)."""
     if not passport:

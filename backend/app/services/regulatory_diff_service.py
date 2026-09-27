@@ -1,6 +1,5 @@
-import uuid
-from typing import List, Dict, Any
 from app.models.diff import RegulatoryDiffRecord
+
 
 class RegulatoryDiffService:
     """
@@ -8,7 +7,7 @@ class RegulatoryDiffService:
     Monitors registered statutory gazettes, computes semantic diffs on amended provisions,
     and alerts affected saved user cases.
     """
-    _registered_updates: List[RegulatoryDiffRecord] = [
+    _registered_updates: list[RegulatoryDiffRecord] = [
         RegulatoryDiffRecord(
             id="DIFF-FSSAI-2024-01",
             source_authority="Food Safety and Standards Authority of India (FSSAI)",
@@ -34,9 +33,9 @@ class RegulatoryDiffService:
     ]
 
     @classmethod
-    def get_all_updates(cls) -> List[RegulatoryDiffRecord]:
+    def get_all_updates(cls) -> list[RegulatoryDiffRecord]:
         return cls._registered_updates
 
     @classmethod
-    def get_updates_for_case(cls, case_id: str) -> List[RegulatoryDiffRecord]:
+    def get_updates_for_case(cls, case_id: str) -> list[RegulatoryDiffRecord]:
         return [u for u in cls._registered_updates if case_id in u.affected_case_ids or len(u.affected_case_ids) == 0]

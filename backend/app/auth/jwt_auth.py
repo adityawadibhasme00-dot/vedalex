@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
-from typing import Optional
+
 import bcrypt
-from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
 from sqlalchemy.orm import Session
-from app.core.database import get_db
+
 from app.core.config import settings
+from app.core.database import get_db
 from app.models.db_models import User
 
 SECRET_KEY = settings.BACKEND_API_KEY_SECRET
@@ -25,7 +26,7 @@ def get_password_hash(password: str) -> str:
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password.encode("utf-8")[:72], salt).decode("utf-8")
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
@@ -47,7 +48,7 @@ def get_current_user(
         if user_id is None:
             raise credentials_exception
     except JWTError:
-        raise credentials_exception
+        raise credentials_exception from None
 
     user = db.query(User).filter(User.id == user_id).first()
     if user is None:
@@ -57,9 +58,9 @@ def get_current_user(
     return user
 
 def get_optional_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False)),
+    credentials: HTTPAuthorizationCredentials | None = Depends(HTTPBearer(auto_error=False)),
     db: Session = Depends(get_db)
-) -> Optional[User]:
+) -> User | None:
     if credentials is None:
         return None
     try:

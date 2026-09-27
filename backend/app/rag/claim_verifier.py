@@ -20,11 +20,11 @@ The verification table is the core artifact that judges see:
 """
 
 import logging
-from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
+from typing import Any
 
-from app.rag.claim_extractor import Claim, ClaimType, extract_claims
-from app.rag.semantic_entailment import EntailmentVerdict, check_entailments_batch
+from app.rag.claim_extractor import extract_claims
+from app.rag.semantic_entailment import check_entailments_batch
 
 logger = logging.getLogger(__name__)
 
@@ -35,15 +35,15 @@ class ClaimVerification:
     claim_type: str
     status: str  # "SUPPORTED", "CONTRADICTED", "NOT_ENOUGH"
     entailment_score: float
-    best_source: Optional[str] = None
+    best_source: str | None = None
     best_source_idx: int = -1
-    citations_found: List[str] = field(default_factory=list)
+    citations_found: list[str] = field(default_factory=list)
     explanation: str = ""
 
 
 @dataclass
 class VerificationTable:
-    claims: List[ClaimVerification]
+    claims: list[ClaimVerification]
     supported_count: int = 0
     contradicted_count: int = 0
     not_enough_count: int = 0
@@ -54,7 +54,7 @@ class VerificationTable:
     has_unsupported: bool = False
 
 
-def _source_label(source: Dict[str, Any]) -> str:
+def _source_label(source: dict[str, Any]) -> str:
     """Build a short human-readable label for a source."""
     parts = []
     for key in ("act_title", "title", "source"):
@@ -71,7 +71,7 @@ def _source_label(source: Dict[str, Any]) -> str:
 
 def verify_claims(
     answer: str,
-    sources: List[Dict[str, Any]],
+    sources: list[dict[str, Any]],
 ) -> VerificationTable:
     """
     Extract claims from the answer and verify each against retrieved evidence.
@@ -98,11 +98,11 @@ def verify_claims(
             has_unsupported=False,
         )
 
-    verifications: List[ClaimVerification] = []
+    verifications: list[ClaimVerification] = []
     claim_texts = [c.text for c in claims]
     results = check_entailments_batch(claim_texts, sources)
 
-    for claim, result in zip(claims, results):
+    for claim, result in zip(claims, results, strict=False):
         best_src_label = None
         best_idx = result.best_source_idx
         if 0 <= best_idx < len(sources):

@@ -1,11 +1,19 @@
+
+from typing import cast
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr
-from typing import Optional
-from sqlalchemy.orm import Session
+from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from app.auth.jwt_auth import (
+    create_access_token,
+    get_current_user,
+    get_password_hash,
+    verify_password,
+)
 from app.core.database import get_db
 from app.models.db_models import User
-from app.auth.jwt_auth import get_password_hash, verify_password, create_access_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -13,8 +21,8 @@ class SignupRequest(BaseModel):
     name: str
     email: str
     password: str
-    role: Optional[str] = "researcher"
-    institution: Optional[str] = None
+    role: str | None = "researcher"
+    institution: str | None = None
 
 class LoginRequest(BaseModel):
     email: str
@@ -33,10 +41,10 @@ class ResetPasswordRequest(BaseModel):
     new_password: str
 
 @router.post("/signup", response_model=AuthResponse)
-async def signup(req: SignupRequest, db: Session = Depends(get_db)):
+def signup(req: SignupRequest, db: Session = Depends(get_db)):
     existing = db.query(User).filter(User.email == req.email).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="Email already registered") from None
 
     try:
         user = User(
@@ -51,7 +59,7 @@ async def signup(req: SignupRequest, db: Session = Depends(get_db)):
         db.refresh(user)
     except IntegrityError:
         db.rollback()
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="Email already registered") from None
 
     token = create_access_token(data={"sub": user.id})
     return AuthResponse(
@@ -66,9 +74,9 @@ async def signup(req: SignupRequest, db: Session = Depends(get_db)):
     )
 
 @router.post("/login", response_model=AuthResponse)
-async def login(req: LoginRequest, db: Session = Depends(get_db)):
+def login(req: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == req.email).first()
-    if not user or not verify_password(req.password, user.hashed_password):
+    if not user or not verify_password(req.password, cast(str, user.hashed_password)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password"
@@ -87,7 +95,7 @@ async def login(req: LoginRequest, db: Session = Depends(get_db)):
     )
 
 @router.post("/forgot-password")
-async def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
+def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == req.email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -95,7 +103,7 @@ async def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_
     return {"message": "Password reset instructions sent to your email"}
 
 @router.get("/profile")
-async def get_profile(current_user: User = Depends(get_current_user)):
+def get_profile(current_user: User = Depends(get_current_user)):
     return {
         "id": current_user.id,
         "name": current_user.name,

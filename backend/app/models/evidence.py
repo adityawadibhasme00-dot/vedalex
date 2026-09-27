@@ -1,8 +1,9 @@
-from enum import Enum
-from pydantic import BaseModel, Field
-from typing import List, Optional
+from enum import StrEnum
 
-class EvidenceLifecycle(str, Enum):
+from pydantic import BaseModel, Field
+
+
+class EvidenceLifecycle(StrEnum):
     MISSING = "Missing"
     UPLOADED = "Uploaded"
     NEEDS_REVIEW = "Needs review"
@@ -15,8 +16,8 @@ class EvidenceItem(BaseModel):
     why_it_applies: str
     expected_evidence_type: str  # "Lab Certificate", "Classical Text Citation", "GMP Audit", "Stability Data"
     status: EvidenceLifecycle = EvidenceLifecycle.MISSING
-    supplied_filename: Optional[str] = None
-    prerequisites: List[str] = Field(default_factory=list)
+    supplied_filename: str | None = None
+    prerequisites: list[str] = Field(default_factory=list)
     next_action: str
     jurisdiction: str = "India"
 
@@ -26,4 +27,4 @@ class EvidenceGapSummary(BaseModel):
     evaluated_checks: int
     blocked_by_missing_sources: int
     coverage_meter_percentage: int  # Describes task completion, NOT approval probability
-    items: List[EvidenceItem]
+    items: list[EvidenceItem]

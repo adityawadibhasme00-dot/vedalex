@@ -1,11 +1,12 @@
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any
+
+from pydantic import BaseModel
+
 
 class IncubatorCaseSummary(BaseModel):
     case_id: str
     startup_name: str
     product_name: str
-    target_markets: List[str]
+    target_markets: list[str]
     current_status: str
     coverage_meter: int
     assigned_reviewer: str
@@ -22,5 +23,5 @@ class InstitutionalDashboardData(BaseModel):
     total_active_cases: int
     pending_expert_reviews: int
     avg_coverage_meter: int
-    cases: List[IncubatorCaseSummary]
-    top_cohort_gaps: List[CohortGapMetric]
+    cases: list[IncubatorCaseSummary]
+    top_cohort_gaps: list[CohortGapMetric]

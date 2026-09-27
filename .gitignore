@@ -24,6 +24,8 @@ backend/uploads/
 backend/exports/
 backend/*.db
 backend/*.sqlite3
+*.db
+*.sqlite3
 
 # Local indices / stores (rebuilt at runtime)
 backend/app/rag/faiss_index/
@@ -44,3 +46,25 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+backend/.env.test
+frontend/.env.test
+.coverage
+coverage.xml
+htmlcov/
+.pytest-tmp/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+bandit-report.json
+
+# Demo recording assets (build output, ~160MB) - regenerate with scripts/video
+scripts/video/
+xyz/
+ipsakti_demo.mp4
+
+# Scratch / debugging artefacts
+_g9*
+diag*.py
+q1.ps1
+*.err

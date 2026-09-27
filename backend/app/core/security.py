@@ -1,14 +1,14 @@
 import hashlib
-import json
 import time
-from typing import Dict, Any, Optional
+from typing import Any
+
 
 class DPDPConsentLogger:
     """
     Implements consent capture, cryptographic audit trail, and grievance metadata
     in compliance with India's Digital Personal Data Protection Act, 2023 (DPDP Act).
     """
-    _audit_log = []
+    _audit_log: list[dict[str, Any]] = []
 
     @classmethod
     def log_consent(
@@ -17,8 +17,8 @@ class DPDPConsentLogger:
         case_id: str,
         purpose: str,
         consented_terms: str,
-        ip_address: Optional[str] = "127.0.0.1"
-    ) -> Dict[str, Any]:
+        ip_address: str | None = "127.0.0.1"
+    ) -> dict[str, Any]:
         timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         consent_string = f"{user_id}:{case_id}:{purpose}:{consented_terms}:{timestamp}"
         consent_hash = hashlib.sha256(consent_string.encode()).hexdigest()

@@ -1,8 +1,8 @@
-import os
-import json
-import re
 import glob
-from typing import List, Dict, Any, Optional, Tuple
+import json
+import os
+import re
+from typing import Any
 
 BACKEND_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -23,7 +23,7 @@ KB_SUBFOLDERS = [
 
 # Default source authority metadata derived from the knowledge folder.
 # authority_level mirrors authority_rank (1 = Act/Gazette ... 5 = Academic/Secondary)
-FOLDER_SOURCE_META: Dict[str, Dict[str, Any]] = {
+FOLDER_SOURCE_META: dict[str, dict[str, Any]] = {
     "patents":       {"authority": "Indian Patent Office (CGPDTM)", "jurisdiction": "India", "authority_level": 1,
                       "category": "patent statute"},
     "regulations":   {"authority": "Indian Regulatory Authority (CDSCO / FSSAI)", "jurisdiction": "India", "authority_level": 2,
@@ -82,7 +82,7 @@ def _flatten_json_text(content: str) -> str:
     except json.JSONDecodeError:
         return content
 
-    parts: List[str] = []
+    parts: list[str] = []
     stack = [data]
     while stack:
         node = stack.pop()
@@ -118,10 +118,10 @@ _META_KEYS = {
 }
 
 
-def _parse_metadata_headers(content: str) -> Tuple[Dict[str, str], str]:
-    meta: Dict[str, str] = {}
+def _parse_metadata_headers(content: str) -> tuple[dict[str, str], str]:
+    meta: dict[str, str] = {}
     lines = content.splitlines()
-    body_lines: List[str] = []
+    body_lines: list[str] = []
     consumed = 0
     for i, line in enumerate(lines[:25]):
         low = line.strip().lower()
@@ -151,14 +151,14 @@ def _looks_like_heading(line: str) -> bool:
     return False
 
 
-def _structure_chunks(text: str, chunk_size: int = 700, overlap: int = 120) -> List[Dict[str, str]]:
+def _structure_chunks(text: str, chunk_size: int = 700, overlap: int = 120) -> list[dict[str, str]]:
     """Section-aware chunking.
 
     Splits on blank lines, keeps short heading-like lines attached to the chunk
     that follows, and emits each chunk with a section_heading when available.
     """
-    chunks: List[Dict[str, str]] = []
-    current: List[str] = []
+    chunks: list[dict[str, str]] = []
+    current: list[str] = []
     current_heading: str = ""
     current_words = 0
 
@@ -198,7 +198,7 @@ def _structure_chunks(text: str, chunk_size: int = 700, overlap: int = 120) -> L
     return chunks or [{"content": text[:2000], "section_heading": ""}]
 
 
-def _chunk_text(content: str, chunk_size: int = 800, overlap: int = 150) -> List[str]:
+def _chunk_text(content: str, chunk_size: int = 800, overlap: int = 150) -> list[str]:
     words = content.split()
     chunks = []
     for i in range(0, len(words), chunk_size - overlap):
@@ -303,7 +303,7 @@ def _extract_publication_year(content: str) -> int:
     return 0
 
 
-def _chunk_patent_document(content: str) -> List[Dict[str, str]]:
+def _chunk_patent_document(content: str) -> list[dict[str, Any]]:
     """
     Patent-specific chunking:
     - Title: one chunk
@@ -311,7 +311,7 @@ def _chunk_patent_document(content: str) -> List[Dict[str, str]]:
     - Claims: ONE claim per chunk (critical for prior-art matching)
     - Description: overlapping window chunks (700 words, 120 overlap)
     """
-    chunks: List[Dict[str, str]] = []
+    chunks: list[dict[str, Any]] = []
     patent_num = _extract_patent_number(content)
     pub_year = _extract_publication_year(content)
 
@@ -364,9 +364,9 @@ def _chunk_patent_document(content: str) -> List[Dict[str, str]]:
     return chunks
 
 
-def _chunk_regulatory_document(content: str) -> List[Dict[str, str]]:
+def _chunk_regulatory_document(content: str) -> list[dict[str, str]]:
     """Regulatory document chunking: per-section with overlap."""
-    chunks: List[Dict[str, str]] = []
+    chunks: list[dict[str, str]] = []
     sections = _split_by_section_headers(content, _REGULATORY_SECTION_PATTERNS)
 
     if not sections:
@@ -390,9 +390,9 @@ def _chunk_regulatory_document(content: str) -> List[Dict[str, str]]:
     return chunks
 
 
-def _chunk_api_document(content: str) -> List[Dict[str, str]]:
+def _chunk_api_document(content: str) -> list[dict[str, str]]:
     """API (Ayurvedic Pharmacopoeia) monograph chunking."""
-    chunks: List[Dict[str, str]] = []
+    chunks: list[dict[str, str]] = []
     sections = _split_by_section_headers(content, _API_SECTION_PATTERNS)
 
     if not sections:
@@ -418,8 +418,8 @@ def _chunk_api_document(content: str) -> List[Dict[str, str]]:
 
 def _split_by_section_headers(
     content: str,
-    patterns: List[tuple],
-) -> List[Tuple[str, str]]:
+    patterns: list[tuple],
+) -> list[tuple[str, str]]:
     """Split content by detected section headers."""
     # Find all section boundaries
     boundaries = []
@@ -442,7 +442,7 @@ def _split_by_section_headers(
     return sections
 
 
-def _split_individual_claims(text: str) -> List[str]:
+def _split_individual_claims(text: str) -> list[str]:
     """Split patent claims into individual claim chunks."""
     # Remove the header
     header_match = re.search(
@@ -467,7 +467,7 @@ def _split_individual_claims(text: str) -> List[str]:
     return claims
 
 
-def _add_doc_metadata(doc: Dict[str, Any], filepath: str, category: str, file_meta: Dict[str, str], chunk: Dict[str, str], index: int) -> Dict[str, Any]:
+def _add_doc_metadata(doc: dict[str, Any], filepath: str, category: str, file_meta: dict[str, str], chunk: dict[str, Any], index: int) -> dict[str, Any]:
     stem = os.path.splitext(os.path.basename(filepath))[0]
     folder_defaults = FOLDER_SOURCE_META.get(category, {})
     relpath = os.path.relpath(filepath, BACKEND_ROOT).replace(os.sep, "/")
@@ -497,8 +497,8 @@ def _add_doc_metadata(doc: Dict[str, Any], filepath: str, category: str, file_me
     }
 
 
-def load_documents_from_dir(base_dir: str, source_category: str, recursive: bool = True) -> List[Dict[str, Any]]:
-    documents: List[Dict[str, Any]] = []
+def load_documents_from_dir(base_dir: str, source_category: str, recursive: bool = True) -> list[dict[str, Any]]:
+    documents: list[dict[str, Any]] = []
     if not os.path.isdir(base_dir):
         return documents
 
@@ -508,7 +508,7 @@ def load_documents_from_dir(base_dir: str, source_category: str, recursive: bool
         matches += [m for m in sorted(glob.glob(os.path.join(base_dir, ext))) if m not in matches]
         for filepath in matches:
             try:
-                with open(filepath, "r", encoding="utf-8", errors="replace") as f:
+                with open(filepath, encoding="utf-8", errors="replace") as f:
                     content = f.read()
                 if ext == "*.json":
                     content = _flatten_json_text(content)
@@ -548,8 +548,8 @@ def load_documents_from_dir(base_dir: str, source_category: str, recursive: bool
     return documents
 
 
-def load_pdfs_from_dir(base_dir: str, source_category: str, recursive: bool = True) -> List[Dict[str, Any]]:
-    documents: List[Dict[str, Any]] = []
+def load_pdfs_from_dir(base_dir: str, source_category: str, recursive: bool = True) -> list[dict[str, Any]]:
+    documents: list[dict[str, Any]] = []
     try:
         import fitz
     except Exception:
@@ -590,7 +590,7 @@ def load_pdfs_from_dir(base_dir: str, source_category: str, recursive: bool = Tr
     return documents
 
 
-def list_reference_links(root: str = None) -> List[Dict[str, str]]:
+def list_reference_links(root: str | None = None) -> list[dict[str, str]]:
     root = root or kb_root()
     links_file = os.path.join(root, "links", "resources.json")
     urls = [u for u in (
@@ -603,7 +603,7 @@ def list_reference_links(root: str = None) -> List[Dict[str, str]]:
     ) if u.startswith("http")]
     if os.path.exists(links_file):
         try:
-            with open(links_file, "r", encoding="utf-8") as f:
+            with open(links_file, encoding="utf-8") as f:
                 data = json.load(f)
             if isinstance(data, list):
                 urls = [str(item) for item in data]
@@ -612,11 +612,11 @@ def list_reference_links(root: str = None) -> List[Dict[str, str]]:
     return [{"url": u} for u in urls]
 
 
-def collect_knowledge_documents(root: str = None) -> List[Dict[str, Any]]:
+def collect_knowledge_documents(root: str | None = None) -> list[dict[str, Any]]:
     root = root or kb_root()
     ensure_kb_layout()
 
-    all_documents: List[Dict[str, Any]] = []
+    all_documents: list[dict[str, Any]] = []
 
     data_base = os.path.join(BACKEND_ROOT, "data")
     for sub in ["pharmacopoeia", "ayurveda", "regulations", "patents", "pubmed", "who", "metadata", "official"]:
@@ -628,11 +628,11 @@ def collect_knowledge_documents(root: str = None) -> List[Dict[str, Any]]:
         all_documents.extend(load_pdfs_from_dir(os.path.join(root, sub), sub))
 
     knowledge_dir = os.path.join(BACKEND_ROOT, "app", "knowledge")
-    for kfile in ["acts_and_gazettes.json", "api_monographs.json", "botanical_synonyms.json", "permitted_tk_prior_art.json"]:
+    for kfile in ["acts_and_gazettes.json", "api_monographs.json", "botanical_synonyms.json", "permitted_tk_prior_art.json", "treaties_metadata.json", "legal_glossary.json"]:
         abs_path = os.path.join(knowledge_dir, kfile)
         if os.path.exists(abs_path):
             try:
-                with open(abs_path, "r", encoding="utf-8") as f:
+                with open(abs_path, encoding="utf-8") as f:
                     content = _flatten_json_text(f.read())
                 if content.strip():
                     stem = os.path.splitext(kfile)[0]
@@ -674,7 +674,7 @@ def collect_knowledge_documents(root: str = None) -> List[Dict[str, Any]]:
     return all_documents
 
 
-def find_relevant_images(query: str, root: str = None, top_k: int = 3) -> List[str]:
+def find_relevant_images(query: str, root: str | None = None, top_k: int = 3) -> list[str]:
     root = root or kb_root()
     img_dir = os.path.join(root, "images")
     if not os.path.isdir(img_dir):

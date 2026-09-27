@@ -1,10 +1,11 @@
 import json
 import os
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
-from app.services.passport_engine import PassportEngine
+
 from app.services.ingredient_resolver import IngredientResolverService
+from app.services.passport_engine import PassportEngine
 from app.services.retrieval_engine import HybridRetrievalEngine
 
 router = APIRouter(prefix="/screening", tags=["IP & TK Screening"])
@@ -13,7 +14,7 @@ class ScreeningRequest(BaseModel):
     passport_id: str
 
 @router.post("/ip-tk")
-async def screen_ip_tk(req: ScreeningRequest):
+def screen_ip_tk(req: ScreeningRequest):
     passport = PassportEngine.get_passport(req.passport_id)
     if not passport:
         raise HTTPException(status_code=404, detail="Passport not found")
@@ -29,7 +30,7 @@ async def screen_ip_tk(req: ScreeningRequest):
     tk_path = os.path.join(os.path.dirname(__file__), "..", "..", "knowledge", "permitted_tk_prior_art.json")
     tk_records = []
     if os.path.exists(tk_path):
-        with open(tk_path, "r", encoding="utf-8") as f:
+        with open(tk_path, encoding="utf-8") as f:
             tk_records = json.load(f)
 
     # Statutory citation for Section 3(p)
