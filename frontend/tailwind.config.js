@@ -22,6 +22,20 @@ module.exports = {
           500: '#10b981', 600: '#059669',
           700: '#047857', 800: '#065f46', 900: '#064e3b',
         },
+        // Public-portal palette: the flat, high-contrast grammar used by
+        // Indian government websites. No gradients, no glass, 1px rules.
+        gov: {
+          navy:   '#0a1f44',  // utility strip
+          blue:   '#0d3b8f',  // primary navigation bar
+          blueDk: '#082a66',
+          link:   '#0b4a9e',
+          saffron:'#ff9933',
+          green:  '#138808',
+          rule:   '#d4d7dd',  // hairline borders
+          wash:   '#f2f5f9',  // banded section background
+          ink:    '#1b1f24',
+          mute:   '#5b6472',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],

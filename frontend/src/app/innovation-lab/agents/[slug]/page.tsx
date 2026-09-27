@@ -243,7 +243,7 @@ export default function AgentDetailPage() {
 
   const nextDisabled = current ? (current.required && !isAnswered(current, answers)) : false;
 
-  const collectInputs = (): Record<string, unknown> => {
+  const collectInputs = useCallback((): Record<string, unknown> => {
     const inputs: Record<string, unknown> = {};
     for (const q of questions) {
       const v = answers[q.key];
@@ -256,7 +256,7 @@ export default function AgentDetailPage() {
     }
     if (doc?.text.trim()) inputs.document_text = doc.text.trim();
     return inputs;
-  };
+  }, [questions, answers, doc]);
 
   const handleUploadDoc = async (file: File) => {
     if (!file || !agent) return;
@@ -286,7 +286,7 @@ export default function AgentDetailPage() {
     } finally {
       setUnderstandingLoading(false);
     }
-  }, [slug, questions, answers]);
+  }, [slug, collectInputs]);
 
   const handleContinue = () => {
     if (current && current.required && !isAnswered(current, answers)) return;
