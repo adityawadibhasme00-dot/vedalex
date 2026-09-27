@@ -5,9 +5,9 @@ from app.main import app
 
 HTTP_METHODS = frozenset({"GET", "POST", "PUT", "PATCH", "DELETE"})
 
-EXPECTED_ROUTER_COUNT = 31
-EXPECTED_PATH_COUNT = 110
-EXPECTED_OPERATION_COUNT = 114
+EXPECTED_ROUTER_COUNT = 32
+EXPECTED_PATH_COUNT = 114
+EXPECTED_OPERATION_COUNT = 119
 
 EXPECTED_PREFIXES = frozenset(
     {
@@ -33,6 +33,7 @@ EXPECTED_PREFIXES = frozenset(
         "innolab",
         "institutional",
         "intelligence",
+        "jobs",
         "label",
         "novelty",
         "passport",
@@ -63,6 +64,14 @@ EXPECTED_SECURED_OPERATIONS = frozenset(
         ("GET", "/api/v1/dpdp/audit-chain/verify"),
         ("POST", "/api/v1/dpdp/purge-retention"),
         ("POST", "/api/v1/fees/estimate"),
+        # Background jobs: submit is admin-only, reads require a user. These
+        # handlers re-fetch government sources and rewrite the retrieval index,
+        # so an unauthenticated POST here is a DoS lever.
+        ("GET", "/api/v1/jobs"),
+        ("GET", "/api/v1/jobs/handlers"),
+        ("GET", "/api/v1/jobs/stats"),
+        ("GET", "/api/v1/jobs/{job_id}"),
+        ("POST", "/api/v1/jobs"),
         ("POST", "/api/v1/prefill/{form}"),
         ("POST", "/api/v1/rag/ask"),
         ("POST", "/api/v1/rag/boolean-search"),

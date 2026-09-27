@@ -24,10 +24,11 @@ import hashlib
 import logging
 import os
 import re
-import time
 from html import unescape
 from typing import Any
 from urllib.parse import quote, unquote, urlparse
+
+from app.core.cache import get_cache
 
 logger = logging.getLogger(__name__)
 
@@ -182,27 +183,23 @@ OFFICIAL_SOURCES: list[dict[str, Any]] = [
 
 
 # ---------------------------------------------------------------------------
-# In-memory TTL cache
+# TTL cache (Redis-shared, in-memory fallback)
 # ---------------------------------------------------------------------------
-
-_cache: dict[str, tuple[float, str]] = {}
+# Named `_cache` as well as `_page_cache`: tests (and callers that want to
+# force a cold fetch) clear this object directly, and the two names are the same
+# SharedCache instance, so clearing one clears both.
+_page_cache = get_cache("official_web", default_ttl=CACHE_TTL_SEC,
+                        max_memory_entries=256)
+_cache = _page_cache
 
 
 def _cache_get(key: str) -> str | None:
-    entry = _cache.get(key)
-    if entry is None:
-        return None
-    ts, value = entry
-    if time.time() - ts > CACHE_TTL_SEC:
-        _cache.pop(key, None)
-        return None
-    return value
+    value = _page_cache.get(key)
+    return value if isinstance(value, str) else None
 
 
 def _cache_set(key: str, value: str) -> str:
-    if len(_cache) > 256:
-        _cache.clear()
-    _cache[key] = (time.time(), value)
+    _page_cache.set(key, value)
     return value
 
 
@@ -511,10 +508,15 @@ def fetch_official_sources(query: str, top_k: int = 3) -> list[dict[str, Any]]:
 
 def get_status() -> dict[str, Any]:
     """Health/status metadata for the live-web retriever."""
+    cache_stats = _page_cache.stats()
     return {
         "enabled": _live_web_enabled(),
         "official_domains": [s["domain"] for s in OFFICIAL_SOURCES],
-        "cache_entries": len(_cache),
+        "cache": cache_stats,
+        # Kept as a flat field because the admin status endpoint surfaces it;
+        # `cache.backend` says whether this is the shared or the local view.
+        "cache_entries": cache_stats["memory_entries"],
+        "cache_backend": cache_stats["backend"],
         "cache_ttl_sec": CACHE_TTL_SEC,
         "timeout_sec": HTTP_TIMEOUT_SEC,
         "max_fetches_per_query": MAX_FETCHES_PER_QUERY,

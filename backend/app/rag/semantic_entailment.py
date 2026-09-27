@@ -27,6 +27,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
 
+from app.core.cache import get_cache
+
 logger = logging.getLogger(__name__)
 
 
@@ -144,14 +146,20 @@ def _cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
 # sentence encoder (default: all-MiniLM-L6-v2) gives ~10x faster embedding
 # on CPU with comparable short-text cosine similarity. The cache is
 # keyed per model so mixed-model runs never corrupt each other.
-_EVIDENCE_VECTOR_CACHE: dict[str, Any] = {}
-_EVIDENCE_CACHE_MAX = 512
+#
+# Backed by the shared cache so replicas reuse each other's vectors instead of
+# re-embedding the same gazette passage once per process. The previous policy
+# flushed the entire cache the moment it reached capacity, which threw away the
+# hot set on every insert past the limit; it is now a bounded LRU.
+_evidence_vector_cache = get_cache(
+    "entailment_vectors", default_ttl=86400.0, max_memory_entries=512
+)
 
 
 def _cache_evidence_vector(text: str, vector: Any, model_key: str) -> Any:
-    if len(_EVIDENCE_VECTOR_CACHE) >= _EVIDENCE_CACHE_MAX:
-        _EVIDENCE_VECTOR_CACHE.clear()
-    _EVIDENCE_VECTOR_CACHE[f"{model_key}:{text}"] = vector
+    _evidence_vector_cache.set(
+        _evidence_vector_cache.make_key(model_key, text), vector
+    )
     return vector
 
 
@@ -164,10 +172,13 @@ def _get_evidence_vectors(
     vectors: list[Any] = [None] * len(evidence_texts)
     missing_idx: list[int] = []
     missing_texts: list[str] = []
+    keys: list[str] = []
     for i, text in enumerate(evidence_texts):
-        cache_key = f"{model_key}:{text}"
-        if cache_key in _EVIDENCE_VECTOR_CACHE:
-            vectors[i] = _EVIDENCE_VECTOR_CACHE[cache_key]
+        cache_key = _evidence_vector_cache.make_key(model_key, text)
+        keys.append(cache_key)
+        cached = _evidence_vector_cache.get(cache_key)
+        if cached is not None:
+            vectors[i] = cached
         else:
             missing_idx.append(i)
             missing_texts.append(text)
@@ -176,7 +187,7 @@ def _get_evidence_vectors(
         new_vecs = engine(missing_texts)
         for j, text in enumerate(missing_texts):
             vec = new_vecs[j]
-            _cache_evidence_vector(text, vec, model_key)
+            _evidence_vector_cache.set(keys[missing_idx[j]], vec)
             vectors[missing_idx[j]] = vec
 
     return vectors

@@ -28,6 +28,8 @@ import time
 from typing import Any
 
 from app.ingestion.pipeline import STATE_FILE, _load_state, _save_state
+from app.core.lock import inspect as _lock_inspect
+from app.core.lock import single_writer
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +70,21 @@ def _poll_interval() -> int:
         return max(60, int(os.environ.get("IPSAKTI_INGESTION_POLL_SEC", "3600")))
     except ValueError:
         return 3600
+
+
+def _ingest_lock_ttl() -> int:
+    """Lease length for the single-writer guard.
+
+    Must exceed the worst-case cycle (many slow official sources, each with its
+    own retry/backoff) so a healthy holder is never declared dead mid-run.  If
+    the process dies the lease still expires and the schedule self-heals.
+    """
+    try:
+        return max(
+            120, int(os.environ.get("IPSAKTI_INGESTION_LOCK_TTL", "1800"))
+        )
+    except ValueError:
+        return 1800
 
 
 def _read_health_state() -> dict[str, Any]:
@@ -239,21 +256,38 @@ def _scheduler_loop() -> None:
             with _lock:
                 due = _due_sources()
             if due:
-                with _lock:
-                    results = [_ingest_source_guarded(sid) for sid in due]
-                    ok_now = [r["source_id"] for r in results if r.get("ok")]
-                    _last_summary = {
-                        "ran_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
-                        "due": due,
-                        "ok_sources": ok_now,
-                        "failed_sources": [r["source_id"] for r in results if not r.get("ok")],
-                        "results": results,
-                    }
-                    logger.info("Scheduled ingestion ran for %s: %s", due, _last_summary)
-                if any(sid.startswith("patent") for sid in ok_now):
-                    watch = _run_watch_cycle_guarded()
-                    if watch:
-                        logger.info("Scheduled patent-watch cycle: %s", watch)
+                # Single-writer guard: only one replica may scrape the official
+                # sources in a given cycle.  Without this, N replicas means N
+                # concurrent crawls of IP India / India Code / WIPO, which gets
+                # the deployment rate-limited and silently stops the Law
+                # Sentinel from noticing amended clauses.
+                with single_writer("ingestion", ttl=_ingest_lock_ttl()) as held:
+                    if not held:
+                        _last_summary = {
+                            "ran_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                            "due": due,
+                            "ok_sources": [],
+                            "failed_sources": [],
+                            "results": [],
+                            "skipped": "another replica holds the ingestion lock",
+                        }
+                        _stop_event.wait(_poll_interval())
+                        continue
+                    with _lock:
+                        results = [_ingest_source_guarded(sid) for sid in due]
+                        ok_now = [r["source_id"] for r in results if r.get("ok")]
+                        _last_summary = {
+                            "ran_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                            "due": due,
+                            "ok_sources": ok_now,
+                            "failed_sources": [r["source_id"] for r in results if not r.get("ok")],
+                            "results": results,
+                        }
+                        logger.info("Scheduled ingestion ran for %s: %s", due, _last_summary)
+                    if any(sid.startswith("patent") for sid in ok_now):
+                        watch = _run_watch_cycle_guarded()
+                        if watch:
+                            logger.info("Scheduled patent-watch cycle: %s", watch)
         except Exception as exc:
             logger.exception("Scheduled ingestion cycle failed: %s", exc)
         _stop_event.wait(_poll_interval())
@@ -294,7 +328,45 @@ def get_scheduler_status() -> dict[str, Any]:
         "max_attempts_per_source": _max_attempts(),
         "backoff_base_sec": _backoff_base(),
         "thread_alive": bool(_thread is not None and _thread.is_alive()),
+        "single_writer_lock": _lock_inspect("ingestion"),
+        "lock_ttl_sec": _ingest_lock_ttl(),
         "last_summary": _last_summary,
         "source_health": _read_health_state(),
         "state_file": STATE_FILE,
     }
+
+
+def run_forever() -> None:  # pragma: no cover - process entrypoint
+    """Run the ingestion loop in the foreground until SIGINT/SIGTERM.
+
+    This is the dedicated-worker entrypoint (``python -m
+    app.services.ingestion_scheduler``).  It exists so the schedule is a
+    deployment decision rather than a side effect of the web process: the API
+    replicas can be scaled to zero and restarted freely while ingestion keeps
+    its cadence.  The single-writer lock still applies, so running several of
+    these is safe — the extras simply skip each cycle.
+    """
+    import signal
+
+    logger.info(
+        "Ingestion worker starting (poll=%ss, cadence=%s, lock_ttl=%ss)",
+        _poll_interval(), _CADENCE_SECONDS, _ingest_lock_ttl(),
+    )
+
+    def _stop(*_: Any) -> None:
+        logger.info("Ingestion worker: shutdown requested")
+        _stop_event.set()
+
+    signal.signal(signal.SIGINT, _stop)
+    signal.signal(signal.SIGTERM, _stop)
+
+    _stop_event.clear()
+    _scheduler_loop()
+
+
+if __name__ == "__main__":  # pragma: no cover
+    logging.basicConfig(
+        level=os.environ.get("LOG_LEVEL", "INFO").upper(),
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
+    run_forever()

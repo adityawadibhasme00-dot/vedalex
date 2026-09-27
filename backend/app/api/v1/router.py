@@ -18,6 +18,7 @@ from app.api.v1.handoff_router import router as handoff_router
 from app.api.v1.innolab_router import router as innolab_router
 from app.api.v1.institutional_router import router as institutional_router
 from app.api.v1.intelligence_router import router as intelligence_router
+from app.api.v1.jobs_router import router as jobs_router
 from app.api.v1.label_router import router as label_router
 from app.api.v1.media_router import router as media_router
 from app.api.v1.novelty_router import router as novelty_router
@@ -65,3 +66,4 @@ api_router.include_router(rag_router)
 api_router.include_router(intelligence_router)
 api_router.include_router(innolab_router)
 api_router.include_router(novelty_router)
+api_router.include_router(jobs_router)

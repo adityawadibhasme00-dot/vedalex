@@ -28,6 +28,11 @@ OPENAI_3_LARGE_DIM = 1536
 HASH_DIM = 192
 
 
+def _model_server_url() -> str:
+    """Base URL of the model sidecar, or "" when running fully in-process."""
+    return (os.environ.get("IPSAKTI_MODEL_SERVER_URL") or "").strip().rstrip("/")
+
+
 class EmbeddingEngine:
     """
     Singleton embedding engine with provider fallback chain:
@@ -63,6 +68,14 @@ class EmbeddingEngine:
         self._init_provider()
 
     def _init_provider(self):
+        # Priority 0: the model sidecar. When reachable, this process never
+        # loads BGE-M3, which is what makes the web tier cheap to replicate.
+        if _model_server_url() and self._probe_sidecar():
+            self._provider = "model-server"
+            self._dim = BGE_M3_DIM
+            logger.info("Embedding engine ready: model-server sidecar (dim=%s)", self._dim)
+            return
+
         # Priority 1: BGE-M3 via sentence-transformers
         if os.environ.get("IPSAKTI_USE_BGE_M3", "1").lower() != "0":
             try:
@@ -98,8 +111,49 @@ class EmbeddingEngine:
             "Set IPSAKTI_USE_BGE_M3=1 or provide OPENAI_API_KEY for real embeddings."
         )
 
+    def _probe_sidecar(self) -> bool:
+        """One-shot readiness check so a down sidecar degrades, never breaks."""
+        try:
+            import httpx
+
+            resp = httpx.get(f"{_model_server_url()}/health", timeout=3.0)
+            if resp.status_code == 200 and resp.json().get("embedder_loaded"):
+                return True
+            logger.warning("Model sidecar not ready (%s); loading in-process", resp.status_code)
+            return False
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Model sidecar unreachable (%s); loading in-process", exc)
+            return False
+
+    def _embed_sidecar(self, texts: list[str]) -> np.ndarray:
+        import httpx
+
+        base = _model_server_url()
+        # Chunk to the sidecar's batch cap; a single oversized request is the
+        # most common way to get a 422 back from the sidecar.
+        out: list[list[float]] = []
+        size = 64
+        with httpx.Client(timeout=120.0) as client:
+            for i in range(0, len(texts), size):
+                batch = texts[i: i + size]
+                resp = client.post(
+                    f"{base}/embed", json={"texts": batch, "normalize": True}
+                )
+                resp.raise_for_status()
+                out.extend(resp.json()["vectors"])
+        return np.array(out, dtype=np.float32)
+
     def embed(self, texts: list[str]) -> np.ndarray:
         """Embed a batch of texts and return (N, dim) float32 array."""
+        if self._provider == "model-server":
+            try:
+                return self._embed_sidecar(texts)
+            except Exception as exc:  # noqa: BLE001
+                # Demote permanently so we stop paying the failed round-trip on
+                # every subsequent request in this process.
+                logger.error("Sidecar embedding failed (%s); switching in-process", exc)
+                self._provider = "unknown"
+                self._init_provider()
         if self._provider == "bge-m3" and self._model is not None:
             return self._embed_bge(texts)
         elif self._provider == "openai-3-large" and self._openai_client is not None:

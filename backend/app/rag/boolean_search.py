@@ -26,6 +26,8 @@ import os
 import re
 from typing import Any
 
+from app.core.cache import get_cache
+
 logger = logging.getLogger(__name__)
 
 _FIELD_ALIASES = {
@@ -432,32 +434,76 @@ def _leaf_terms(node: _Node) -> list[str]:
 # --------------------------------------------------------------------------
 # Corpus access
 # --------------------------------------------------------------------------
+#
+# The corpus itself stays in-process: it is the *same list object* as
+# ``HybridRetriever._bm25_corpus``, so caching it again would double memory for
+# no gain, and pushing megabytes of documents through Redis on every replica
+# would be worse.  What actually needs to be shared is *invalidation* — after a
+# reindex one replica knows the corpus changed, and every other replica must
+# notice.  A generation counter in the shared cache carries that signal.
+#
+# (The expensive part this guards against is the ``get_all_documents(limit=5000)``
+# Qdrant round-trip, which used to be repeated per process after every restart.)
+
+_corpus_cache = get_cache("boolean_corpus", default_ttl=0, max_memory_entries=1)
+_CORPUS_GENERATION_KEY = "generation"
 
 _CORPUS_CACHE: list[dict[str, Any]] = []
+_CORPUS_LOADED_AT_GENERATION: str | None = None
+
+
+def _current_generation() -> str:
+    value = _corpus_cache.get(_CORPUS_GENERATION_KEY)
+    if isinstance(value, str) and value:
+        return value
+    return "0"
 
 
 def invalidate_corpus_cache():
-    """Drop the cached corpus (call after a reindex to see new documents)."""
-    global _CORPUS_CACHE
+    """Drop the cached corpus (call after a reindex to see new documents).
+
+    Bumps the shared generation counter so replicas that are not the one
+    performing the reindex also drop their copy.
+    """
+    global _CORPUS_CACHE, _CORPUS_LOADED_AT_GENERATION
     _CORPUS_CACHE = []
+    _CORPUS_LOADED_AT_GENERATION = None
+    _corpus_cache.set(
+        _CORPUS_GENERATION_KEY, f"{int(_current_generation() or 0) + 1}", ttl=0
+    )
 
 
 def _load_corpus() -> list[dict[str, Any]]:
     """Full local retrieval corpus (shared with the hybrid pipeline)."""
-    global _CORPUS_CACHE
+    global _CORPUS_CACHE, _CORPUS_LOADED_AT_GENERATION
+    generation = _current_generation()
     if _CORPUS_CACHE:
-        return _CORPUS_CACHE
+        if _CORPUS_LOADED_AT_GENERATION is None:
+            # Corpus was supplied by a caller (tests, or a custom index) rather
+            # than loaded here, so there is no recorded generation to invalidate
+            # against. Adopt the current one and use it — an explicitly supplied
+            # corpus is authoritative.
+            _CORPUS_LOADED_AT_GENERATION = generation
+            return _CORPUS_CACHE
+        if _CORPUS_LOADED_AT_GENERATION == generation:
+            return _CORPUS_CACHE
+        # else: the generation moved (a reindex happened, possibly in another
+        # replica) — fall through and reload.
+    _CORPUS_CACHE = []
+    _CORPUS_LOADED_AT_GENERATION = None
     try:
         from app.rag.retrieval_pipeline import HybridRetriever
 
         if HybridRetriever._bm25_corpus:
             _CORPUS_CACHE = HybridRetriever._bm25_corpus
+            _CORPUS_LOADED_AT_GENERATION = generation
             return _CORPUS_CACHE
         from app.rag.qdrant_store import QdrantVectorStore
         docs = QdrantVectorStore().get_all_documents(limit=5000)
         if docs:
             HybridRetriever.build_bm25_index(docs)
             _CORPUS_CACHE = HybridRetriever._bm25_corpus
+            _CORPUS_LOADED_AT_GENERATION = generation
             return _CORPUS_CACHE
     except Exception as exc:
         logger.debug("boolean corpus via qdrant failed: %s", exc)
@@ -466,6 +512,7 @@ def _load_corpus() -> list[dict[str, Any]]:
         docs = collect_knowledge_documents()
         if docs:
             _CORPUS_CACHE = docs
+            _CORPUS_LOADED_AT_GENERATION = generation
             return _CORPUS_CACHE
     except Exception as exc:
         logger.debug("boolean corpus via kb failed: %s", exc)

@@ -39,6 +39,36 @@ services:
     volumes:
       - redis_data:/data
 
+  # Holds BGE-M3 + the BGE cross-encoder. Keeping the weights out of the web
+  # process is what lets the backend scale horizontally: replicas no longer each
+  # load ~4GB of identical model state, so they stay cheap to autoscale.
+  # Scale THIS service for throughput; scale `backend` for request count.
+  modelserver:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ipsakti_modelserver
+    restart: always
+    command: >
+      python -m uvicorn app.serving.model_server:app
+      --host 0.0.0.0 --port 8081 --workers 1
+    environment:
+      - IPSAKTI_MODEL_DEVICE=cpu
+      - IPSAKTI_EMBEDDING_MODEL=BAAI/bge-m3
+      - IPSAKTI_RERANKER_MODEL=BAAI/bge-reranker-v2-m3
+      - IPSAKTI_USE_RERANKER=1
+      - HF_HOME=/app/.hf_cache
+    ports:
+      - "8081:8081"
+    volumes:
+      - model_cache:/app/.hf_cache
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request;urllib.request.urlopen('http://localhost:8081/health')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s
+
   backend:
     build:
       context: ./backend
@@ -58,6 +88,15 @@ services:
       - IPSAKTI_RAG_DEFAULT=hybrid
       - IPSAKTI_RAG_CACHE_TTL=3600
       - IPSAKTI_RAG_RATE_LIMIT=60
+      # Web tier delegates model work to the sidecar; leave unset to run
+      # fully in-process (single-replica local development).
+      - IPSAKTI_MODEL_SERVER_URL=http://modelserver:8081
+      # Only one replica may scrape the official statutory sources per cycle.
+      - IPSAKTI_INGESTION_LOCK_TTL=1800
+      - IPSAKTI_DB_POOL_SIZE=20
+      - IPSAKTI_DB_MAX_OVERFLOW=40
+      # The API only enqueues; `jobworker` is the single execution path.
+      - IPSAKTI_INLINE_JOBS=0
     ports:
       - "8000:8000"
     volumes:
@@ -70,6 +109,70 @@ services:
         condition: service_healthy
       qdrant:
         condition: service_started
+      redis:
+        condition: service_started
+      modelserver:
+        condition: service_healthy
+
+  # Executes background jobs (corpus reindex, statutory harvest, law sentinel,
+  # dossier export). Split from `backend` so a 4-minute reindex cannot occupy a
+  # request worker, and so the two can be scaled and restarted independently.
+  # `restart: unless-stopped` matters: a job killed mid-run is left in `running`
+  # until its lease expires, and the worker picks it up on restart.
+  jobworker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ipsakti_jobworker
+    restart: unless-stopped
+    command: ["python", "-m", "app.core.jobs"]
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql://ipsakti:ipsakti_secret@postgres:5432/ipsakti
+      - QDRANT_URL=http://qdrant:6333
+      - REDIS_URL=redis://redis:6379/0
+      - IPSAKTI_MODEL_SERVER_URL=http://modelserver:8081
+      - IPSAKTI_INGESTION_LOCK_TTL=1800
+      - IPSAKTI_INLINE_JOBS=0
+    volumes:
+      - ./backend/exports:/app/exports
+      - ./backend/data:/app/data
+      - ./backend/app/rag/faiss_index:/app/app/rag/faiss_index
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      modelserver:
+        condition: service_healthy
+
+  # Ingestion loop. Kept as its own process so the schedule is a deployment
+  # decision: it polls official statutory sources on a timer, and the
+  # single-writer lock guarantees only one replica of it does that per cycle.
+  ingestionworker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ipsakti_ingestionworker
+    restart: unless-stopped
+    command: ["python", "-m", "app.services.ingestion_scheduler"]
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql://ipsakti:ipsakti_secret@postgres:5432/ipsakti
+      - QDRANT_URL=http://qdrant:6333
+      - REDIS_URL=redis://redis:6379/0
+      - IPSAKTI_MODEL_SERVER_URL=http://modelserver:8081
+      - IPSAKTI_INGESTION_LOCK_TTL=1800
+    volumes:
+      - ./backend/data:/app/data
+      - ./backend/app/rag/faiss_index:/app/app/rag/faiss_index
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      modelserver:
+        condition: service_healthy
 
   frontend:
     build:
@@ -94,3 +197,4 @@ volumes:
   postgres_data:
   qdrant_data:
   redis_data:
+  model_cache:

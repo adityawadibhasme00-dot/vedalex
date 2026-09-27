@@ -1,4 +1,5 @@
 import base64
+import time as _time
 from typing import Any
 from urllib.parse import quote
 
@@ -356,23 +357,26 @@ def test_cache_get_returns_none_for_missing_key():
 
 
 def test_cache_get_drops_expired_entries():
-    import time as _time
-    owr._cache["stale"] = (_time.time() - owr.CACHE_TTL_SEC - 1, "old")
+    # Entries are written through the SharedCache API, not as raw tuples.
+    owr._cache.set("stale", "old", ttl=0.01)
+    assert owr._cache_get("stale") == "old"
+    _time.sleep(0.05)
     assert owr._cache_get("stale") is None
-    assert "stale" not in owr._cache
 
 
 def test_cache_get_keeps_fresh_entries():
-    import time as _time
-    owr._cache["fresh"] = (_time.time(), "new")
+    owr._cache_set("fresh", "new")
     assert owr._cache_get("fresh") == "new"
 
 
-def test_cache_set_clears_when_over_capacity():
-    for i in range(257):
-        owr._cache[f"filler-{i}"] = (0.0, "x")
+def test_cache_set_stays_within_capacity():
+    # Over capacity the cache evicts oldest-first rather than wiping itself, so
+    # the entry just written must always survive.
+    for i in range(owr._page_cache.max_memory_entries + 8):
+        owr._cache_set(f"filler-{i}", "x")
     owr._cache_set("after", "y")
-    assert list(owr._cache) == ["after"]
+    assert owr._cache_get("after") == "y"
+    assert len(owr._page_cache._mem) <= owr._page_cache.max_memory_entries
 
 
 def test_allowed_domain_treats_malformed_authority_as_rejected():
