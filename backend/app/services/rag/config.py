@@ -12,7 +12,7 @@ import os
 import threading
 from typing import Any
 
-RAG_TYPES: list[str] = ["hybrid", "production", "graph", "agentic"]
+RAG_TYPES: list[str] = ["hybrid", "production", "graph", "agentic", "combined"]
 
 _ENV_TEMPLATE = {
     "default": "IPSAKTI_RAG_DEFAULT",
@@ -26,7 +26,7 @@ _ENV_TEMPLATE = {
 }
 
 _DEFAULTS: dict[str, Any] = {
-    "default": "hybrid",
+    "default": os.environ.get("IPSAKTI_RAG_DEFAULT", "combined"),
     "cache_ttl": int(os.environ.get("IPSAKTI_RAG_CACHE_TTL", "3600")),
     "rate_limit": int(os.environ.get("IPSAKTI_RAG_RATE_LIMIT", "60")),
     "redis_url": os.environ.get("REDIS_URL", ""),

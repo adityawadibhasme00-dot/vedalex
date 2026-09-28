@@ -59,7 +59,14 @@ def agentic_chat(
     current_user: User | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
-    """Run the complete agentic pipeline for one query."""
+    """Run the complete agentic pipeline for one query.
+
+    Enhanced with:
+    - Parallel claim verification
+    - Contradiction severity scoring
+    - Source attribution verification
+    - Response caching
+    """
     try:
         out = get_chain().execute(
             req.query.strip(),

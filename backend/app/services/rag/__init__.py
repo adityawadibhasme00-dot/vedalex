@@ -10,6 +10,7 @@ and existing local knowledge graph; nothing in the legacy pipeline is rewritten.
 """
 
 import app.services.rag.agentic_rag as _agentic  # noqa: F401
+import app.services.rag.combined_rag as _combined  # noqa: F401
 import app.services.rag.graph_rag as _graph  # noqa: F401
 import app.services.rag.hybrid_rag as _hybrid  # noqa: F401  (register side-effect)
 import app.services.rag.production_rag as _production  # noqa: F401

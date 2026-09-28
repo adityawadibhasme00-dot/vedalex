@@ -12,14 +12,14 @@ interface ActionCardProps {
 
 const colorClasses: Record<ActionCardProps['color'], { bg: string; border: string; iconBg: string }> = {
   emerald: {
-    bg: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800',
-    border: 'hover:border-emerald-300',
-    iconBg: 'bg-emerald-600',
+    bg: 'bg-green-50 hover:bg-green-100 text-green-800',
+    border: 'hover:border-green-300',
+    iconBg: 'bg-gov-green',
   },
   blue: {
     bg: 'bg-blue-50 hover:bg-blue-100 text-blue-800',
     border: 'hover:border-blue-300',
-    iconBg: 'bg-blue-600',
+    iconBg: 'bg-gov-blue',
   },
   amber: {
     bg: 'bg-amber-50 hover:bg-amber-100 text-amber-800',
@@ -34,9 +34,9 @@ export function ActionCard({ icon, label, description, color, onClick }: ActionC
     <button
       onClick={onClick}
       className={clsx(
-        'block w-full text-left p-6 rounded-2xl border-2 border-transparent bg-white shadow-sm',
+        'block w-full text-left p-6 rounded-xl border-2 border-transparent bg-white shadow-sm',
         c.bg, c.border,
-        'transition-all hover:scale-[1.02] hover:shadow-lg',
+        'transition-colors hover:shadow-md',
       )}
     >
       <div className="flex items-start gap-4">

@@ -1,4 +1,4 @@
-"""G6 — Unified RAG: auto-mode routing, fallback, and configure integration."""
+"""G6 — Unified RAG: combined-engine routing, fallback, and configure integration."""
 
 from __future__ import annotations
 
@@ -14,37 +14,36 @@ pytestmark = pytest.mark.integration
 # Selector (pure rules — offline)
 # ---------------------------------------------------------------------------
 
-def test_entity_lookup_routes_to_graph():
+def test_any_query_routes_to_combined():
     selection = select_rag_type("Withania somnifera")
-    assert selection["rag_type"] == "graph"
-    assert selection["reason"] == "short entity lookup"
+    assert selection["rag_type"] == "combined"
+    assert selection["reason"] == "all RAG engines combined into one"
 
 
-def test_question_routes_to_configured_default():
+def test_question_routes_to_combined_default():
     selection = select_rag_type("What is the patentability of turmeric extraction?")
-    assert selection["rag_type"] == "hybrid"
-    assert selection["reason"] == "configured default"
+    assert selection["rag_type"] == "combined"
 
 
-def test_multi_aspect_question_routes_to_agentic():
+def test_multi_aspect_question_routes_to_combined():
     selection = select_rag_type(
         "Compare patent and trademark strategy and list the deadlines"
     )
-    assert selection["rag_type"] == "agentic"
-    assert selection["reason"] == "multi-aspect question"
+    assert selection["rag_type"] == "combined"
 
 
 def test_default_of_auto_never_recurses():
     selection = select_rag_type(
         "Explain the registration process in full detail", default="auto"
     )
-    assert selection["rag_type"] == "hybrid"
+    assert selection["rag_type"] == "combined"
 
 
-def test_config_default_can_be_auto():
+def test_config_default_accepts_combined():
     reset_runtime()
     try:
-        assert update({"default": "auto"}) == {"default": "auto"}
+        assert update({"default": "graph"}) == {"default": "graph"}
+        assert update({"default": "combined"}) == {"default": "combined"}
         assert update({"default": "bogus"}) == {}
     finally:
         reset_runtime()
@@ -54,7 +53,7 @@ def test_config_default_can_be_auto():
 # Endpoint: auto mode
 # ---------------------------------------------------------------------------
 
-def test_search_auto_resolves_entity_lookup(api_client):
+def test_search_auto_resolves_combined(api_client):
     response = api_client.post(
         "/api/v1/rag/search",
         json={"query": "Withania somnifera", "rag_type": "auto"},
@@ -62,12 +61,11 @@ def test_search_auto_resolves_entity_lookup(api_client):
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
-    assert data["meta"]["auto_resolved"] == "graph"
-    assert data["meta"]["auto_reason"] == "short entity lookup"
-    assert data["rag_type"] in {"hybrid", "production", "graph", "agentic"}
+    assert data["meta"]["auto_resolved"] == "combined"
+    assert data["rag_type"] == "combined"
 
 
-def test_search_auto_resolves_multi_aspect_to_agentic(api_client):
+def test_search_auto_multi_aspect_resolves_combined(api_client):
     response = api_client.post(
         "/api/v1/rag/search",
         json={
@@ -76,7 +74,7 @@ def test_search_auto_resolves_multi_aspect_to_agentic(api_client):
         },
     )
     assert response.status_code == 200
-    assert response.json()["meta"]["auto_resolved"] == "agentic"
+    assert response.json()["meta"]["auto_resolved"] == "combined"
 
 
 # ---------------------------------------------------------------------------

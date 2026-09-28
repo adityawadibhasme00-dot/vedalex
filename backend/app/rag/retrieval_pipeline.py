@@ -8,11 +8,12 @@ Combines four retrieval strategies with cascading fallback:
   4. BGE Reranker (cross-encoder re-scoring)
 
 Pipeline flow:
-  Query -> Embed -> Qdrant Search (top 20)
+  Query -> Query Expansion -> Embed -> Qdrant Search (top 20)
        -> BM25 Search (top 20)
+       -> Multi-Query Retrieval (parallel)
        -> Merge + Deduplicate
        -> Metadata Filter
-       -> Rerank (top 10 -> top 5)
+       -> Adaptive Rerank (top N -> top K)
        -> Hallucination Check
        -> Confidence Calculation
        -> Return Verified Context
@@ -23,9 +24,218 @@ production-grade module.
 
 import logging
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
+
+# Query expansion synonyms for Ayurveda/IP domain
+QUERY_EXPANSION_SYNONYMS: dict[str, list[str]] = {
+    "ayurvedic": ["ayurveda", "traditional medicine", "herbal"],
+    "patent": ["intellectual property", "ip", "invention", "novelty"],
+    "formulation": ["composition", "preparation", "dosage form", "medicine"],
+    "ingredient": ["herb", "botanical", "api", "active compound"],
+    "compliance": ["regulatory", "legal", "guideline", "standard"],
+    "fssai": ["food safety", "ayurveda aahara", "nutraceutical"],
+    "cdsco": ["drug control", "schedule t", "gmp", "manufacturing"],
+    "tkdl": ["traditional knowledge", "prior art", "classical text"],
+    "section 3(p)": ["3p", "traditional knowledge exception", "patent exclusion"],
+    "abs": ["access benefit sharing", "nba", "biodiversity", "biological diversity"],
+    "dshea": ["dietary supplement", "fda", "us market", "structure function"],
+    "clinical": ["trial", "study", "efficacy", "safety data"],
+    "stability": ["shelf life", "storage", "degradation", "quality"],
+    "extraction": ["isolation", "purification", "process", "method"],
+    "synergy": ["combination", "potentiation", "enhancing", "complementary"],
+    "white space": ["opportunity", "gap", "unclaimed", "blue ocean"],
+    "prior art": ["existing patent", "anticipation", "novelty destruction"],
+    "fto": ["freedom to operate", "infringement", "clearance", "blocking"],
+    "claim": ["assertion", "scope", "coverage", "wording"],
+    "label": ["packaging", "marketing", "advertising", "branding"],
+    "export": ["international", "cross-border", "market entry", "global"],
+    "gmp": ["good manufacturing practice", "quality", "schedule t", "facility"],
+    "monograph": ["pharmacopoeia", "standard", "specification", "api"],
+    "radar": ["readiness", "score", "assessment", "evaluation"],
+    "roadmap": ["journey", "timeline", "path", "steps", "process"],
+    "evidence": ["data", "proof", "support", "validation", "verification"],
+    "risk": ["hazard", "danger", "threat", "exposure", "vulnerability"],
+    "cost": ["fee", "expense", "price", "budget", "investment"],
+    "deadline": ["due date", "timeline", "cutoff", "last date"],
+    "trademark": ["brand", "mark", "logo", "name", "gi"],
+    "copyright": ["author", "literary", "artistic", "ownership"],
+    "design": ["appearance", "ornamental", "shape", "configuration"],
+    "pct": ["international application", "wipo", "patent cooperation treaty"],
+    "madrid": ["trademark international", "brand protection", "wipo"],
+    "hague": ["design international", "industrial design", "wipo"],
+    "lisbon": ["appellation", "geographical indication", "origin"],
+    "nagoya": ["protocol", "genetic resources", "benefit sharing"],
+    "treaty": ["convention", "agreement", "protocol", "international"],
+    "act": ["law", "statute", "legislation", "regulation"],
+    "rule": ["regulation", "guideline", "norm", "standard"],
+    "notification": ["gazette", "circular", "order", "amendment"],
+    "guideline": ["guidance", "advisory", "recommendation", "direction"],
+    "circular": ["notice", "communication", "memorandum", "letter"],
+    "order": ["directive", "instruction", "command", "decree"],
+    "amendment": ["modification", "change", "revision", "update"],
+    "schedule": ["annexure", "appendix", "table", "list"],
+    "form": ["format", "template", "proforma", "structure"],
+    "fee": ["charge", "cost", "payment", "remittance"],
+    "license": ["permit", "authorization", "approval", "consent"],
+    "registration": ["enrollment", "record", "filing", "application"],
+    "renewal": ["revival", "extension", "continuation", "restoration"],
+    "suspension": ["interruption", "pause", "halt", "stoppage"],
+    "cancellation": ["revocation", "annulment", "termination", "withdrawal"],
+    "appeal": ["review", "revision", "challenge", "petition"],
+    "tribunal": ["court", "forum", "authority", "judicial"],
+    "high court": ["hc", "judiciary", "appellate", "superior"],
+    "supreme court": ["sc", "apex", "highest", "final"],
+    "ip india": ["indian patent office", "ipo", "patent office"],
+    "wipo": ["world intellectual property", "international bureau"],
+    "who": ["world health organization", "health authority"],
+    "fda": ["food and drug administration", "us regulator"],
+    "health canada": ["canadian health", "nhpr", "natural health"],
+    "ayush": ["ministry of ayush", "ayush ministry", "government"],
+    "nba": ["national biodiversity authority", "biodiversity board"],
+    "biodiversity": ["biological diversity", "bioresource", "genetic"],
+    "genetic": ["hereditary", "dna", "gene", "genome"],
+    "traditional": ["classical", "ancestral", "heritage", "folk"],
+    "knowledge": ["information", "wisdom", "practice", "science"],
+    "medicine": ["drug", "remedy", "therapeutic", "healing"],
+    "herb": ["plant", "botanical", "herbal", "medicinal"],
+    "plant": ["flora", "botanical", "herb", "tree"],
+    "root": ["rhizome", "tuber", "bulb", "underground"],
+    "leaf": ["foliage", "herb", "green", "blade"],
+    "flower": ["bloom", "blossom", "petal", "corolla"],
+    "fruit": ["berry", "drupe", "pome", "seed"],
+    "seed": ["grain", "kernel", "nut", "pit"],
+    "bark": ["rind", "cortex", "outer", "covering"],
+    "resin": ["gum", "latex", "sap", "exudate"],
+    "oil": ["fat", "lipid", "essence", "extract"],
+    "powder": ["dust", "ground", "pulverized", "fine"],
+    "tablet": ["pill", "caplet", "lozenge", "troche"],
+    "capsule": ["gelcap", "softgel", "hard shell", "container"],
+    "syrup": ["elixir", "solution", "suspension", "liquid"],
+    "cream": ["ointment", "salve", "balm", "emollient"],
+    "gel": ["jelly", "colloidal", "semisolid", "transparent"],
+    "paste": ["ointment", "cream", "salve", "topical"],
+    "decoction": ["kwatha", "kashayam", "boiled", "extraction"],
+    "infusion": ["tea", "tisane", "steeped", "hot water"],
+    "tincture": ["extract", "alcohol", "concentrated", "solution"],
+    "distillate": ["volatile", "essential", "aromatic", "steam"],
+    "fermented": ["asava", "arishta", "wine", "brewed"],
+    "medicated": ["treated", "enriched", "fortified", "enhanced"],
+    "ghee": ["clarified butter", "ghrita", "fat", "lipid"],
+    "honey": ["madhu", "sweet", "nectar", "viscous"],
+    "jaggery": ["gur", "unrefined", "cane", "sweet"],
+    "sugar": ["sweetener", "sucrose", "cane", "refined"],
+    "salt": ["sodium", "mineral", "rock", "sea"],
+    "ash": ["bhasma", "calcined", "oxide", "residue"],
+    "calcined": ["incinerated", "burned", "heated", "oxidized"],
+    "purified": ["shodhana", "detoxified", "cleaned", "refined"],
+    "processed": ["prepared", "treated", "manufactured", "refined"],
+    "standardized": ["normalized", "controlled", "consistent", "uniform"],
+    "quality": ["grade", "purity", "standard", "specification"],
+    "safety": ["toxicity", "adverse", "side effect", "risk"],
+    "efficacy": ["effectiveness", "potency", "activity", "performance"],
+    "stability": ["shelf life", "degradation", "storage", "preservation"],
+    "bioavailability": ["absorption", "uptake", "utilization", "delivery"],
+    "pharmacokinetics": ["adme", "absorption", "distribution", "metabolism"],
+    "pharmacodynamics": ["mechanism", "action", "effect", "response"],
+    "clinical trial": ["study", "research", "experiment", "investigation"],
+    "preclinical": ["animal", "in vitro", "lab", "experimental"],
+    "toxicology": ["safety", "poison", "hazard", "risk"],
+    "adverse event": ["side effect", "reaction", "complication", "harm"],
+    "contraindication": ["warning", "precaution", "avoid", "prohibition"],
+    "interaction": ["interference", "conflict", "reaction", "effect"],
+    "dosage": ["dose", "amount", "quantity", "regimen"],
+    "administration": ["delivery", "route", "method", "application"],
+    "indication": ["use", "purpose", "condition", "disease"],
+    "therapeutic": ["healing", "curative", "treatment", "remedy"],
+    "diagnostic": ["detection", "identification", "screening", "test"],
+    "prophylactic": ["preventive", "protective", "prophylaxis", "avoidance"],
+    "palliative": ["supportive", "comfort", "relief", "symptomatic"],
+    "adjuvant": ["auxiliary", "supportive", "complementary", "additional"],
+    "synergistic": ["complementary", "enhancing", "potentiating", "combined"],
+    "antagonistic": ["opposing", "counteracting", "interfering", "conflicting"],
+    "bioactive": ["active", "pharmacological", "therapeutic", "functional"],
+    "phytochemical": ["plant chemical", "natural compound", "botanical active"],
+    "alkaloid": ["nitrogen", "basic", "phytochemical", "active"],
+    "flavonoid": ["polyphenol", "antioxidant", "pigment", "bioactive"],
+    "terpenoid": ["isoprene", "essential oil", "aromatic", "bioactive"],
+    "glycoside": ["sugar", "bound", "conjugate", "bioactive"],
+    "saponin": ["foam", "detergent", "hemolytic", "bioactive"],
+    "tannin": ["astringent", "polyphenol", "precipitant", "bioactive"],
+    "polysaccharide": ["complex sugar", "starch", "fiber", "bioactive"],
+    "protein": ["amino acid", "enzyme", "peptide", "macromolecule"],
+    "lipid": ["fat", "oil", "sterol", "hydrophobic"],
+    "vitamin": ["nutrient", "coenzyme", "essential", "micronutrient"],
+    "mineral": ["element", "trace", "inorganic", "electrolyte"],
+    "antioxidant": ["free radical", "oxidative", "protective", "scavenger"],
+    "anti-inflammatory": ["inflammation", "swelling", "redness", "pain"],
+    "antimicrobial": ["antibacterial", "antifungal", "antiviral", "germicide"],
+    "analgesic": ["pain", "relief", "soothing", "comfort"],
+    "antipyretic": ["fever", "temperature", "cooling", "reducing"],
+    "expectorant": ["mucus", "cough", "phlegm", "clearing"],
+    "digestive": ["stomach", "intestine", "gut", "assimilation"],
+    "carminative": ["gas", "bloating", "flatulence", "relief"],
+    "laxative": ["bowel", "constipation", "purgative", "cleansing"],
+    "diuretic": ["urine", "kidney", "water", "elimination"],
+    "hepatic": ["liver", "hepatoprotective", "bile", "detox"],
+    "cardiac": ["heart", "cardiovascular", "circulation", "pulse"],
+    "nervous": ["neural", "brain", "nerve", "cognitive"],
+    "respiratory": ["lung", "breathing", "airway", "pulmonary"],
+    "immune": ["immunity", "defense", "resistance", "protection"],
+    "endocrine": ["hormone", "gland", "metabolic", "thyroid"],
+    "reproductive": ["fertility", "genital", "sexual", "procreative"],
+    "musculoskeletal": ["bone", "muscle", "joint", "skeletal"],
+    "integumentary": ["skin", "hair", "nail", "dermal"],
+    "urinary": ["kidney", "bladder", "urine", "renal"],
+    "lymphatic": ["lymph", "immune", "drainage", "spleen"],
+    "sensory": ["sense", "vision", "hearing", "taste"],
+    "mental": ["mind", "psychological", "emotional", "cognitive"],
+    "sleep": ["insomnia", "rest", "sedation", "calm"],
+    "stress": ["anxiety", "tension", "strain", "pressure"],
+    "memory": ["cognition", "recall", "learning", "concentration"],
+    "focus": ["attention", "concentration", "clarity", "alertness"],
+    "energy": ["vitality", "stamina", "vigor", "strength"],
+    "fatigue": ["tiredness", "exhaustion", "lethargy", "weakness"],
+    "aging": ["senescence", "longevity", "anti-aging", "elderly"],
+    "detox": ["cleanse", "purify", "eliminate", "toxin"],
+    "rejuvenate": ["rasayana", "renew", "restore", "revitalize"],
+    "adaptogen": ["stress", "resistance", "balance", "homeostasis"],
+    "rasayana": ["rejuvenation", "longevity", "vitality", "anti-aging"],
+    "vajikarana": ["aphrodisiac", "fertility", "sexual", "reproductive"],
+    "sthanika": ["local", "topical", "external", "applied"],
+    "abhyanga": ["massage", "oil", "rub", "therapeutic"],
+    "panchakarma": ["detox", "cleansing", "rejuvenation", "therapy"],
+    "shirodhara": ["oil", "forehead", "calm", "relaxation"],
+    "nasya": ["nasal", "nose", "head", "sinus"],
+    "basti": ["enema", "colon", "cleansing", "vata"],
+    "virechana": ["purgation", "cleansing", "pitta", "elimination"],
+    "vamana": ["emesis", "cleansing", "kapha", "elimination"],
+    "raktamoksha": ["blood", "letting", "detox", "cleansing"],
+    "yoga": ["exercise", "posture", "breath", "meditation"],
+    "pranayama": ["breath", "respiration", "lung", "energy"],
+    "meditation": ["mindfulness", "concentration", "calm", "awareness"],
+    "mantra": ["chant", "sound", "vibration", "sacred"],
+    "ayurveda": ["ayurvedic", "traditional", "holistic", "dosha"],
+    "dosha": ["vata", "pitta", "kapha", "constitution"],
+    "vata": ["air", "ether", "movement", "nervous"],
+    "pitta": ["fire", "water", "metabolism", "digestive"],
+    "kapha": ["earth", "water", "structure", "stability"],
+    "prakriti": ["constitution", "nature", "body type", "dosha"],
+    "vikriti": ["imbalance", "disorder", "disease", "dosha"],
+    "agni": ["digestive fire", "metabolism", "enzyme", "transformation"],
+    "ama": ["toxin", "undigested", "waste", "impurity"],
+    "ojas": ["vitality", "immunity", "essence", "strength"],
+    "srotas": ["channel", "system", "pathway", "circulation"],
+    "dhatu": ["tissue", "element", "structure", "support"],
+    "mala": ["waste", "excretion", "elimination", "byproduct"],
+    "prana": ["life force", "energy", "breath", "vital"],
+    "tejas": ["radiance", "fire", "transformation", "clarity"],
+    "sattva": ["purity", "harmony", "balance", "clarity"],
+    "rajas": ["activity", "movement", "passion", "energy"],
+    "tamas": ["inertia", "stability", "darkness", "heaviness"],
+}
 
 # BM25 imports (graceful fallback)
 try:
@@ -298,6 +508,57 @@ class HybridRetriever:
         return filtered
 
     # ------------------------------------------------------------------
+    # Query Expansion
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def _expand_query(cls, query: str) -> list[str]:
+        """Expand query with domain synonyms for better recall."""
+        expanded = [query]
+        q_lower = query.lower()
+        for term, synonyms in QUERY_EXPANSION_SYNONYMS.items():
+            if term in q_lower:
+                for syn in synonyms[:3]:
+                    expanded.append(query.replace(term, syn, 1) if term in query else f"{query} {syn}")
+        return expanded[:5]
+
+    # ------------------------------------------------------------------
+    # Multi-Query Retrieval
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def _multi_query_retrieve(
+        cls,
+        queries: list[str],
+        top_k: int = 20,
+        filters: dict[str, Any] | None = None,
+        domains: list[str] | None = None,
+    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+        """Run retrieval for multiple queries in parallel."""
+        semantic_all: list[dict[str, Any]] = []
+        bm25_all: list[dict[str, Any]] = []
+        statutory_all: list[dict[str, Any]] = []
+
+        def _retrieve(q: str):
+            sem = cls.qdrant_search(q, top_k=top_k, filters=filters, domains=domains)
+            bm = cls.bm25_search(q, top_k=top_k, domains=domains)
+            stat = cls.statutory_search(q, top_k=6)
+            return sem, bm, stat
+
+        with ThreadPoolExecutor(max_workers=min(3, len(queries))) as pool:
+            futures = {pool.submit(_retrieve, q): q for q in queries}
+            for fut in as_completed(futures):
+                try:
+                    sem, bm, stat = fut.result()
+                    semantic_all.extend(sem)
+                    bm25_all.extend(bm)
+                    statutory_all.extend(stat)
+                except Exception as exc:
+                    logger.warning("Multi-query retrieval failed for '%s': %s", futures[fut], exc)
+
+        return semantic_all, bm25_all, statutory_all
+
+    # ------------------------------------------------------------------
     # Reranking
     # ------------------------------------------------------------------
 
@@ -308,16 +569,17 @@ class HybridRetriever:
         documents: list[dict[str, Any]],
         top_k: int = 5,
     ) -> list[dict[str, Any]]:
-        """Rerank documents using cross-encoder."""
+        """Rerank documents using cross-encoder with adaptive depth."""
         from app.rag.reranker import Reranker
         if not Reranker.is_available():
-            # Passthrough: keep current ordering, attach a rank score.
             return [
                 {**d, "rerank_score": d.get("score", 1.0 / (i + 1)), "original_rank": i}
                 for i, d in enumerate(documents[:top_k])
             ]
         reranker = Reranker()
-        return reranker.rerank(query, documents, top_k=top_k)
+        # Adaptive: rerank more candidates when we have many, fewer when we have few
+        adaptive_k = min(len(documents), max(top_k * 2, 10))
+        return reranker.rerank(query, documents[:adaptive_k], top_k=top_k)
 
     # ------------------------------------------------------------------
     # Confidence Calculation
@@ -385,7 +647,7 @@ class HybridRetriever:
         domains: list[str] | None = None,
     ) -> dict[str, Any]:
         """
-        Full hybrid retrieval pipeline.
+        Full hybrid retrieval pipeline with query expansion and multi-query retrieval.
 
         Args:
             domains: Intent-relevant curated collections to restrict the search
@@ -410,35 +672,40 @@ class HybridRetriever:
         if jurisdiction:
             effective_filters["jurisdiction"] = jurisdiction
 
-        # Step 1: Qdrant semantic search
-        semantic_results = cls.qdrant_search(
-            query, top_k=20, filters=effective_filters, domains=domains
-        )
+        # Step 1: Query expansion for better recall
+        expanded_queries = cls._expand_query(query)
+        use_multi_query = len(expanded_queries) > 1
+
+        # Step 2: Multi-query retrieval (parallel) or single-query
+        if use_multi_query:
+            semantic_results, bm25_results, statutory_results = cls._multi_query_retrieve(
+                expanded_queries, top_k=20, filters=effective_filters, domains=domains
+            )
+        else:
+            semantic_results = cls.qdrant_search(
+                query, top_k=20, filters=effective_filters, domains=domains
+            )
+            bm25_results = cls.bm25_search(query, top_k=20, domains=domains)
+            statutory_results = cls.statutory_search(query, jurisdiction=jurisdiction, top_k=6)
+
         semantic_time = time.time() - start
 
-        # Step 2: BM25 keyword search
-        bm25_start = time.time()
-        bm25_results = cls.bm25_search(query, top_k=20, domains=domains)
-        bm25_time = time.time() - bm25_start
-
-        # Step 3: Statutory search
-        stat_start = time.time()
-        statutory_results = cls.statutory_search(query, jurisdiction=jurisdiction, top_k=6)
-        stat_time = time.time() - stat_start
-
-        # Step 4: Merge + deduplicate
+        # Step 3: Merge + deduplicate
         merged = cls._merge_results(semantic_results, bm25_results, statutory_results)
 
-        # Step 5: Apply metadata filters (for non-Qdrant results)
+        # Step 4: Apply metadata filters (for non-Qdrant results)
         if effective_filters:
             merged = cls._apply_metadata_filters(merged, effective_filters)
 
-        # Step 6: Rerank
-        # Cap the cross-encoder input to the top candidates by combined score.
-        # The merged list can hold 40+ passages; feeding them all to the
-        # CPU-bound BGE reranker adds tens of seconds for marginal gains.
+        # Step 5: Score normalization
+        if merged:
+            max_score = max(float(d.get("combined_score", 0)) for d in merged) or 1.0
+            for d in merged:
+                d["normalized_score"] = round(float(d.get("combined_score", 0)) / max_score, 6)
+
+        # Step 6: Rerank with adaptive depth
         rerank_start = time.time()
-        rerank_candidates = merged[:6]
+        rerank_candidates = merged[:10]
         reranked = cls._rerank(query, rerank_candidates, top_k=top_k)
         rerank_time = time.time() - rerank_start
 
@@ -473,9 +740,9 @@ class HybridRetriever:
                 "merged_count": len(merged),
                 "final_count": len(reranked),
                 "domains_filtered": domains,
+                "query_expanded": use_multi_query,
+                "expanded_queries": len(expanded_queries),
                 "semantic_time_ms": round(semantic_time * 1000, 1),
-                "bm25_time_ms": round(bm25_time * 1000, 1),
-                "statutory_time_ms": round(stat_time * 1000, 1),
                 "rerank_time_ms": round(rerank_time * 1000, 1),
                 "total_time_ms": round(total_time * 1000, 1),
                 "embedding_provider": _get_embedding_provider(),

@@ -111,7 +111,7 @@ describe('TopNav profile', () => {
     await user.click(screen.getByRole('button', { name: 'Profile' }));
     expect(screen.getByText('Researcher')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /Government Working Dashboard/ })
+      screen.getByRole('button', { name: /Working Dashboard/ })
     ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Sign Out' })
@@ -135,7 +135,7 @@ describe('TopNav profile', () => {
     await user.click(screen.getByRole('button', { name: 'Profile' }));
     expect(screen.getByText('Innovator')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /Government Working Dashboard/ })
+      screen.getByRole('button', { name: /Working Dashboard/ })
     ).toBeInTheDocument();
   });
 });

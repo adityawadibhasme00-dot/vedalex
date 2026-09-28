@@ -13,12 +13,12 @@ export function GlassCard({ children, className, hover = false, glow = null, pad
   return (
     <div
       className={clsx(
-        'rounded-3xl border border-emerald-200 bg-white/80 backdrop-blur-xl shadow-[0_8px_30px_rgba(2,44,34,0.08)]',
+        'rounded-xl border border-gray-300 bg-white',
         hover && 'glass-interactive cursor-pointer',
         pad[padding],
         glow === 'blue' && 'hover:shadow-glow-blue',
-        glow === 'violet' && 'hover:shadow-glow-violet',
-        glow === 'emerald' && 'hover:shadow-glow-emerald',
+        glow === 'violet' && 'hover:shadow-glow-blue',
+        glow === 'emerald' && 'hover:shadow-glow-blue',
         className,
       )}
       {...props}

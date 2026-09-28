@@ -14,7 +14,6 @@ import WhatIfSimulator from '../../components/WhatIfSimulator';
 import SaktiAssistant from '../../components/SaktiAssistant';
 import { ProductClassifier } from '../../components/ProductClassifier';
 import { ExportReadiness } from '../../components/ExportReadiness';
-import { FeatureHub } from '../../components/FeatureHub';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -325,8 +324,8 @@ export default function DashboardPage() {
       >
 
         {isLoading && (
-          <div className="h-0.5 bg-emerald-100 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-emerald-600 to-amber-500 animate-shimmer" />
+          <div className="h-0.5 bg-gov-wash relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-gov-blue to-amber-500 animate-shimmer" />
           </div>
         )}
 
@@ -365,7 +364,6 @@ export default function DashboardPage() {
                   />
                 </GlassCard>
               </div>
-              <FeatureHub onOpen={handleFeatureOpen} />
             </>
           )}
 
@@ -491,12 +489,12 @@ export default function DashboardPage() {
       </div>
 
       {/* Bottom navigation - mobile */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-emerald-200 flex items-center justify-around px-2 py-2 shadow-[0_-4px_20px_rgba(2,44,34,0.06)]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gov-rule flex items-center justify-around px-2 py-2 shadow-[0_-4px_20px_rgba(26,42,78,0.08)]">
         {NAV_ITEMS.slice(0, 5).map(item => {
           const isActive = activeTab === item.id;
           const Icon = item.icon;
           return (
-            <button key={item.id} onClick={() => navigate(item.id)} className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl ${isActive ? 'text-emerald-600' : 'text-slate-500'}`}>
+            <button key={item.id} onClick={() => navigate(item.id)} className={`flex flex-col items-center gap-1 px-3 py-1 rounded-md ${isActive ? 'text-gov-blue' : 'text-slate-500'}`}>
               <Icon className="w-5 h-5" />
               <span className="text-[9px] font-medium">{t(item.labelKey, lang).split(' ')[0]}</span>
             </button>

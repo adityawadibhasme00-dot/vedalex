@@ -1,76 +1,21 @@
-"""Auto mode: deterministic query-to-architecture selector for unified search.
+"""Auto mode: route every query to the single combined RAG engine.
 
-Pure rules, no LLM, no network — fully testable offline:
-
-1. **Entity lookup** (short lookup-style query: <= 6 words, <= 60 chars,
-   no ``?``, no question words) -> ``graph`` (knowledge-graph entity fusion).
-2. **Multi-aspect question** (markers like ``compare``, ``vs``, ``and``,
-   ``step by step``) -> ``agentic`` (parallel specialised agents).
-3. **Otherwise** -> the configured default architecture (``hybrid`` if the
-   default itself is ``auto`` or invalid — never recurses).
+The four architectures (hybrid / production / graph / agentic) are now fused
+into one engine (``combined``). "Auto" therefore always resolves to the
+combined engine so the user gets the union of evidence from every architecture
+in a single response — there is no per-query engine choice any more.
 """
 
 from __future__ import annotations
 
-from app.services.rag.config import RAG_TYPES
-
 AUTO = "auto"
 
-_QUESTION_WORDS = frozenset(
-    {
-        "what",
-        "why",
-        "how",
-        "when",
-        "where",
-        "who",
-        "which",
-        "is",
-        "are",
-        "can",
-        "could",
-        "should",
-        "do",
-        "does",
-        "explain",
-        "list",
-    }
-)
 
-_MULTI_INTENT_MARKERS = (
-    " compare ",
-    " vs ",
-    " versus ",
-    " and ",
-    " also ",
-    " both ",
-    " difference ",
-    " step by step ",
-    " end to end ",
-)
+def select_rag_type(query: str, default: str = "combined") -> dict[str, str]:
+    """Return the combined engine for every query.
 
-
-def select_rag_type(query: str, default: str = "hybrid") -> dict[str, str]:
-    """Route ``query`` to one of :data:`RAG_TYPES`.
-
-    Returns ``{"rag_type": ..., "reason": ...}`` where ``reason`` explains
-    the routing decision (surfaced in the response ``meta`` for transparency).
+    Preserves the call signature used by ``/rag/search`` and keeps ``auto`` a
+    valid request value while the underlying routing decision is now trivial.
     """
-    text = (query or "").strip()
-    lowered = f" {text.lower()} "
-    words = text.lower().split()
-
-    is_entity_lookup = (
-        len(text) <= 60
-        and len(words) <= 6
-        and "?" not in text
-        and not any(word in words for word in _QUESTION_WORDS)
-    )
-    if is_entity_lookup:
-        return {"rag_type": "graph", "reason": "short entity lookup"}
-
-    if any(marker in lowered for marker in _MULTI_INTENT_MARKERS):
-        return {"rag_type": "agentic", "reason": "multi-aspect question"}
-
-    resolved = default if default in RAG_TYPES else "hybrid"
-    return {"rag_type": resolved, "reason": "configured default"}
+    del query  # engine selection is unified; query no longer picks an engine
+    return {"rag_type": "combined", "reason": "all RAG engines combined into one"}

@@ -75,7 +75,7 @@ def test_config_defaults_and_validation():
     update({"rate_limit": -5})
     assert get("rate_limit") == 1
     reset_runtime()
-    assert get("default") == "hybrid"
+    assert get("default") == "combined"
 
 
 def test_hybrid_rag_returns_result(monkeypatch):

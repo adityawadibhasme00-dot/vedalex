@@ -115,7 +115,7 @@ export function AgentHub() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-700 via-teal-700 to-cyan-800 text-white p-6 md:p-8">
+      <div className="relative overflow-hidden rounded-xl border border-gov-navy bg-gov-navy text-white p-6 md:p-8">
         <div className="absolute -right-8 -top-10 opacity-10 rotate-12">
           <Bot className="w-48 h-48" />
         </div>
@@ -125,7 +125,7 @@ export function AgentHub() {
               <Zap className="w-3.5 h-3.5" /> POWERED BY THE IP-SAKTI ORCHESTRATION ENGINE
             </div>
             <h1 className="mt-4 text-2xl md:text-3xl font-bold font-display">Agent Hub</h1>
-            <p className="mt-2 text-sm text-emerald-50/90 leading-relaxed">
+            <p className="mt-2 text-sm text-blue-100 leading-relaxed">
               Domain-expert AI agents that combine planning, tools, reasoning and verification.
               Each agent takes a <span className="font-semibold text-white">brief intake</span> (1–2 questions),
               confirms how it understood your input, then runs its workflow autonomously — reporting every
@@ -134,7 +134,7 @@ export function AgentHub() {
           </div>
           <div className="hidden md:flex flex-col items-center gap-1 shrink-0">
             <span className="text-4xl font-bold">{agents.length}</span>
-            <span className="text-[11px] uppercase tracking-wider text-emerald-100">agents</span>
+            <span className="text-[11px] uppercase tracking-wider text-blue-200">agents</span>
           </div>
         </div>
       </div>
@@ -142,7 +142,7 @@ export function AgentHub() {
       {/* Orchestrator smart brief */}
       <GlassCard className="p-5 md:p-6">
         <div className="flex items-center gap-2 mb-1">
-          <GitBranch className="w-4 h-4 text-emerald-600" />
+          <GitBranch className="w-4 h-4 text-gov-blue" />
           <h2 className="text-sm font-semibold text-slate-900">Orchestrator — one brief, many agents</h2>
         </div>
         <p className="text-xs text-slate-500 mb-3">
@@ -156,12 +156,12 @@ export function AgentHub() {
             onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void handlePlan(); }}
             rows={2}
             placeholder="e.g. Ashwagandha aur Brahmi ka hydroalcoholic extract Canada export karna hai"
-            className="flex-1 rounded-xl border border-emerald-200 bg-white/80 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
+            className="flex-1 rounded-md border border-gov-rule bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gov-blue"
           />
           <button
             onClick={() => void handlePlan()}
             disabled={planLoading || !brief.trim()}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-gov-blue px-5 py-2 text-sm font-medium text-white hover:bg-gov-navy disabled:opacity-50"
           >
             {planLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
             Plan
@@ -169,7 +169,7 @@ export function AgentHub() {
         </div>
 
         {plan && (
-          <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
+          <div className="mt-4 rounded-md border border-gov-rule bg-gov-wash p-4">
             <div className="flex flex-wrap items-center gap-2 mb-3">
               {plan.intents.map((i) => (
                 <Badge key={i.intent} variant="success" className="capitalize">{i.label}</Badge>
@@ -179,15 +179,15 @@ export function AgentHub() {
             <div className="space-y-2">
               {plan.agents.map((a, idx) => (
                 <div key={a.slug} className="flex items-start gap-3">
-                  <span className="inline-flex w-6 h-6 items-center justify-center rounded-full bg-emerald-600 text-white text-xs font-bold shrink-0">{idx + 1}</span>
+                  <span className="inline-flex w-6 h-6 items-center justify-center rounded-full bg-gov-blue text-white text-xs font-bold shrink-0">{idx + 1}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-slate-900">{a.label} <span className="text-[11px] font-normal text-slate-400">· {a.slug}</span></p>
                     <p className="text-xs text-slate-500">{a.reason}</p>
-                    <p className="text-[11px] text-teal-600 mt-0.5">tools: {a.tools.join(' · ')}</p>
+                    <p className="text-[11px] text-gov-blue mt-0.5">tools: {a.tools.join(' · ')}</p>
                   </div>
                   <button
                     onClick={() => openAgent(a.slug)}
-                    className="text-teal-600 hover:text-teal-800 text-xs font-medium flex items-center gap-1 shrink-0"
+                    className="text-gov-blue hover:text-gov-navy text-xs font-medium flex items-center gap-1 shrink-0"
                   >
                     Open <ArrowUpRight className="w-3.5 h-3.5" />
                   </button>
@@ -198,30 +198,30 @@ export function AgentHub() {
               <button
                 onClick={() => void handleRunPlan()}
                 disabled={runLoading}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-md bg-gov-blue px-4 py-2 text-xs font-medium text-white hover:bg-gov-navy disabled:opacity-50"
               >
                 {runLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
                 Run this plan (multi-agent)
               </button>
-              <button onClick={() => { setPlan(null); setRun(null); }} className="text-xs text-slate-500 hover:text-emerald-700">Clear</button>
+              <button onClick={() => { setPlan(null); setRun(null); }} className="text-xs text-slate-500 hover:text-gov-blue">Clear</button>
             </div>
           </div>
         )}
 
         {run && (
-          <div className="mt-4 rounded-2xl border p-4 space-y-3" style={{ borderColor: run.verification.band === 'high' ? 'var(--emerald-200, #a7f3d0)' : 'var(--amber-200, #fde68a)', background: 'rgba(236,253,245,0.5)' }}>
+          <div className="mt-4 rounded-xl border p-4 space-y-3" style={{ borderColor: run.verification.band === 'high' ? 'var(--gov-rule, #d4d7dd)' : 'var(--amber-200, #fde68a)', background: run.verification.band === 'high' ? 'rgba(19,136,8,0.05)' : 'rgba(255,153,51,0.06)' }}>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm font-semibold text-slate-900">Run {run.run_id.slice(0, 8)} · {run.verification.band.toUpperCase()} verification · {run.verification.confidence}% confidence</p>
               <div className="flex gap-1.5">
                 {run.verification.checks.map((c) => (
-                  <span key={c.name} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white border border-emerald-200 text-slate-600">{c.status}</span>
+                  <span key={c.name} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white border border-gov-rule text-slate-600">{c.status}</span>
                 ))}
               </div>
             </div>
             {run.steps.map((s) => (
               <div key={s.seq} className="flex items-start gap-3">
                 {s.status === 'completed'
-                  ? <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                  ? <CheckCircle2 className="w-4 h-4 text-gov-green mt-0.5 shrink-0" />
                   : <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />}
                 <div className="flex-1">
                   <p className="text-sm text-slate-800">{s.label} <span className="text-xs text-slate-400">· {s.agent_slug}</span></p>
@@ -240,60 +240,40 @@ export function AgentHub() {
         </div>
       )}
 
-      {/* Only the agents — grouped by category */}
+      {/* Agents — flat list, no category headings */}
       {loading ? (
         <div className="flex items-center gap-3 py-24 justify-center text-slate-500">
           <Loader2 className="w-5 h-5 animate-spin" /> Loading Agent Hub…
         </div>
       ) : (
-        phases.map((phase) => {
-          const group = agents.filter((a) => a.phase === phase);
-          if (group.length === 0) return null;
-          const meta = CATEGORY_META[phase] || { label: phase, icon: <Bot className="w-4 h-4" />, blurb: '', accent: 'from-emerald-600 to-teal-600' };
-          return (
-            <section key={phase}>
-              <div className="flex items-center gap-3 mb-3">
-                <span className={`inline-flex w-9 h-9 items-center justify-center rounded-xl bg-gradient-to-br text-white ${meta.accent}`}>
-                  {meta.icon}
-                </span>
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900">
-                    {meta.label} <span className="text-sm font-medium text-slate-400">({group.length})</span>
-                  </h2>
-                  <p className="text-xs text-slate-500">{meta.blurb}</p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {agents.filter((a) => ['triz', 'quick_research', 'novelty_search', 'fto_search', 'patent_drafting', 'invention_disclosure', 'essentiality_claim_chart', 'formulation', 'materials_find_solutions'].includes(a.slug)).map((agent) => {
+            return (
+              <GlassCard
+                key={agent.slug}
+                hover
+                className="p-5 flex flex-col"
+                onClick={() => openAgent(agent.slug)}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="inline-flex w-9 h-9 items-center justify-center rounded-md bg-gov-blue text-white">
+                    <Bot className="w-4 h-4" />
+                  </span>
+                  <p className="text-sm font-semibold text-slate-900">{agent.label}</p>
                 </div>
-              </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {group.map((agent) => {
-                  return (
-                    <GlassCard
-                      key={agent.slug}
-                      hover
-                      className="p-5 flex flex-col"
-                      onClick={() => openAgent(agent.slug)}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className={`inline-flex w-9 h-9 items-center justify-center rounded-xl bg-gradient-to-br text-white ${meta.accent}`}>
-                          {meta.icon}
-                        </span>
-                        <p className="text-sm font-semibold text-slate-900">{agent.label}</p>
-                      </div>
-                      <p className="mt-3 text-xs text-slate-600 leading-relaxed flex-1 line-clamp-2">
-                        {AGENT_BLURBS[agent.slug] || agent.description}
-                      </p>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); openAgent(agent.slug); }}
-                        className="mt-4 inline-flex w-full items-center justify-center gap-1 rounded-xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700"
-                      >
-                        Start Agent <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
-                    </GlassCard>
-                  );
-                })}
-              </div>
-            </section>
-          );
-        })
+                <p className="mt-3 text-xs text-slate-600 leading-relaxed flex-1 line-clamp-2">
+                  {AGENT_BLURBS[agent.slug] || agent.description}
+                </p>
+                <button
+                  onClick={(e) => { e.stopPropagation(); openAgent(agent.slug); }}
+                  className="mt-4 inline-flex w-full items-center justify-center gap-1 rounded-md bg-gov-blue px-4 py-2 text-xs font-semibold text-white hover:bg-gov-navy"
+                >
+                  Start Agent <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </GlassCard>
+            );
+          })}
+        </div>
       )}
 
       <p className="pt-2 text-center text-xs text-slate-400">

@@ -190,6 +190,69 @@ def _detect_fabricated_omics_identifiers(
     return violations
 
 
+def _check_citation_density(answer: str, sources: list[dict[str, Any]]) -> list[str]:
+    """Check that the answer has adequate citation density relative to its length."""
+    violations = []
+    word_count = len(answer.split())
+    citation_count = _count_citations(answer)
+
+    if word_count > 50 and citation_count == 0:
+        violations.append(f"Answer has {word_count} words but zero citations")
+    elif word_count > 100 and citation_count < 2:
+        violations.append(f"Answer has {word_count} words but only {citation_count} citation(s)")
+
+    return violations
+
+
+def _check_numeric_consistency(answer: str, sources: list[dict[str, Any]]) -> list[str]:
+    """Check that numeric claims in the answer are consistent with sources."""
+    violations = []
+
+    # Extract numbers from answer
+    answer_numbers = set(re.findall(r'\b\d+(?:\.\d+)?%?', answer))
+
+    # Extract numbers from sources
+    source_numbers = set()
+    for s in sources:
+        content = str(s.get("content", ""))
+        source_numbers.update(re.findall(r'\b\d+(?:\.\d+)?%?', content))
+
+    # Check for numbers in answer that aren't in sources (allow common numbers)
+    common_numbers = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "100", "1000"}
+    suspicious = answer_numbers - source_numbers - common_numbers
+
+    if len(suspicious) > 3:
+        violations.append(f"Answer contains {len(suspicious)} numeric values not found in sources")
+
+    return violations
+
+
+def _check_temporal_consistency(answer: str, sources: list[dict[str, Any]]) -> list[str]:
+    """Check that dates and temporal references in the answer are consistent with sources."""
+    violations = []
+
+    # Extract years from answer
+    answer_years = set(re.findall(r'\b(19|20)\d{2}\b', answer))
+
+    # Extract years from sources
+    source_years = set()
+    for s in sources:
+        content = str(s.get("content", ""))
+        source_years.update(re.findall(r'\b(19|20)\d{2}\b', content))
+        if s.get("effective_date"):
+            source_years.update(re.findall(r'\b(19|20)\d{2}\b', str(s["effective_date"])))
+
+    # Check for years in answer that aren't in sources (allow recent years)
+    current_year = 2026
+    recent_years = {str(y) for y in range(current_year - 2, current_year + 1)}
+    suspicious_years = answer_years - source_years - recent_years
+
+    if len(suspicious_years) > 2:
+        violations.append(f"Answer contains {len(suspicious_years)} year references not found in sources")
+
+    return violations
+
+
 def validate_answer(
     answer: str,
     sources: list[dict[str, Any]],
@@ -218,6 +281,10 @@ def validate_answer(
         violations.append("No explicit citations found in answer")
         recommendations.append("Add source citations for every factual claim")
 
+    # 2b. Citation density check
+    density_violations = _check_citation_density(answer, sources)
+    violations.extend(density_violations)
+
     # 3. Patent number fabrication check
     if source_patent_numbers is None:
         source_patent_numbers = []
@@ -233,9 +300,17 @@ def validate_answer(
     date_violations = _detect_fabricated_dates(answer, source_dates)
     violations.extend(date_violations)
 
+    # 4b. Temporal consistency check
+    temporal_violations = _check_temporal_consistency(answer, sources)
+    violations.extend(temporal_violations)
+
     # 5. Unsupported absolute claims
     claim_violations = _detect_unsupported_claims(answer, sources)
     violations.extend(claim_violations)
+
+    # 5b. Numeric consistency check
+    numeric_violations = _check_numeric_consistency(answer, sources)
+    violations.extend(numeric_violations)
 
     # 6. Source quality check
     if not sources:
@@ -270,6 +345,12 @@ def validate_answer(
         risk_score += 20
     if citation_count == 0:
         risk_score += 10
+    if density_violations:
+        risk_score += 10
+    if numeric_violations:
+        risk_score += 15
+    if temporal_violations:
+        risk_score += 15
 
     if risk_score >= 60:
         risk = HallucinationRisk.CRITICAL

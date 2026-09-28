@@ -14,22 +14,22 @@ interface StatCardProps {
 }
 
 const accentBorder: Record<string, string> = {
-  blue: 'border-l-blue-500',
-  violet: 'border-l-violet-500',
-  emerald: 'border-l-emerald-500',
-  amber: 'border-l-amber-500',
-  red: 'border-l-red-500',
-  cyan: 'border-l-cyan-500',
+  blue: 'border-l-gov-blue',
+  violet: 'border-l-gov-blue',
+  emerald: 'border-l-gov-green',
+  amber: 'border-l-amber-600',
+  red: 'border-l-red-600',
+  cyan: 'border-l-gov-blue',
 };
 
 const accentText: Record<string, string> = {
-  blue: 'text-blue-600', violet: 'text-violet-600', emerald: 'text-emerald-600',
-  amber: 'text-amber-600', red: 'text-red-600', cyan: 'text-cyan-600',
+  blue: 'text-gov-blue', violet: 'text-gov-blue', emerald: 'text-gov-green',
+  amber: 'text-amber-600', red: 'text-red-600', cyan: 'text-gov-blue',
 };
 
 const accentBg: Record<string, string> = {
-  blue: 'bg-blue-100', violet: 'bg-violet-100', emerald: 'bg-emerald-100',
-  amber: 'bg-amber-100', red: 'bg-red-100', cyan: 'bg-cyan-100',
+  blue: 'bg-gov-wash', violet: 'bg-gov-wash', emerald: 'bg-green-50',
+  amber: 'bg-amber-50', red: 'bg-red-50', cyan: 'bg-gov-wash',
 };
 
 export function StatCard({ label, value, subtext, icon, accent = 'blue', className }: StatCardProps) {

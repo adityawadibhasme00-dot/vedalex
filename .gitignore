@@ -79,3 +79,7 @@ _g9*
 diag*.py
 q1.ps1
 *.err
+
+# Video demo build artefacts (regenerate with: python -m video.build_clips)
+backend/video/out/
+vedalex_demo.mp4

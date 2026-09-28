@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="antialiased selection:bg-emerald-500 selection:text-white">
+      <body className="antialiased selection:bg-gov-blue selection:text-white">
         <Providers>{children}</Providers>
       </body>
     </html>

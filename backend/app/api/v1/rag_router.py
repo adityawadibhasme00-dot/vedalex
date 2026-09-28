@@ -143,6 +143,7 @@ async def ask_query(
 
     # Step 1b: Hybrid retrieval restricted to intent-relevant collections.
     # Embedding + BM25 + rerank is CPU/IO bound, so it runs on a worker thread.
+    # Enhanced with query expansion and multi-query retrieval.
     retrieval_result = await run_sync(
         HybridRetriever.retrieve,
         query=query,
@@ -514,9 +515,10 @@ class UnifiedSearchRequest(BaseModel):
     jurisdiction: str | None = Field(None, description="Filter by jurisdiction: India, United States, Canada, International")
     category: str | None = Field(None, description="Filter by category: patent, tkdl, regulatory, pharmacopoeia, who, pubmed")
     top_k: int = Field(10, ge=1, le=50, description="Number of top sources to return")
-    rag_type: str | None = Field(None, description="RAG architecture: hybrid | production | graph | agentic | auto (auto = rule-based routing)")
+    rag_type: str | None = Field(None, description="RAG architecture: combined (default, all engines fused) | hybrid | production | graph | agentic | auto")
     filters: dict[str, Any] | None = Field(None, description="Optional metadata filters (category, jurisdiction, patent_number, ...)")
     user_key: str | None = Field(None, max_length=100, description="Optional identifier for rate-limiting (defaults to user id / 'anonymous')")
+    answer: bool = Field(True, description="Generate a grounded LLM answer from the combined evidence")
 
 
 class UnifiedSearchResponse(BaseModel):
@@ -530,6 +532,7 @@ class UnifiedSearchResponse(BaseModel):
     refusal: dict[str, Any] | None = None
     retrieval_stats: dict[str, Any] = {}
     meta: dict[str, Any] = {}
+    answer: str | None = None
 
 
 class ConfigureRequest(BaseModel):
@@ -551,11 +554,12 @@ async def unified_rag_search(
     current_user: User | None = Depends(get_optional_user),
 ):
     """
-    Unified search across all four RAG architectures.
+    Unified search — one combined output from every RAG engine.
 
-    ``rag_type``: hybrid (BM25 + dense + RRF + rerank), production (hybrid +
-    cache + rate-limit), graph (hybrid + knowledge graph), agentic (parallel
-    specialised agents). Defaults to ``IPSAKTI_RAG_DEFAULT`` (env or /rag/configure).
+    The default ``rag_type`` is ``combined`` which runs Production, Graph and
+    Agentic in parallel and fuses their evidence with RRF. ``rag_type='auto'``
+    now also resolves to ``combined`` (engine selection is unified). An optional
+    grounded LLM answer is produced from the merged evidence when ``answer=true``.
     """
     import time as _time
 
@@ -565,10 +569,10 @@ async def unified_rag_search(
     from app.services.rag.config import get as cfg_get
     start = _time.perf_counter_ns()
 
-    requested = (req.rag_type or str(cfg_get("default", "hybrid"))).strip().lower()
+    requested = (req.rag_type or str(cfg_get("default", "combined"))).strip().lower()
     auto_meta: dict[str, Any] = {}
     if requested == AUTO:
-        selection = select_rag_type(req.query, default=str(cfg_get("default", "hybrid")))
+        selection = select_rag_type(req.query, default=str(cfg_get("default", "combined")))
         auto_meta = {
             "auto_resolved": selection["rag_type"],
             "auto_reason": selection["reason"],
@@ -617,6 +621,22 @@ async def unified_rag_search(
             logger.error("hybrid fallback also failed: %s", fallback_exc)
             raise HTTPException(503, "retrieval unavailable") from fallback_exc
 
+    answer: str | None = None
+    if req.answer and result.sources and not result.should_refuse:
+        try:
+            from app.services.multi_layer_orchestrator import MultiLayerOrchestrator
+
+            orchestrator_result = await run_sync(
+                MultiLayerOrchestrator.run,
+                req.query,
+                None,
+                retrieved_sources=result.sources,
+            )
+            answer = orchestrator_result.get("answer") or ""
+        except Exception as exc:
+            logger.warning("combined answer generation failed, returning sources only: %s", exc)
+            answer = None
+
     return UnifiedSearchResponse(
         success=True,
         rag_type=result.rag_type,
@@ -630,6 +650,7 @@ async def unified_rag_search(
         else {"blocked": True, "reason": result.refusal_reason},
         retrieval_stats=result.retrieval_stats,
         meta={**result.meta, **auto_meta},
+        answer=answer,
     )
 
 
