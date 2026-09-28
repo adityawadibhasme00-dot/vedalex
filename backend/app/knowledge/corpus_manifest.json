@@ -38,6 +38,7 @@
       "legal_glossary.json": "3058e64e0db31f2d2ef3caa0ffb448c763d42e8075e2a594bd5a7c2f04abb350",
       "pathway_rules.json": "515b9f25b135c2ac5d7ea175918b36aa273f16326b50edb40324fd3e58b328ac",
       "permitted_tk_prior_art.json": "077ffff4ac4846c8413d5cef153a5d49cb23a5bd08eb8596baf49ce559d32d4b",
+      "provision_graph.json": "87b7683b1e8790c3cb2a142f1666262739e7321c3f88b368949def2f765f51e3",
       "quality_pharmacopoeia.json": "619952d81572f36e3162bfc4f2b9bc06f60269597894342b13d6b4db081797bb",
       "safety_signals.json": "7944635fcad3318910c3571dee0ce2a4578d13f27ea59527b45efb2892526291",
       "treaties_metadata.json": "99d1adacfb6e845be6fedd1b2f0fe29bffe25e6e5f81d856a46463ffffdba1cd",
@@ -59,7 +60,7 @@
   },
   "artifact_counts": {
     "rule_pack_rules_yaml": 7,
-    "knowledge_json": 19,
+    "knowledge_json": 20,
     "curated_text_data": 0,
     "kb_documents": 4,
     "treaties_metadata": 1,

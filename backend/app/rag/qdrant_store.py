@@ -242,27 +242,41 @@ class QdrantVectorStore:
                             indexing_threshold=20000,
                         ),
                     )
-                    for field, schema_type in [
-                        ("category", PayloadSchemaType.KEYWORD),
-                        ("domain", PayloadSchemaType.KEYWORD),
-                        ("authority", PayloadSchemaType.KEYWORD),
-                        ("jurisdiction", PayloadSchemaType.KEYWORD),
-                        ("authority_level", PayloadSchemaType.INTEGER),
-                        ("patent_number", PayloadSchemaType.KEYWORD),
-                        ("publication_year", PayloadSchemaType.INTEGER),
-                        ("source", PayloadSchemaType.KEYWORD),
-                        ("doc_id", PayloadSchemaType.KEYWORD),
-                    ]:
-                        try:
-                            client.create_payload_index(
-                                collection_name=collection_name,
-                                field_name=field,
-                                field_schema=schema_type,
-                            )
-                        except Exception:
-                            pass
-
                     logger.info(f"Created collection: {collection_name} (dim={self._dim})")
+
+                # Index every collection, not just newly created ones. Fields
+                # added later (e.g. provision_id for the cross-reference graph)
+                # would otherwise never be indexed on a collection that already
+                # existed, leaving those filters as full scans indefinitely.
+                # create_payload_index is idempotent enough for our purposes:
+                # "already exists" is swallowed below like any other error.
+                for field, schema_type in [
+                    ("category", PayloadSchemaType.KEYWORD),
+                    ("domain", PayloadSchemaType.KEYWORD),
+                    ("authority", PayloadSchemaType.KEYWORD),
+                    ("jurisdiction", PayloadSchemaType.KEYWORD),
+                    ("authority_level", PayloadSchemaType.INTEGER),
+                    ("patent_number", PayloadSchemaType.KEYWORD),
+                    ("publication_year", PayloadSchemaType.INTEGER),
+                    ("source", PayloadSchemaType.KEYWORD),
+                    ("doc_id", PayloadSchemaType.KEYWORD),
+                    # Provision identity, so a retrieved chunk can be joined to
+                    # the cross-reference graph in
+                    # app/services/provision_graph.py. Absent on chunks indexed
+                    # before this field existed; the resolver treats that as
+                    # "no cross-references" rather than guessing.
+                    ("provision_id", PayloadSchemaType.KEYWORD),
+                    ("effective_from", PayloadSchemaType.KEYWORD),
+                    ("effective_to", PayloadSchemaType.KEYWORD),
+                ]:
+                    try:
+                        client.create_payload_index(
+                            collection_name=collection_name,
+                            field_name=field,
+                            field_schema=schema_type,
+                        )
+                    except Exception:
+                        pass
 
             # Preserve read access to a pre-existing single-schema collection
             # so previously indexed data is never silently lost.
@@ -354,6 +368,15 @@ class QdrantVectorStore:
                     "publication_year": int(doc.get("publication_year", 0)) if doc.get("publication_year") else 0,
                     "source_url": doc.get("source_url", ""),
                     "effective_date": doc.get("effective_date", ""),
+                    # Provision cross-reference graph identity. Kept separate
+                    # from effective_date because the graph models an
+                    # applicability window (effective_from/effective_to) that a
+                    # single date cannot express.
+                    "provision_id": doc.get("provision_id", ""),
+                    "effective_from": doc.get("effective_from", ""),
+                    "effective_to": doc.get("effective_to", ""),
+                    "citation_locator": doc.get("citation_locator", ""),
+                    "verification_status": doc.get("verification_status", ""),
                     "chunk_index": int(doc.get("chunk_index", i)),
                     "content_preview": doc.get("content", "")[:200],
                     "domain": domain,
