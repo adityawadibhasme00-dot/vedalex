@@ -223,10 +223,39 @@ export async function signupUser(name: string, email: string, password: string, 
   return res.json();
 }
 
+export interface AuthProfile {
+  id?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+  institution?: string | null;
+}
+
+export async function getProfile(token: string): Promise<AuthProfile> {
+  const res = await fetch(`${API_BASE_URL}/auth/profile`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to load profile');
+  }
+  return res.json();
+}
+
 // ─── AI Copilot ──────────────────────────────────────────────────
+// The copilot pipeline is embedding + rerank + LLM bound. The backend documents
+// a 25-45s worst case per query (IPSAKTI_LLM_TIMEOUT alone is 25s), so the
+// client budget must sit comfortably above that or legitimate slow answers get
+// aborted and reported as a backend failure.
+const COPILOT_TIMEOUT_MS = 120000;
+
 export async function askCopilot(question: string, passportId?: string, context?: any) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 45000);
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, COPILOT_TIMEOUT_MS);
   try {
     const res = await fetch(`${API_BASE_URL}/chat/query`, {
       method: 'POST',
@@ -234,8 +263,20 @@ export async function askCopilot(question: string, passportId?: string, context?
       body: JSON.stringify({ question, passport_id: passportId, context }),
       signal: controller.signal,
     });
-    if (!res.ok) throw new Error('Failed to query AI Copilot');
+    if (!res.ok) {
+      // Surface the server's own reason instead of a blanket failure string.
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `AI Copilot request failed (HTTP ${res.status})`);
+    }
     return res.json();
+  } catch (err) {
+    if (timedOut) {
+      throw new Error(
+        'The AI Copilot took too long to respond. The retrieval pipeline is still ' +
+        'working — please try again.'
+      );
+    }
+    throw err;
   } finally {
     clearTimeout(timer);
   }

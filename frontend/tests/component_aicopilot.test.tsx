@@ -178,11 +178,16 @@ describe('AICopilot core flow', () => {
     );
     renderWithProviders(<AICopilot />);
     await sendQuestion(user, 'Will this break?');
+    // The failure must name the actual cause and be marked as a refusal, so it
+    // can never be read as a sourced answer.
+    const notice = await screen.findByText(
+      /the request did not complete/i
+    );
+    expect(notice).toBeInTheDocument();
     expect(
-      await screen.findByText(
-        'Sorry, I encountered an error. Please ensure the backend is running and try again.'
-      )
+      screen.getByText('No answer given — this reply is not backed by a cited source')
     ).toBeInTheDocument();
+    expect(screen.getByText(/Nothing was cited because no sources were retrieved/)).toBeInTheDocument();
   });
 
   test('jurisdiction toggle changes the request context', async () => {

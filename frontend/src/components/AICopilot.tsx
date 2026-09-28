@@ -60,6 +60,10 @@ interface Message {
   productClassification?: CopilotProductClassification;
   verification?: Record<string, unknown>;
   metrics?: Record<string, unknown>;
+  // True when the backend declined to answer (no evidence / too weak / needed
+  // clarification). The bubble renders these as a refusal, never as an answer.
+  abstained?: boolean;
+  abstentionReason?: string;
   timestamp: number;
 }
 
@@ -664,6 +668,8 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
         escalation: res.escalation,
         productClassification: res.product_classification_bilingual || res.product_classification,
         verification: res.verification,
+        abstained: res.abstained,
+        abstentionReason: res.abstention_reason,
         timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, msg]);
@@ -684,10 +690,19 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
         setSpeakingMsgId(messages.length + 1);
         voice.speak(res.answer, () => setSpeakingMsgId(null));
       }
-    } catch {
+    } catch (err) {
+      // Show the actual reason (timeout, HTTP status, network down) rather than
+      // a blanket "backend error", which hides the only actionable detail.
+      const reason = err instanceof Error ? err.message : 'Unknown error';
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: 'Sorry, I encountered an error. Please ensure the backend is running and try again.', timestamp: Date.now() },
+        {
+          role: 'assistant',
+          content: `I could not answer that — the request did not complete (${reason}). Nothing was cited because no sources were retrieved. Please retry.`,
+          abstained: true,
+          abstentionReason: 'request failed before any sources were retrieved',
+          timestamp: Date.now(),
+        },
       ]);
     } finally {
       setIsLoading(false);
@@ -1073,6 +1088,20 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                         <ChartRenderer chart={chart} />
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {msg.role === 'assistant' && msg.abstained && (
+                  <div className="mt-2 flex items-start gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5">
+                    <AlertTriangle className="w-3 h-3 text-amber-600 flex-shrink-0 mt-px" />
+                    <div>
+                      <div className="text-[10px] font-bold text-amber-800">
+                        No answer given — this reply is not backed by a cited source
+                      </div>
+                      {msg.abstentionReason && (
+                        <div className="text-[9px] text-amber-700 mt-0.5">{msg.abstentionReason}</div>
+                      )}
+                    </div>
                   </div>
                 )}
 

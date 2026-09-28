@@ -19,5 +19,16 @@ export const handlers = [
         role: 'researcher'
       }
     })
+  ),
+  http.get('http://localhost/api/v1/auth/profile', () =>
+    HttpResponse.json({
+      id: 'test-user',
+      name: 'Test User',
+      email: 'tester@example.test',
+      role: 'researcher',
+      institution: null,
+      is_active: true,
+      created_at: '2024-01-01 00:00:00'
+    })
   )
 ];

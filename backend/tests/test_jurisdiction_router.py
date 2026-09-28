@@ -7,6 +7,7 @@ framework instead of requesting clarification.
 
 from app.services.jurisdiction_router import (
     FRAMEWORKS,
+    _keyword_hint,
     filter_sources_by_jurisdiction,
     resolve_jurisdiction,
 )
@@ -81,3 +82,30 @@ def test_filter_sources_by_jurisdiction_gates_cross_regime():
     intl_titles = {s["title"] for s in kept_intl}
     assert "Patent Act" not in intl_titles
     assert "PCT" in intl_titles
+
+
+# ---------------------------------------------------------------------------
+# Cue matching must respect token boundaries
+# ---------------------------------------------------------------------------
+
+def test_short_cue_does_not_match_inside_ordinary_words():
+    """Regression: the cue ``us`` matched inside ``users``, routing an
+    adversarial SQL string to the International framework. Retrieval then
+    returned evidence for a regime the user never asked about and the copilot
+    answered it with high confidence — a fabricated answer."""
+    assert _keyword_hint("SELECT * FROM users; DROP TABLE users;--") is None
+    assert _keyword_hint("because the focus is unclear") is None
+    assert _keyword_hint("discuss the status") is None
+
+
+def test_standalone_short_cue_still_resolves():
+    # "us" as a real token must keep working, and so must longer cues.
+    assert _keyword_hint("Can I export this to the US?") == "International"
+    assert _keyword_hint("FDA requirements for supplements") == "International"
+    assert _keyword_hint("export to the United States") == "International"
+
+
+def test_phrase_cue_matches_with_boundaries():
+    assert _keyword_hint("What does section 3(p) say?") == "India"
+    assert _keyword_hint("Is TKDL clearance needed?") == "India"
+    assert _keyword_hint("section3p") is None
