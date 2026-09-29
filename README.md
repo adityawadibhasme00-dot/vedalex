@@ -148,7 +148,7 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1
 | `POST /api/v1/label/analyze` | Claim Firewall / label analysis |
 | `GET /api/v1/analysis/readiness/{id}` | Patent readiness scores |
 | `GET /api/v1/roadmap/{id}` | Regulatory roadmap |
-| `POST /api/v1/export/dossier` | Generate exportable dossier |
+| `POST /api/v1/export/dossier` | Generate dossier — `format`: `pdf` (dossier), `docx` (editable), `checklist` (filing tick-list), `html` |
 | `POST /api/v1/upload/disclosure-check` | Upload & scan documents |
 | `POST /api/v1/assessment/evaluate` | Regulatory assessment |
 | `POST /api/v1/what-if/simulate` | Claim mutation simulation |
