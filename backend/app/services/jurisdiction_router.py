@@ -26,6 +26,8 @@ a source from the other regime (e.g. an Indian Patent Act passage in
 International mode) is never cited — judged as evidence simply does not mix.
 """
 
+import re
+from collections.abc import Iterable
 from typing import Any
 
 from app.services.copilot_orchestrator import JURISDICTION_KEYWORDS
@@ -97,6 +99,39 @@ _INTERNATIONAL_CUES: list[str] = (
 _INTERNATIONAL_CUES = sorted(set(c.lower() for c in _INTERNATIONAL_CUES))
 
 
+def _cue_matcher(cues: Iterable[str]) -> re.Pattern[str] | None:
+    """Compile jurisdiction cues into a word-boundary matcher.
+
+    Bare ``cue in question`` substring matching is unsafe for short cues: the
+    cue ``us`` matches inside ``users``/``because``, ``uk`` inside ordinary
+    words, and ``cbd``/``pct``/``fda``/``npn`` inside unrelated tokens. A
+    mis-fired cue routes the query to the wrong legal framework, so retrieval
+    returns evidence for a regime the user never asked about and the copilot
+    then answers it with high confidence — a fabricated answer.
+
+    Boundaries are asserted with ``(?<![a-z0-9])``/``(?![a-z0-9])`` (the same
+    convention ``intent_classifier`` uses for its token matchers) so a cue
+    matches as a whole token or phrase. Longer cues are listed first so the
+    alternation prefers the most specific match.
+    """
+    parts = {c.strip().lower() for c in cues if c and c.strip()}
+    if not parts:
+        return None
+    ordered = sorted(parts, key=len, reverse=True)
+    return re.compile(
+        r"(?<![a-z0-9])(?:" + "|".join(re.escape(c) for c in ordered) + r")(?![a-z0-9])",
+        re.IGNORECASE,
+    )
+
+
+_INTERNATIONAL_CUE_RE = _cue_matcher(_INTERNATIONAL_CUES)
+_INDIA_CUE_RE = _cue_matcher(JURISDICTION_KEYWORDS.get("India", []))
+_US_CA_CUE_RE = _cue_matcher(
+    JURISDICTION_KEYWORDS.get("United States", [])
+    + JURISDICTION_KEYWORDS.get("Canada", [])
+)
+
+
 def is_official_explicit(context: dict[str, Any] | None) -> str | None:
     """Read the jurisdiction toggle sent by the UI, if any."""
     if not context:
@@ -112,18 +147,12 @@ def is_official_explicit(context: dict[str, Any] | None) -> str | None:
 
 
 def _keyword_hint(question: str) -> str | None:
-    q = question.lower()
-    found_intl = any(cue in q for cue in _INTERNATIONAL_CUES)
-    found_ind = any(cue in q for cue in JURISDICTION_KEYWORDS.get("India", []))
-    found_us_ca = any(
-        cue in q for cue in (
-            JURISDICTION_KEYWORDS.get("United States", [])
-            + JURISDICTION_KEYWORDS.get("Canada", [])
-        )
-    )
-    if found_us_ca or found_intl:
+    q = question or ""
+    if _US_CA_CUE_RE is not None and _US_CA_CUE_RE.search(q):
         return "International"
-    if found_ind:
+    if _INTERNATIONAL_CUE_RE is not None and _INTERNATIONAL_CUE_RE.search(q):
+        return "International"
+    if _INDIA_CUE_RE is not None and _INDIA_CUE_RE.search(q):
         return "India"
     return None
 

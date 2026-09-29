@@ -1,13 +1,29 @@
 'use client';
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { loginUser, signupUser } from './api';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { loginUser, signupUser, getProfile, type AuthProfile } from './api';
 
 export interface User {
+  id?: string;
   name: string;
   email: string;
   role: 'Startup / MSME Founder' | 'Patent Agent' | 'Researcher' | 'Incubator Admin' | 'System Admin' | string;
   institution?: string;
   avatar?: string;
+}
+
+/**
+ * Layer the authoritative server profile over the locally cached one. Fields the
+ * server omits fall back to the cache so a partial response never blanks the UI.
+ */
+function mergeProfile(profile: AuthProfile, cached: User | null): User {
+  return {
+    ...cached,
+    id: profile.id ?? cached?.id,
+    name: profile.name || cached?.name || '',
+    email: profile.email || cached?.email || '',
+    role: profile.role || cached?.role || '',
+    institution: profile.institution ?? cached?.institution
+  };
 }
 
 interface AuthContextType {
@@ -48,18 +64,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [apiToken, setApiToken] = useState<string | null>(null);
+  // Guards the background revalidation against landing after the user signed out.
+  const sessionActive = useRef(true);
 
   useEffect(() => {
     const saved = localStorage.getItem('ipsakti_user');
     const savedToken = localStorage.getItem('ipsakti_token');
+    let cached: User | null = null;
     if (saved) {
-      try { setUser(JSON.parse(saved)); } catch {}
+      try { cached = JSON.parse(saved); } catch {}
     }
+    if (cached) setUser(cached);
     if (savedToken) setApiToken(savedToken);
     setIsLoading(false);
+
+    if (!savedToken) return;
+
+    // Revalidate in the background so the displayed profile name is the current
+    // server value rather than a stale localStorage copy. Failures are ignored on
+    // purpose: the session is offline-first, and the backend regenerates its JWT
+    // secret on restart, so a 401 here must not discard the cached profile.
+    getProfile(savedToken)
+      .then((profile) => {
+        if (!sessionActive.current) return;
+        const next = mergeProfile(profile, cached);
+        setUser(next);
+        localStorage.setItem('ipsakti_user', JSON.stringify(next));
+      })
+      .catch(() => {});
   }, []);
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    sessionActive.current = true;
     setIsLoading(true);
     try {
       const res = await loginUser(email, password);
@@ -84,6 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signup = async (name: string, email: string, password: string, role?: string, institution?: string): Promise<{ success: boolean; error?: string }> => {
+    sessionActive.current = true;
     setIsLoading(true);
     try {
       const res = await signupUser(name, email, password, role, institution);
@@ -100,6 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    sessionActive.current = false;
     setUser(null);
     setApiToken(null);
     localStorage.removeItem('ipsakti_user');

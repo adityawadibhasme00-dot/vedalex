@@ -40,6 +40,13 @@ CATEGORY_BY_SEED_FILE = {
     "claim_alternatives": "regulatory",
 }
 
+# Seed files that are internal structures rather than citable legal content.
+# Loaded directly by the code that needs them; never indexed for retrieval.
+NON_RETRIEVABLE_SEED_FILES = frozenset({
+    "provision_graph",
+    "corpus_manifest",
+})
+
 
 def _load_state() -> dict[str, Any]:
     try:
@@ -165,6 +172,99 @@ def _json_value_text(value: Any) -> str:
     return str(value)
 
 
+# Seed records whose id is the stable key that provision_graph.json keys on.
+_PROVISION_ID_FIELDS = ("id", "canonical_id", "provision_id")
+
+
+def _seed_units(data: Any) -> list[tuple[str, str, dict[str, Any]]]:
+    """Split a seed file into individually indexable units.
+
+    Returns ``(unit_key, text, record)`` per unit.
+
+    A list-shaped seed is indexed **per record**. Collapsing the whole list into
+    one ``entry:`` blob destroys record identity, which breaks two things:
+
+    1. Citation granularity — chunks span several Acts at once, so a chunk
+       cannot be attributed to the provision it actually came from.
+    2. Provision identity — nothing in the payload says which provision a chunk
+       is, so the cross-reference graph in ``provision_graph.py`` can never be
+       joined to a retrieved chunk.
+
+    Dict-shaped seeds (botanical_synonyms, treaties_metadata) keep their
+    existing whole-file behaviour, since their keys *are* the record identity.
+    """
+    if isinstance(data, list):
+        units: list[tuple[str, str, dict[str, Any]]] = []
+        for i, record in enumerate(data):
+            if isinstance(record, dict):
+                key = ""
+                for field in _PROVISION_ID_FIELDS:
+                    value = record.get(field)
+                    if isinstance(value, str) and value.strip():
+                        key = value.strip()
+                        break
+                key = key or f"entry_{i}"
+                text = "\n".join(
+                    f"{k}: {_json_value_text(v)}" for k, v in record.items()
+                )
+                units.append((key, text, record))
+            else:
+                units.append((f"entry_{i}", _json_value_text(record), {}))
+        return units
+    text = "\n".join(
+        f"{k}: {_json_value_text(v)}" for k, v in (data or {}).items()
+    )
+    return [("__file__", text, {})]
+
+
+def _record_metadata(
+    record: dict[str, Any], fallback: dict[str, Any]
+) -> dict[str, Any]:
+    """Per-record payload overrides.
+
+    The seed source is hardcoded to ``jurisdiction: India`` because that is
+    what most of the corpus is. A US or Canadian Act indexed under that tag is
+    then treated as Indian law by ``filter_sources_by_jurisdiction``: it
+    survives an India filter as domestic evidence, and is dropped from an
+    International filter. That silently defeats the "never mix legal
+    frameworks" rule, so a record's own jurisdiction must win.
+    """
+    out: dict[str, Any] = {}
+    for field in ("jurisdiction", "authority", "act_title", "source_url"):
+        value = record.get(field)
+        if isinstance(value, str) and value.strip():
+            out[field] = value.strip()
+    rank = record.get("authority_rank")
+    if isinstance(rank, (int, float)):
+        out["authority_level"] = int(rank)
+
+    # Join to the cross-reference graph where this record *is* a provision.
+    key = ""
+    for field in _PROVISION_ID_FIELDS:
+        value = record.get(field)
+        if isinstance(value, str) and value.strip():
+            key = value.strip()
+            break
+    if key:
+        try:
+            from app.services import provision_graph as _pg
+            provision_ids = _pg.provisions_for_record(key)
+            if provision_ids:
+                # Always a list: one Act record can back several provisions
+                # (e.g. the FD&C Act record covers both 21 U.S.C. 321(g)(1)(B)
+                # and 21 U.S.C. 355), and Qdrant indexes a KEYWORD array
+                # natively.
+                out["provision_id"] = provision_ids
+                first = _pg.get_provision(provision_ids[0]) or {}
+                out["effective_from"] = first.get("effective_from", "") or ""
+                out["effective_to"] = first.get("effective_to", "") or ""
+                out["citation_locator"] = first.get("citation_locator", "") or ""
+                out["verification_status"] = first.get("verification_status", "") or ""
+        except Exception:  # graph must never break ingestion
+            pass
+    return out
+
+
 def ingest_local_corpus(mode: str = "update") -> dict[str, Any]:
     """Index curated files under backend/data/** (txt/md/json/pdf/docx)."""
     base = os.path.join(os.path.dirname(STATE_FILE))
@@ -224,21 +324,27 @@ def ingest_knowledge_seeds(mode: str = "update") -> dict[str, Any]:
         return {"source_id": "knowledge_seeds", "name": "Knowledge seeds", "chunks": 0}
     for path in sorted(glob.glob(os.path.join(seed_dir, "*.json"))):
         name = os.path.splitext(os.path.basename(path))[0]
+        if name in NON_RETRIEVABLE_SEED_FILES:
+            # The graph is a lookup structure, not legal text. Indexing it would
+            # put internal provision IDs and edge records into the retrievable
+            # corpus, where they could be quoted back to a judge as though they
+            # were statutory wording. The provisions' actual text is indexed
+            # from the Act records in acts_and_gazettes.json.
+            logger.debug("Skipping non-retrievable seed %s", name)
+            continue
         try:
             with open(path, encoding="utf-8") as fh:
                 data = json.load(fh)
         except Exception as exc:
             logger.warning("Seed read failed %s: %s", path, exc)
             continue
-        text = "\n".join(
-            f"{k}: {_json_value_text(v)}"
-            for k, v in (data.items() if isinstance(data, dict) else [("entry", data)])
-        )
-        text = normalizer.normalize_text(text)
-        digest = md.content_digest(text)
+        units = _seed_units(data)
+        # File-level digest: the whole file is the unit of change detection, as
+        # before, so an unchanged file is still skipped.
+        digest = md.content_digest("\n\n".join(text for _, text, _ in units))
         if mode != "full" and per_source["files"].get(name, {}).get("hash") == digest:
             continue
-        source = {
+        base_source = {
             "id": "knowledge_seeds", "name": f"IP-SAKTI canonical seeds — {name}",
             "jurisdiction": "India", "authority": "IP-SAKTI canonical knowledge seeds",
             "authority_level": 1, "priority": "P0",
@@ -246,12 +352,29 @@ def ingest_knowledge_seeds(mode: str = "update") -> dict[str, Any]:
             "category": CATEGORY_BY_SEED_FILE.get(name, "regulatory"),
             "access_mode": "authorized",
         }
-        base_md = md.build_metadata(source, path, name, text, 0)
-        docs = to_documents(text, name, path, base_md, max_tokens=500)
-        upserted = _upsert(docs)
-        per_source["files"][name] = {"hash": digest, "chunks": len(docs), "upserted": upserted}
-        harvested.extend(docs)
-        logger.info("  ingested %d chunks from seed %s", len(docs), name)
+        file_docs: list[dict[str, Any]] = []
+        for unit_key, unit_text, record in units:
+            text = normalizer.normalize_text(unit_text)
+            overrides = _record_metadata(record, base_source)
+            source = dict(base_source)
+            source.update(overrides)
+            base_md = md.build_metadata(source, path, unit_key, text, 0)
+            # build_metadata synthesises doc_id from source_id+url+index, which
+            # is identical for every record in the file. Set it explicitly so
+            # each record is addressable, and let the provision fields ride
+            # through to_documents' metadata merge.
+            base_md["doc_id"] = f"{name}:{unit_key}"
+            for key, value in overrides.items():
+                if key in ("provision_id", "effective_from", "effective_to",
+                           "citation_locator", "verification_status"):
+                    base_md[key] = value
+            file_docs.extend(
+                to_documents(text, unit_key, path, base_md, max_tokens=500)
+            )
+        upserted = _upsert(file_docs)
+        per_source["files"][name] = {"hash": digest, "chunks": len(file_docs), "upserted": upserted}
+        harvested.extend(file_docs)
+        logger.info("  ingested %d chunks from seed %s", len(file_docs), name)
     _save_state(state)
     return {"source_id": "knowledge_seeds", "name": "Knowledge seeds", "chunks": len(harvested)}
 

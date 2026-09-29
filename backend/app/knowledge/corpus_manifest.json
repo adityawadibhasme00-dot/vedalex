@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
-  "corpus_version": "c390d93e85d36070",
-  "generated_at": "2026-09-27T17:51:53Z",
+  "corpus_version": "11605c3d6df78ab9",
+  "generated_at": "2026-09-28T19:23:24Z",
   "industry_signals": "IP-SAKTI Sahayak curated corpus",
   "scope": [
     "rule_pack_rules_yaml",
@@ -36,6 +36,7 @@
       "legal_glossary.json": "3058e64e0db31f2d2ef3caa0ffb448c763d42e8075e2a594bd5a7c2f04abb350",
       "pathway_rules.json": "7a3c6001965d6af3a6ad33fc86f56465bffd4c300bcf39e45f0413c81640f5d5",
       "permitted_tk_prior_art.json": "a8fcbd7c431b183689454a040ae6e55afead20957cf5215f1110512080f7c502",
+      "provision_graph.json": "5e5915d724093ae812496ac85c42dc42222390232e44738e1d405115787d0112",
       "quality_pharmacopoeia.json": "6a2c356f968195dbf118ccb236acc8e4897a1b3407f8902b8fbb8a68837facc0",
       "safety_signals.json": "615a763981bb2b6470c76621f5d97f118f8cbd6fa72b51dddb8f72c87bcd7f54",
       "white_space.json": "4da980808b52c14f13b40a191381656483e21fc4ceedd2f72bc90d14989b63da"
@@ -49,6 +50,7 @@
       "external/genes/documents.json": "4b5cf3225df376bd3ad9fc008339406c3a4f56fa7bd32e549be221e287438f72",
       "external/provenance.json": "54a53a360ef45a82d6493e9e50c25c30939a8bea635026c6b9d49a7ba3ba27cc",
       "external/taxonomy/documents.json": "00fc4951e3028eba026d1f2b448e2eff97c975ca0a34d086ca8ad16e03b86cf8",
+      "locks/ingestion.lock": "9dddbf63a9c89f9e52412c0e710fee775dd315c6e26fb7beb2d75be0731bd31d",
       "metadata/sources_index.txt": "117bc2ce724ec5680b5890ebe593fb9439dda316aefdee5c0a4acfae7e41f59d",
       "multiomics/metabolomics/metabolomics_01.txt": "e04298f29b1cb55e389de072b86cc1738f2060ef17b8b4776060cdc7b23aed55",
       "multiomics/metabolomics/metabolomics_02.txt": "f4779f7244a8e3292c65429bec8c9ec0bed5c8768e2cc148d6f5209d3896f682",
@@ -116,8 +118,8 @@
   },
   "artifact_counts": {
     "rule_pack_rules_yaml": 7,
-    "knowledge_json": 17,
-    "curated_text_data": 59,
+    "knowledge_json": 18,
+    "curated_text_data": 60,
     "kb_documents": 4,
     "treaties_metadata": 1,
     "cites_appendices": 1

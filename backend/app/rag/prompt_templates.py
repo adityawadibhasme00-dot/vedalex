@@ -539,6 +539,53 @@ def format_sources_for_prompt(sources: list[dict[str, Any]]) -> str:
     return "\n\n---\n\n".join(parts)
 
 
+CROSS_REFERENCE_PROMPT = """The provisions below were NOT retrieved as search results. They were
+reached by following statutory cross-references (exception / definition /
+cross_reference edges) out of the provisions that WERE retrieved, from the
+platform's provision graph.
+
+Treat them as governing qualifications on the retrieved provisions, not as
+independent evidence. If one narrows, carves out, or overrides the retrieved
+rule, say so explicitly in the answer and name the provision. Never present a
+cross-reference as though it were a directly retrieved source, and never treat
+it as a second independent confirmation of anything. If a cross-reference is
+marked unverified, do not rely on it — state that the carve-out could not be
+confirmed from the primary text."""
+
+
+def format_cross_references_for_prompt(
+    cross_references: list[dict[str, Any]] | None,
+) -> str:
+    """Format provision cross-references as a distinct prompt section.
+
+    Kept separate from ``format_sources_for_prompt`` on purpose: these are
+    pointers derived from the graph, not retrieved passages, and blending them
+    into the source list would let the model count one provision twice.
+    """
+    if not cross_references:
+        return ""
+    parts: list[str] = []
+    for ref in cross_references:
+        content = (ref.get("content") or "").strip()
+        if not content:
+            continue
+        header_parts = [f"CROSS-REFERENCE: {ref.get('citation_locator') or ref.get('title') or ref.get('provision_id', '')}"]
+        if ref.get("graph_edge_type"):
+            header_parts.append(f"Relation: {ref['graph_edge_type']}")
+        if ref.get("graph_via"):
+            header_parts.append(f"Reached from: {ref['graph_via']}")
+        if ref.get("jurisdiction"):
+            header_parts.append(f"Jurisdiction: {ref['jurisdiction']}")
+        if ref.get("effective_from"):
+            header_parts.append(f"Effective from: {ref['effective_from']}")
+        if ref.get("verification_status"):
+            header_parts.append(f"Verification: {ref['verification_status']}")
+        parts.append(f"### {' | '.join(header_parts)}\n\n{content}")
+    if not parts:
+        return ""
+    return CROSS_REFERENCE_PROMPT + "\n\n" + "\n\n---\n\n".join(parts)
+
+
 # ============================================================================
 # Query-Specific Prompt Variants
 # ============================================================================
@@ -588,13 +635,20 @@ def build_rag_prompt(
     sources: list[dict[str, Any]],
     intent: str | None = None,
     passport_context: dict[str, Any] | None = None,
+    cross_references: list[dict[str, Any]] | None = None,
 ) -> dict[str, str]:
     """
     Build the complete prompt for the LLM with retrieved context.
 
+    ``cross_references`` are provision-graph pointers (exceptions, definitions)
+    reached from the retrieved sources. They are rendered as a separate,
+    explicitly-labelled section so the model can apply a carve-out without
+    mistaking it for independently retrieved evidence.
+
     Returns dict with 'system' and 'user' keys.
     """
     sources_text = format_sources_for_prompt(sources)
+    xref_text = format_cross_references_for_prompt(cross_references)
 
     # Select intent-specific instructions
     intent_instructions = ""
@@ -620,9 +674,11 @@ def build_rag_prompt(
 
     if intent_instructions:
         user_prompt += f"\n\n## ADDITIONAL INSTRUCTIONS FOR THIS QUERY TYPE\n\n{intent_instructions}"
-
+    if xref_text:
+        user_prompt += f"\n\n## PROVISION CROSS-REFERENCES (graph-derived)\n\n{xref_text}"
     if passport_section:
         user_prompt += passport_section
+
 
     return {
         "system": SYSTEM_PROMPT,

@@ -316,6 +316,10 @@ export interface CopilotResponse {
   product_classification?: CopilotProductClassification | null;
   product_classification_bilingual?: CopilotProductClassification | null;
   escalation?: CopilotEscalation | null;
+  /** True when the backend declined to answer (no evidence, weak evidence, or
+   *  a required clarification). Never render such a reply as a sourced answer. */
+  abstained?: boolean;
+  abstention_reason?: string | null;
 }
 
 // ─── Patent Analysis ────────────────────────────────────────────────────────────

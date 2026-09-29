@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { server } from './mw/server';
-import { render, waitFor } from './test-utils';
+import { act, render, waitFor } from './test-utils';
 import { AuthProvider, useAuth } from '../src/lib/AuthContext';
 
 const BASE = 'http://localhost/api/v1';
@@ -93,6 +93,11 @@ describe('AuthContext login', () => {
 
 describe('AuthContext session lifecycle', () => {
   test('restores saved session from localStorage on mount', async () => {
+    server.use(
+      http.get(`${BASE}/auth/profile`, () =>
+        HttpResponse.text('unavailable', { status: 503 })
+      )
+    );
     localStorage.setItem(
       'ipsakti_user',
       JSON.stringify({ name: 'Saved', email: 'saved@example.test', role: 'Researcher' })
@@ -105,6 +110,11 @@ describe('AuthContext session lifecycle', () => {
   });
 
   test('logout clears state and localStorage', async () => {
+    server.use(
+      http.get(`${BASE}/auth/profile`, () =>
+        HttpResponse.text('unavailable', { status: 503 })
+      )
+    );
     localStorage.setItem(
       'ipsakti_user',
       JSON.stringify({ name: 'Saved', email: 'saved@example.test', role: 'Researcher' })
@@ -140,5 +150,114 @@ describe('AuthContext session lifecycle', () => {
     await renderAuth();
     expect(ctx.user).toBeNull();
     expect(ctx.isLoading).toBe(false);
+  });
+});
+
+describe('AuthContext profile revalidation', () => {
+  test('replaces the stale cached name with the server profile on mount', async () => {
+    server.use(
+      http.get(`${BASE}/auth/profile`, () =>
+        HttpResponse.json({
+          id: 'u9',
+          name: 'Dr. Ananya Desai',
+          email: 'ananya@example.test',
+          role: 'Patent Agent',
+          institution: 'NIPER',
+          is_active: true,
+          created_at: '2024-01-01 00:00:00',
+        })
+      )
+    );
+    localStorage.setItem(
+      'ipsakti_user',
+      JSON.stringify({ name: 'Stale Name', email: 'old@example.test', role: 'Researcher' })
+    );
+    localStorage.setItem('ipsakti_token', 'tok-9');
+    await renderAuth();
+
+    await waitFor(() => expect(ctx.user.name).toBe('Dr. Ananya Desai'));
+    expect(ctx.user.email).toBe('ananya@example.test');
+    expect(ctx.user.role).toBe('Patent Agent');
+    expect(ctx.user.institution).toBe('NIPER');
+    expect(JSON.parse(localStorage.getItem('ipsakti_user')!).name).toBe('Dr. Ananya Desai');
+  });
+
+  test('sends the stored bearer token when revalidating', async () => {
+    let seenAuth: string | null = null;
+    server.use(
+      http.get(`${BASE}/auth/profile`, ({ request }) => {
+        seenAuth = request.headers.get('Authorization');
+        return HttpResponse.json({ name: 'Ada', email: 'ada@example.test', role: 'Researcher' });
+      })
+    );
+    localStorage.setItem(
+      'ipsakti_user',
+      JSON.stringify({ name: 'Ada', email: 'ada@example.test', role: 'Researcher' })
+    );
+    localStorage.setItem('ipsakti_token', 'tok-auth');
+    await renderAuth();
+
+    await waitFor(() => expect(seenAuth).toBe('Bearer tok-auth'));
+  });
+
+  test('keeps the cached profile when the profile request is unauthorised', async () => {
+    server.use(
+      http.get(`${BASE}/auth/profile`, () =>
+        HttpResponse.json({ detail: 'Could not validate credentials' }, { status: 401 })
+      )
+    );
+    localStorage.setItem(
+      'ipsakti_user',
+      JSON.stringify({ name: 'Cached', email: 'cached@example.test', role: 'Researcher' })
+    );
+    localStorage.setItem('ipsakti_token', 'expired-token');
+    await renderAuth();
+
+    await waitFor(() => expect(ctx.isLoading).toBe(false));
+    expect(ctx.user.name).toBe('Cached');
+    expect(ctx.apiToken).toBe('expired-token');
+  });
+
+  test('falls back to cached fields the server response omits', async () => {
+    server.use(
+      http.get(`${BASE}/auth/profile`, () =>
+        HttpResponse.json({ name: 'Server Name' })
+      )
+    );
+    localStorage.setItem(
+      'ipsakti_user',
+      JSON.stringify({ name: 'Cached', email: 'cached@example.test', role: 'Researcher' })
+    );
+    localStorage.setItem('ipsakti_token', 'tok-partial');
+    await renderAuth();
+
+    await waitFor(() => expect(ctx.user.name).toBe('Server Name'));
+    expect(ctx.user.email).toBe('cached@example.test');
+    expect(ctx.user.role).toBe('Researcher');
+  });
+
+  test('does not restore the profile when logout wins the race', async () => {
+    server.use(
+      http.get(`${BASE}/auth/profile`, async () => {
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        return HttpResponse.json({
+          name: 'Late Name',
+          email: 'late@example.test',
+          role: 'Researcher',
+        });
+      })
+    );
+    localStorage.setItem(
+      'ipsakti_user',
+      JSON.stringify({ name: 'Cached', email: 'cached@example.test', role: 'Researcher' })
+    );
+    localStorage.setItem('ipsakti_token', 'tok-race');
+    await renderAuth();
+    act(() => ctx.logout());
+
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    expect(ctx.user).toBeNull();
+    expect(localStorage.getItem('ipsakti_user')).toBeNull();
+    expect(localStorage.getItem('ipsakti_token')).toBeNull();
   });
 });

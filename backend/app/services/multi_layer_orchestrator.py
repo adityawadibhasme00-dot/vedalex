@@ -45,7 +45,9 @@ Enhanced with:
   - Layer-level latency tracking
 """
 
+import copy
 import hashlib
+import json
 import logging
 import os
 import re
@@ -105,15 +107,34 @@ _CACHE_TTL = 300  # 5 minutes
 _CACHE_MAX_SIZE = 100
 
 
-def _cache_key(question: str, passport_id: str | None = None) -> str:
-    key = f"{question}|{passport_id or ''}"
+def _cache_key(
+    question: str,
+    passport_id: str | None = None,
+    context: dict[str, Any] | None = None,
+) -> str:
+    """Key the cached answer by everything that can change it.
+
+    The jurisdiction toggle is part of the answer, not metadata: the same
+    question must not be answered from Indian law for one caller and US law
+    for the next. Keying on the question alone silently served the first
+    caller's regime to everyone else, which is a cross-request leak of
+    jurisdiction-scoped legal advice.
+    """
+    try:
+        ctx = json.dumps(context or {}, sort_keys=True, default=str)
+    except Exception:
+        ctx = repr(sorted((context or {}).keys()))
+    key = f"{question}|{passport_id or ''}|{ctx}"
     return hashlib.md5(key.encode()).hexdigest()
 
 
 def _cache_get(key: str) -> dict[str, Any] | None:
     entry = _response_cache.get(key)
     if entry and time.time() - entry["ts"] < _CACHE_TTL:
-        return entry["data"]
+        # Deep copy: callers mutate what they get back (e.g. stamping
+        # decision_trace["cache_hit"]), and a shared reference would let one
+        # caller rewrite the stored entry for every later reader.
+        return copy.deepcopy(entry["data"])
     return None
 
 
@@ -121,7 +142,7 @@ def _cache_set(key: str, data: dict[str, Any]) -> None:
     if len(_response_cache) >= _CACHE_MAX_SIZE:
         oldest = min(_response_cache, key=lambda k: _response_cache[k]["ts"])
         del _response_cache[oldest]
-    _response_cache[key] = {"ts": time.time(), "data": data}
+    _response_cache[key] = {"ts": time.time(), "data": copy.deepcopy(data)}
 
 
 # ---------------------------------------------------------------------------
@@ -683,9 +704,15 @@ class MultiLayerOrchestrator:
     def run(cls, question: str, passport_id: str | None = None,
             context: dict[str, Any] | None = None,
             retrieved_sources: list[dict[str, Any]] | None = None) -> dict[str, Any]:
-        # 0. Check cache first
-        cache_key = _cache_key(question, passport_id)
-        cached = _cache_get(cache_key)
+        # 0. Check cache first.
+        #
+        # Answers assembled from caller-supplied evidence are never cached and
+        # never served from cache. That evidence is the caller's choice, so
+        # reusing or storing it would let one caller's citations become another
+        # caller's answer.
+        cacheable = not retrieved_sources
+        cache_key = _cache_key(question, passport_id, context)
+        cached = _cache_get(cache_key) if cacheable else None
         if cached is not None:
             cached["decision_trace"]["cache_hit"] = True
             return cached
@@ -997,6 +1024,72 @@ class MultiLayerOrchestrator:
                    else "High Confidence not attained (fewer than two official sources).")
             ),
         })
+
+        # ---------- PROVISION CROSS-REFERENCE GRAPH · exceptions & definitions ----
+        # Runs AFTER citation voting on purpose. A cross-reference pointer is not
+        # an independent official source, so letting it vote would manufacture
+        # High Confidence out of a graph lookup. Here it is appended for the
+        # drafting step only, and re-passes the no-mixing gate so a cross-border
+        # edge can never pull foreign law into an answer.
+        _graph_notes: list[str] = []
+        _graph_stale: list[dict[str, Any]] = []
+        _graph_xrefs: list[dict[str, Any]] = []
+        try:
+            from app.services import provision_graph as _pgraph
+            _exp = _pgraph.expand_for_sources(sources) if _pgraph.available() else None
+        except Exception:  # graph is additive; never break the answer
+            _exp, _pgraph = None, None
+        if _exp:
+            _seen_pids = {
+                pid for s in sources
+                for pid in (s.get("provision_id") if isinstance(s.get("provision_id"), (list, tuple))
+                            else [s.get("provision_id")])
+                if isinstance(pid, str)
+            }
+            _linked_sources: list[dict[str, Any]] = []
+            for _entry in _exp["linked"]:
+                _pid = _entry["provision_id"]
+                if _pid in _seen_pids:
+                    continue
+                if not _pgraph.is_current(_pid):
+                    continue  # never cite superseded/withdrawn law as current
+                _src = _pgraph.provision_to_source(_pid, _entry)
+                if _src:
+                    _linked_sources.append(_src)
+            _linked_sources = filter_sources_by_jurisdiction(
+                _linked_sources, juris_resolved["mode"]
+            )
+            _cross_blocked = len(_exp["linked"]) - len(_linked_sources)
+            if _linked_sources:
+                # Deliberately NOT appended to `sources`. `sources[:5]` is both
+                # the LLM context and the user-visible citation list, so a graph
+                # pointer injected there would be presented as a retrieved
+                # document. They travel as cross-reference context instead.
+                _graph_xrefs = _linked_sources
+                _graph_notes.append(
+                    f"Applied {len(_linked_sources)} provision cross-reference(s) "
+                    f"({', '.join(sorted({s['graph_edge_type'] for s in _linked_sources}))}) "
+                    f"as drafting context; not counted as independent votes."
+                )
+            if _cross_blocked > 0:
+                _graph_notes.append(
+                    f"Blocked {_cross_blocked} cross-reference(s) from the other legal "
+                    f"regime under the no-mixing rule (mode={juris_resolved['mode']})."
+                )
+            _graph_stale = _exp["stale"]
+        if _graph_notes or _graph_stale:
+            _detail = " ".join(_graph_notes)
+            if _graph_stale:
+                _detail += (
+                    f" {len(_graph_stale)} provision(s) resolved to non-current law "
+                    f"({', '.join(s['provision_id'] for s in _graph_stale)}) and were "
+                    "withheld from citation."
+                )
+            flow.append({
+                "layer": "6 · Provision Cross-Reference Graph",
+                "status": "PASS" if _graph_notes else "WARN",
+                "detail": _detail,
+            })
 
         # ----------------- LAYER 7 · RESPONSE GENERATION -------------------------
         dataset_intents = {"white_space", "botanical_origin"}
@@ -1364,6 +1457,7 @@ class MultiLayerOrchestrator:
                 "method": "Intent Router → Hybrid RAG → KG → Rule Engine → MCP → Citation Voting → LLM",
                 "source_count": len(sources[:5]),
                 "candidate_count": len(sources),
+                "cross_reference_count": len(_graph_xrefs),
                 "llm_draft": llm_draft_meta.get("generated", False),
                 "llm_provider": llm_draft_meta.get("provider", "off"),
             },
@@ -1381,6 +1475,7 @@ class MultiLayerOrchestrator:
                 sources=sources[:5],
                 intent=intent_id,
                 passport_context=context,
+                cross_references=_graph_xrefs,
             )
             if domain_intent["ban_patent_topics"] and isinstance(llm_prompt, dict):
                 user_prompt = llm_prompt.get("user") or llm_prompt.get("query") or ""
@@ -1397,6 +1492,21 @@ class MultiLayerOrchestrator:
             "question": question,
             "answer": answer,
             "sources": sources[:5],
+            "cross_references": [
+                {
+                    "provision_id": s.get("provision_id", ""),
+                    "citation_locator": s.get("citation_locator", ""),
+                    "title": s.get("title", ""),
+                    "relation": s.get("graph_edge_type", ""),
+                    "reached_from": s.get("graph_via", ""),
+                    "jurisdiction": s.get("jurisdiction", ""),
+                    "effective_from": s.get("effective_from", ""),
+                    "verification_status": s.get("verification_status", ""),
+                    "summary": s.get("content", ""),
+                }
+                for s in _graph_xrefs
+            ],
+            "superseded_provisions": _graph_stale,
             "confidence": confidence,
             "images": [],
             "intent": {"id": intent_id, "label": surface_intent["label"]},
@@ -1433,6 +1543,7 @@ class MultiLayerOrchestrator:
         }
 
         # Cache the response
-        _cache_set(cache_key, response)
+        if cacheable:
+            _cache_set(cache_key, response)
 
         return response

@@ -43,6 +43,104 @@ class ChatResponse(BaseModel):
     product_classification_bilingual: dict[str, Any] | None = None
     escalation: dict[str, Any] | None = None
     audit: dict[str, Any] | None = None
+    # Self-abstention contract: True whenever the response is a refusal rather
+    # than a sourced answer. The UI must never render a refusal as if it were
+    # grounded, so this flag is derived server-side on every response.
+    abstained: bool = False
+    abstention_reason: str | None = None
+
+# Confidence at or below which a response is treated as an abstention rather
+# than an answer. Matches the orchestrator's own low-confidence gate.
+ABSTAIN_CONFIDENCE = 0.35
+
+PIPELINE_FAILURE_ANSWER = (
+    "The IP-SAKTI copilot could not complete this query because a retrieval "
+    "service failed. No answer was generated and no sources are cited. "
+    "Please retry, or narrow the question to a specific statute, ingredient or "
+    "regulator."
+)
+
+
+def _abstention(
+    question: str,
+    reason: str,
+    message: str,
+    intent: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    """Build an honest no-answer payload.
+
+    The pipeline failed, so nothing about the corpus can be asserted — not even
+    that evidence is missing. The message says the query could not be served and
+    cites nothing, instead of guessing a cause.
+    """
+    return {
+        "question": question,
+        "answer": message,
+        "sources": [],
+        "confidence": 0.0,
+        "images": [],
+        "intent": intent,
+        "abstained": True,
+        "abstention_reason": reason,
+        "analysis_card": {"verification_badge": "Unable to answer"},
+        "response_sections": {
+            "direct_answer": message,
+            "clarification_needed": False,
+            "official_sources_used": [],
+            "confidence": 0,
+            "next_recommended_action": "Retry the question, or ask an IP facilitator.",
+            "why_it_matters": (
+                "No source was retrieved or cited, so nothing in this reply is "
+                "backed by the official record."
+            ),
+        },
+        "audit": {},
+    }
+
+
+def _mark_abstained(result: dict[str, Any], reason: str) -> None:
+    """Record a refusal and strip the evidence that never supported an answer.
+
+    Clearing sources and confidence is what keeps the contract honest: a reply
+    flagged as a refusal must not also advertise citations, or the client
+    renders "no answer given" above a list of sources the user will read as
+    backing for a claim that was not made.
+    """
+    result["abstained"] = True
+    result["abstention_reason"] = reason
+    result["sources"] = []
+    result["confidence"] = 0.0
+    sections = result.get("response_sections")
+    if isinstance(sections, dict):
+        sections["official_sources_used"] = []
+
+
+def _derive_abstention(result: dict[str, Any], no_evidence_answer: str) -> None:
+    """Flag refusals in place so the client can never mistake one for an answer."""
+    # Read the incoming verdict before defaulting it, and always leave the
+    # payload well-formed so both flags are present on every response.
+    already_refusal = bool(result.get("abstained"))
+    reason = result.get("abstention_reason")
+    result["abstained"] = False
+    result["abstention_reason"] = None
+    if already_refusal:
+        # Already a refusal (the orchestrator decided so) — still normalise it,
+        # so the no-citations invariant holds for every refusal path.
+        _mark_abstained(result, str(reason or "declined to answer"))
+        return
+    answer = str(result.get("answer") or "")
+    marker = no_evidence_answer.split(".")[0]
+    sections = result.get("response_sections")
+    sections = sections if isinstance(sections, dict) else {}
+    # Order matters: the reason is shown to the user, so the most specific
+    # cause has to win. A clarification carries low confidence by design and
+    # would otherwise be mislabelled as weak evidence.
+    if sections.get("clarification_needed"):
+        _mark_abstained(result, "jurisdiction clarification required")
+    elif not answer or answer.startswith(no_evidence_answer) or marker in answer:
+        _mark_abstained(result, "no supporting evidence in the indexed corpus")
+    elif float(result.get("confidence") or 0.0) < ABSTAIN_CONFIDENCE:
+        _mark_abstained(result, "retrieved evidence was too weak to support an answer")
 
 @router.post("/query", response_model=ChatResponse)
 async def chat_query(
@@ -51,38 +149,77 @@ async def chat_query(
     current_user: User | None = Depends(get_optional_user)
 ):
     from app.agents.input_defenses import defend_query
+    from app.services.ai_copilot import NO_EVIDENCE_ANSWER
 
     # Security B1+B2: sanitised before the question reaches the orchestrator
     # or any LLM; the audit trail hashes the sanitised form as well.
     question = defend_query(req.question)["query"]
     # The orchestrator is synchronous and LLM/RAG-bound (25-45s worst case).
     # Run it on a worker thread so the event loop keeps serving other requests.
-    result = await run_sync(
-        MultiLayerOrchestrator.run, question, req.passport_id, req.context
-    )
+    #
+    # Any internal failure is converted into an explicit no-answer response
+    # instead of a 500: a broken retrieval service must never surface to the
+    # user as a generic "backend error", and it must never be papered over with
+    # a generated answer.
+    try:
+        result = await run_sync(
+            MultiLayerOrchestrator.run, question, req.passport_id, req.context
+        )
+    except Exception:  # noqa: BLE001 — the answer path must not 500
+        logger.exception(
+            "copilot pipeline failed (question_hash=%s)", hash_audit_token(question)
+        )
+        result = _abstention(
+            question, "retrieval pipeline failure", PIPELINE_FAILURE_ANSWER
+        )
+
+    # Normalise/validate against the response schema. A payload that does not
+    # fit the contract is not trustworthy enough to show, so it degrades to a
+    # no-answer response instead of raising a 500 from the serialiser.
+    try:
+        result = ChatResponse.model_validate(result).model_dump()
+    except Exception:  # noqa: BLE001
+        logger.exception(
+            "copilot response failed schema validation (question_hash=%s)",
+            hash_audit_token(question),
+        )
+        result = _abstention(
+            question, "malformed orchestrator response", PIPELINE_FAILURE_ANSWER
+        )
+
+    _derive_abstention(result, NO_EVIDENCE_ANSWER)
+
+    # ``audit`` is an optional field on the schema, so it serialises to None
+    # unless the orchestrator set it. Normalise it before the bookkeeping below
+    # writes into it.
+    if not isinstance(result.get("audit"), dict):
+        result["audit"] = {}
 
     # Privacy-preserving audit + persistence:
     #  - Full text persisted ONLY on explicit consent (consent_record=true).
     #  - The audit trail stores hashed query/answer + source/citation IDs,
     #    never raw formulation details, to keep logs privacy-preserving.
-    result["audit"] = {}
     if req.consent_record and current_user:
-        chat_entry = ChatHistory(
-            user_id=current_user.id,
-            message=scrub_text(question),
-            response=scrub_text(result["answer"]),
-            sources=result["sources"],
-            confidence=result["confidence"],
-            consent_record=True,
-            query_hash=hash_audit_token(question),
-        )
-        db.add(chat_entry)
-        db.commit()
-        result["audit"] = {
-            "persisted": True,
-            "stored_full_record": True,
-            "query_scrubbed": scrub_text(question) != question,
-        }
+        try:
+            chat_entry = ChatHistory(
+                user_id=current_user.id,
+                message=scrub_text(question),
+                response=scrub_text(result["answer"]),
+                sources=result["sources"],
+                confidence=result["confidence"],
+                consent_record=True,
+                query_hash=hash_audit_token(question),
+            )
+            db.add(chat_entry)
+            db.commit()
+            result["audit"].update({
+                "persisted": True,
+                "stored_full_record": True,
+                "query_scrubbed": scrub_text(question) != question,
+            })
+        except Exception:  # noqa: BLE001 — persistence must not lose the answer
+            db.rollback()
+            logger.exception("chat history persistence failed")
 
     citation_ids = []
     for src in result.get("sources", []) or []:
@@ -92,18 +229,30 @@ async def chat_query(
                 citation_ids.append(str(val))
                 break
     source_ids = [str(s.get("source_id", s.get("id", ""))) for s in result.get("sources", []) or []]
-    audit_entry = QueryAuditLog.record(
-        query_hash=hash_audit_token(question),
-        answer_hash=hash_audit_token(result["answer"]),
-        source_ids=source_ids,
-        citation_ids=citation_ids,
-        jurisdiction=(result.get("jurisdiction") or {}).get("detected")
-            if isinstance(result.get("jurisdiction"), dict) else None,
-        confidence=result.get("confidence"),
-        language=result.get("detected_language"),
-        user_id=str(current_user.id) if current_user else None,
-        opt_in_store=bool(req.consent_record),
-    )
+    # Audit bookkeeping is best-effort: it must never turn a served answer into
+    # a failed request.
+    try:
+        audit_entry = QueryAuditLog.record(
+            query_hash=hash_audit_token(question),
+            answer_hash=hash_audit_token(result["answer"]),
+            source_ids=source_ids,
+            citation_ids=citation_ids,
+            jurisdiction=(result.get("jurisdiction") or {}).get("detected")
+                if isinstance(result.get("jurisdiction"), dict) else None,
+            confidence=result.get("confidence"),
+            language=result.get("detected_language"),
+            user_id=str(current_user.id) if current_user else None,
+            opt_in_store=bool(req.consent_record),
+        )
+    except Exception:  # noqa: BLE001
+        logger.warning("query audit log failed", exc_info=True)
+        # Fall back to the hashes we can still compute. The audit-chain record
+        # below reads both keys, so an incomplete stub would silently drop the
+        # privacy-preserving event instead of degrading to a reduced one.
+        audit_entry = {
+            "query_hash": hash_audit_token(question),
+            "answer_hash": hash_audit_token(result["answer"]),
+        }
     try:
         from app.services.audit_chain import record_event
 

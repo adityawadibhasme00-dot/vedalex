@@ -1,0 +1,304 @@
+{
+  "schema_version": "1.0",
+  "_meta": {
+    "purpose": "Provision-level cross-reference graph. A provision is a single section/regulation of a named instrument, keyed by (act, section) rather than act title alone, because two sections of the same Act are different rules with different exceptions. Edges connect provisions so that an exception, definition or cross-reference living in ANOTHER section is reachable from the provision that was retrieved.",
+    "why_not_just_chunks": "Vector retrieval returns the section that matches the question text. An exception frequently lives in a different section that does not match the text at all, so without edges the exception is silently unreachable and the system answers as if no exception exists. This file makes that reach explicit.",
+    "curated": "2026-09-28",
+    "editing_rule": "Every provision and every edge must cite a basis that exists in this repository (an acts_and_gazettes record, a rule-pack rule, or an explicit statement in repo text). An edge with no in-repo basis is a fabrication and must not be added. Small and correct beats large and invented.",
+    "verification_status_legend": {
+      "corpus_record": "The provision is a record in acts_and_gazettes.json or is quoted in a rule pack.",
+      "referenced_only": "The provision is referenced by repo text but has no standalone corpus record; the locator must be verified against the primary instrument before it is cited to a user.",
+      "external": "Sourced from a primary instrument outside this repository. Not currently used."
+    },
+    "temporal_note": "effective_from/effective_to model the applicability window. effective_to: null means no known end date, NOT that the provision is permanent. status is one of active | superseded | repealed | not_in_force. A provision whose window has closed must not be cited as current law.",
+    "disclaimer": "Graph structure is curated metadata, not legal advice. Every conclusion drawn from an edge must still cite the instrument text; the edge tells the system WHERE to look, never WHAT the answer is."
+  },
+  "provisions": [
+    {
+      "provision_id": "ACT-IN-PATENT-1970-SEC3P",
+      "label": "Section 3(p) — traditional knowledge non-patentability bar",
+      "act_title": "The Patents Act, 1970 (as amended)",
+      "section_reference": "Section 3(p)",
+      "jurisdiction": "India",
+      "authority": "Indian Patent Office (CGPDTM)",
+      "authority_level": 1,
+      "effective_from": "2005-04-04",
+      "effective_to": null,
+      "status": "active",
+      "citation_locator": "Patents Act 1970, s.3(p)",
+      "source_url": "https://ipindia.gov.in/patents.htm",
+      "verification_status": "corpus_record",
+      "corpus_record": "ACT-IN-PATENT-1970-SEC3P",
+      "rule_ids": [
+        "RULE_PATENT_SEC3P_OBJECTION"
+      ],
+      "summary": "Ingredients documented as traditional knowledge, with no proven synergism, fall under the non-patentability bar."
+    },
+    {
+      "provision_id": "ACT-IN-PATENT-1970-S10-4D-II",
+      "label": "Section 10(4)(d)(ii) — disclosure of source/geographical origin",
+      "act_title": "The Patents Act, 1970 (as amended)",
+      "section_reference": "Section 10(4)(d)(ii)",
+      "jurisdiction": "India",
+      "authority": "Indian Patent Office (CGPDTM)",
+      "authority_level": 1,
+      "effective_from": "1970-09-05",
+      "effective_to": null,
+      "status": "active",
+      "citation_locator": "Patents Act 1970, s.10(4)(d)(ii)",
+      "source_url": "https://ipindia.gov.in/patents.htm",
+      "verification_status": "referenced_only",
+      "corpus_record": "ACT-IN-PATENT-1970-SEC3P",
+      "rule_ids": [
+        "RULE_PATENT_SEC3P_OBJECTION"
+      ],
+      "summary": "Mandatory disclosure of the source and geographical origin of biological material."
+    },
+    {
+      "provision_id": "ACT-IN-BD-2002-S6",
+      "label": "Biological Diversity Act 2002, Section 6 — NBA prior approval",
+      "act_title": "The Biological Diversity Act, 2002",
+      "section_reference": "Section 6",
+      "jurisdiction": "India",
+      "authority": "National Biodiversity Authority (NBA)",
+      "authority_level": 1,
+      "effective_from": "2003-10-03",
+      "effective_to": null,
+      "status": "active",
+      "citation_locator": "Biological Diversity Act 2002, s.6",
+      "source_url": "https://ipindia.gov.in/patents.htm",
+      "verification_status": "referenced_only",
+      "corpus_record": "ACT-IN-PATENT-1970-SEC3P",
+      "rule_ids": [
+        "RULE_PATENT_SEC3P_OBJECTION"
+      ],
+      "summary": "NBA approval is required before patent grant where biological material is used. Referenced by the Section 3(p) rule pack as a prerequisite."
+    },
+    {
+      "provision_id": "ACT-IN-AYUSH-1940-158B",
+      "label": "Drugs and Cosmetics Rules — Rule 158-B and Schedule T (ASU GMP)",
+      "act_title": "Drugs and Cosmetics Act, 1940 & Rules, 1945",
+      "section_reference": "Rule 158-B & Schedule T (ASU GMP)",
+      "jurisdiction": "India",
+      "authority": "Ministry of AYUSH / CDSCO",
+      "authority_level": 1,
+      "effective_from": "1945-12-21",
+      "effective_to": null,
+      "status": "active",
+      "citation_locator": "D&C Rules, r.158-B & Sch. T",
+      "source_url": "https://ayush.gov.in/acts-rules/drugs-and-cosmetics-act-1940",
+      "verification_status": "corpus_record",
+      "corpus_record": "ACT-IN-AYUSH-1940-158B",
+      "rule_ids": [],
+      "summary": "Ayurvedic System of Medicine manufacturing and GMP conditions."
+    },
+    {
+      "provision_id": "ACT-IN-FSSAI-2022-AAHARA",
+      "label": "FSSAI Ayurveda Aahara — Regulation 4 and Schedule I",
+      "act_title": "Food Safety and Standards (Ayurveda Aahara) Regulations, 2022",
+      "section_reference": "Regulation 4 & Schedule I (Permitted Positive List)",
+      "jurisdiction": "India",
+      "authority": "Food Safety and Standards Authority of India (FSSAI)",
+      "authority_level": 1,
+      "effective_from": "2022-04-05",
+      "effective_to": null,
+      "status": "active",
+      "citation_locator": "FSSAI Ayurveda Aahara Regs 2022, reg.4 & Sch.I",
+      "source_url": "https://www.fssai.gov.in/upload/notifications/2022/05/6274b7c6c0e5aGazette_Notification_Ayurveda_Aahara_05_05_2022.pdf",
+      "verification_status": "corpus_record",
+      "corpus_record": "ACT-IN-FSSAI-2022-AAHARA",
+      "rule_ids": [],
+      "summary": "Permitted positive list and composition limits for Ayurveda Aahara claims."
+    },
+    {
+      "provision_id": "ACT-US-FDA-1994-DSHEA",
+      "label": "DSHEA — 21 U.S.C. 343(r)(6) and 21 CFR 101.93",
+      "act_title": "Dietary Supplement Health and Education Act of 1994 (DSHEA)",
+      "section_reference": "21 U.S.C. 343(r)(6) & 21 CFR 101.93",
+      "jurisdiction": "United States",
+      "authority": "United States Food and Drug Administration (US FDA)",
+      "authority_level": 1,
+      "effective_from": "1994-10-25",
+      "effective_to": null,
+      "status": "active",
+      "citation_locator": "21 U.S.C. 343(r)(6); 21 CFR 101.93",
+      "source_url": "https://www.fda.gov/food/dietary-supplements",
+      "verification_status": "corpus_record",
+      "corpus_record": "ACT-US-FDA-1994-DSHEA",
+      "rule_ids": [],
+      "summary": "Structure/function claim substantiation and the significant scientific evidence standard for disease-related claims."
+    },
+    {
+      "provision_id": "ACT-US-FDCA-321G1B",
+      "label": "FD&C Act — drug definition, 21 U.S.C. 321(g)(1)(B)",
+      "act_title": "Federal Food, Drug, and Cosmetic Act (FD&C Act)",
+      "section_reference": "21 U.S.C. 321(g)(1)(B)",
+      "jurisdiction": "United States",
+      "authority": "US FDA / CDER",
+      "authority_level": 1,
+      "effective_from": "1938-06-25",
+      "effective_to": null,
+      "status": "active",
+      "citation_locator": "21 U.S.C. 321(g)(1)(B)",
+      "source_url": "https://www.fda.gov/drugs",
+      "verification_status": "corpus_record",
+      "corpus_record": "ACT-US-FDA-FDCA-DRUG",
+      "rule_ids": [],
+      "summary": "Defines 'drug' by intended use. DSHEA's definition of dietary supplement is drawn from this provision, so the two must be read together when classifying a product."
+    },
+    {
+      "provision_id": "ACT-US-FDCA-355-NDA",
+      "label": "FD&C Act — 21 U.S.C. 355 (New Drug Application)",
+      "act_title": "Federal Food, Drug, and Cosmetic Act (FD&C Act)",
+      "section_reference": "21 U.S.C. 355 (NDA)",
+      "jurisdiction": "United States",
+      "authority": "US FDA / CDER",
+      "authority_level": 1,
+      "effective_from": "1938-06-25",
+      "effective_to": null,
+      "status": "active",
+      "citation_locator": "21 U.S.C. 355",
+      "source_url": "https://www.fda.gov/drugs",
+      "verification_status": "corpus_record",
+      "corpus_record": "ACT-US-FDA-FDCA-DRUG",
+      "rule_ids": [],
+      "summary": "New Drug Application pathway. Reached only if a product fails the dietary-supplement classification and is a drug."
+    },
+    {
+      "provision_id": "ACT-CA-HC-2004-NHPR",
+      "label": "Natural Health Products Regulations (NHPR)",
+      "act_title": "Natural Health Products Regulations (NHPR)",
+      "section_reference": "SOR/2003-196 & NHPID Compendium of Monographs",
+      "jurisdiction": "Canada",
+      "authority": "Health Canada (NNHPD)",
+      "authority_level": 1,
+      "effective_from": "2004-01-01",
+      "effective_to": null,
+      "status": "active",
+      "citation_locator": "NHPR, SOR/2003-196",
+      "source_url": "https://www.canada.ca/en/health-canada/services/drugs-health-products/natural-non-prescription.html",
+      "verification_status": "corpus_record",
+      "corpus_record": "ACT-CA-HC-2004-NHPR",
+      "rule_ids": [],
+      "summary": "Licensing, approved licence information and labelling for natural health products."
+    },
+    {
+      "provision_id": "ACT-IN-DESIGNS-2000-S4",
+      "label": "Designs Act 2000, Section 4 — novelty",
+      "act_title": "Designs Act, 2000",
+      "section_reference": "Section 4 (novelty) & Section 2(d) (design definition)",
+      "jurisdiction": "India",
+      "authority": "CGPDTM",
+      "authority_level": 1,
+      "effective_from": "2001-05-11",
+      "effective_to": null,
+      "status": "active",
+      "citation_locator": "Designs Act 2000, s.4",
+      "source_url": "",
+      "verification_status": "referenced_only",
+      "corpus_record": null,
+      "rule_ids": [
+        "RULE_DESIGN_NOVEL_CONFIGURATION"
+      ],
+      "summary": "Registrability of a novel physical configuration that is not purely functional."
+    },
+    {
+      "provision_id": "ACT-IN-TM-1999-S9",
+      "label": "Trade Marks Act 1999, Section 9 — absolute grounds",
+      "act_title": "Trade Marks Act, 1999",
+      "section_reference": "Section 9 (Absolute grounds: absence of distinctive character)",
+      "jurisdiction": "India",
+      "authority": "CGPDTM",
+      "authority_level": 1,
+      "effective_from": "2003-09-15",
+      "effective_to": null,
+      "status": "active",
+      "citation_locator": "Trade Marks Act 1999, s.9",
+      "source_url": "",
+      "verification_status": "referenced_only",
+      "corpus_record": null,
+      "rule_ids": [
+        "RULE_TM_GENERIC_NAME_BAR"
+      ],
+      "summary": "Generic or non-distinctive marks are barred as an absolute ground."
+    },
+    {
+      "provision_id": "ACT-IN-GI-1999-S3",
+      "label": "GI Act 1999, Section 3 — GI application",
+      "act_title": "Geographical Indications of Goods (Registration and Protection) Act, 1999",
+      "section_reference": "Section 3 (GI application) & Rules 2002",
+      "jurisdiction": "India",
+      "authority": "GI Registry, CGPDTM",
+      "authority_level": 1,
+      "effective_from": "1999-12-01",
+      "effective_to": null,
+      "status": "active",
+      "citation_locator": "GI Act 1999, s.3",
+      "source_url": "",
+      "verification_status": "referenced_only",
+      "corpus_record": null,
+      "rule_ids": [
+        "RULE_GI_INDIAN_ORIGIN_ELIGIBILITY"
+      ],
+      "summary": "Collective/producer GI applications for origin-linked quality."
+    }
+  ],
+  "edges": [
+    {
+      "from": "ACT-US-FDA-1994-DSHEA",
+      "to": "ACT-US-FDCA-321G1B",
+      "type": "definition",
+      "basis": "DSHEA's definition of 'dietary supplement' is drawn from the FD&C Act drug definition at 21 U.S.C. 321(g)(1)(B). The corpus records 321(g)(1)(B) against the FD&C Act and 343(r)(6) against DSHEA; a structure/function claim question cannot be classified without both.",
+      "citation_locator": "21 U.S.C. 343(r)(6); 21 U.S.C. 321(g)(1)(B)",
+      "verification_status": "corpus_record"
+    },
+    {
+      "from": "ACT-US-FDA-1994-DSHEA",
+      "to": "ACT-US-FDCA-355-NDA",
+      "type": "cross_reference",
+      "basis": "If a product fails the dietary-supplement definition and is a drug by intended use, the NDA pathway applies. Classification and pathway are a single decision, not two.",
+      "citation_locator": "21 U.S.C. 355",
+      "verification_status": "corpus_record"
+    },
+    {
+      "from": "ACT-IN-PATENT-1970-SEC3P",
+      "to": "ACT-IN-BD-2002-S6",
+      "type": "cross_reference",
+      "basis": "RULE_PATENT_SEC3P_OBJECTION lists 'NBA (National Biodiversity Authority) approval prior to patent grant under Section 6 of Biological Diversity Act' as a required action. The NBA prerequisite lives outside the Patents Act, so it is unreachable from the s.3(p) text alone.",
+      "citation_locator": "Patents Act 1970, s.3(p); Biological Diversity Act 2002, s.6",
+      "verification_status": "referenced_only"
+    },
+    {
+      "from": "ACT-IN-PATENT-1970-SEC3P",
+      "to": "ACT-IN-PATENT-1970-S10-4D-II",
+      "type": "cross_reference",
+      "basis": "RULE_PATENT_SEC3P_OBJECTION lists 'Mandatory disclosure of source/geographical origin of biological material under Sec 10(4)(d)(ii)' as a required action. Same Act, different section — the reason section-scoped nodes are required.",
+      "citation_locator": "Patents Act 1970, s.3(p), s.10(4)(d)(ii)",
+      "verification_status": "referenced_only"
+    },
+    {
+      "from": "ACT-IN-DESIGNS-2000-S4",
+      "to": "ACT-IN-PATENT-1970-SEC3P",
+      "type": "cross_reference",
+      "basis": "RULE_DESIGN_NOVEL_CONFIGURATION states 'Registering a design bars late patent claims on the same shape', so design and patent eligibility are a single decision for physical configurations.",
+      "citation_locator": "Designs Act 2000, s.4",
+      "verification_status": "referenced_only"
+    },
+    {
+      "from": "ACT-IN-GI-1999-S3",
+      "to": "ACT-IN-TM-1999-S9",
+      "type": "cross_reference",
+      "basis": "RULE_GI_INDIAN_ORIGIN_ELIGIBILITY states 'Distinguish from trademark rights; GI protects origin-linked quality, not a brand', making the two rights mutually exclusive in practice for origin-linked goods.",
+      "citation_locator": "GI Act 1999, s.3; Trade Marks Act 1999, s.9",
+      "verification_status": "referenced_only"
+    },
+    {
+      "from": "ACT-IN-FSSAI-2022-AAHARA",
+      "to": "ACT-IN-AYUSH-1940-158B",
+      "type": "cross_reference",
+      "basis": "A product marketed as a food (FSSAI Ayurveda Aahara) and as an ASU drug (D&C Rule 158-B) is routed by a single product decision; the two regimes are alternatives, and a claim that reads as therapeutic pushes the product out of the food route.",
+      "citation_locator": "FSSAI Ayurveda Aahara Regs 2022; D&C Rules r.158-B",
+      "verification_status": "referenced_only"
+    }
+  ]
+}
