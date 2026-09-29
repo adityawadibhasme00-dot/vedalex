@@ -3,8 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import { getInstitutionalAnalytics } from '../lib/api';
 import { Building2, Users, AlertCircle, CheckCircle, BarChart3 } from 'lucide-react';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 export default function InstitutionalView() {
+  const { lang } = useLang();
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -18,7 +21,7 @@ export default function InstitutionalView() {
   if (isLoading) {
     return (
       <div className="glass-panel rounded-2xl p-8 text-center border border-emerald-200">
-        <p className="text-slate-500 text-xs">Loading institutional incubator cohort analytics...</p>
+        <p className="text-slate-500 text-xs">{t('institutional_loading', lang)}</p>
       </div>
     );
   }
@@ -35,21 +38,21 @@ export default function InstitutionalView() {
             <h3 className="text-base font-bold text-slate-900 font-display">{data.organization_name}</h3>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Section 7.4.1 Multi-Tenant Incubator Dashboard & Aggregated Cohort Compliance Intelligence.
+            {t('institutional_header_desc', lang)}
           </p>
         </div>
 
         <div className="flex items-center space-x-3 text-xs">
           <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200 text-center">
-            <span className="text-slate-500 block text-[10px] uppercase font-bold">Active Cases</span>
+            <span className="text-slate-500 block text-[10px] uppercase font-bold">{t('institutional_active_cases', lang)}</span>
             <span className="text-sm font-bold text-slate-900">{data.total_active_cases}</span>
           </div>
           <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200 text-center">
-            <span className="text-slate-500 block text-[10px] uppercase font-bold">Pending Reviews</span>
+            <span className="text-slate-500 block text-[10px] uppercase font-bold">{t('institutional_pending_reviews', lang)}</span>
             <span className="text-sm font-bold text-amber-600">{data.pending_expert_reviews}</span>
           </div>
           <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200 text-center">
-            <span className="text-slate-500 block text-[10px] uppercase font-bold">Avg Coverage</span>
+            <span className="text-slate-500 block text-[10px] uppercase font-bold">{t('institutional_avg_coverage', lang)}</span>
             <span className="text-sm font-bold text-emerald-600">{data.avg_coverage_meter}%</span>
           </div>
         </div>
@@ -59,7 +62,7 @@ export default function InstitutionalView() {
       <div className="glass-panel rounded-2xl p-5 border border-emerald-200 space-y-3">
         <h4 className="text-xs font-bold uppercase tracking-wider text-amber-600 flex items-center space-x-1.5">
           <BarChart3 className="w-4 h-4" />
-          <span>Top Systemic Compliance Bottlenecks Across Cohort</span>
+          <span>{t('institutional_bottlenecks', lang)}</span>
         </h4>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -73,7 +76,7 @@ export default function InstitutionalView() {
                 <div className="bg-amber-500 h-full" style={{ width: `${gap.percentage}%` }} />
               </div>
               <p className="text-[11px] text-slate-500 leading-relaxed pt-1 border-t border-emerald-200">
-                <strong className="text-slate-700">Policy Action: </strong>{gap.recommended_workshop_action}
+                <strong className="text-slate-700">{t('institutional_policy_action', lang)}</strong> {gap.recommended_workshop_action}
               </p>
             </div>
           ))}
@@ -83,19 +86,19 @@ export default function InstitutionalView() {
       {/* Startup Case Queue */}
       <div className="glass-panel rounded-2xl p-5 border border-emerald-200 space-y-3">
         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-          Incubator Case Queue & Triage Status
+          {t('institutional_case_queue', lang)}
         </h4>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-slate-600">
             <thead className="border-b border-emerald-200 text-slate-500 uppercase text-[10px]">
               <tr>
-                <th className="pb-2.5">Case / Startup</th>
-                <th className="pb-2.5">Product Formulation</th>
-                <th className="pb-2.5">Target Markets</th>
-                <th className="pb-2.5">Coverage</th>
-                <th className="pb-2.5">Assigned Reviewer</th>
-                <th className="pb-2.5">Status</th>
+                <th className="pb-2.5">{t('institutional_th_case', lang)}</th>
+                <th className="pb-2.5">{t('institutional_th_product', lang)}</th>
+                <th className="pb-2.5">{t('institutional_th_markets', lang)}</th>
+                <th className="pb-2.5">{t('institutional_th_coverage', lang)}</th>
+                <th className="pb-2.5">{t('institutional_th_reviewer', lang)}</th>
+                <th className="pb-2.5">{t('institutional_th_status', lang)}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-emerald-200">

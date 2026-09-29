@@ -1,11 +1,11 @@
-export const AGENT_BLURBS: Record<string, string> = {
-  triz: 'Finds innovative solutions using contradiction analysis and inventive principles.',
-  quick_research: 'Scans the tech landscape to extract concepts, trends and evidence fast.',
-  novelty_search: 'Runs an examiner-style novelty search comparing your idea to prior art.',
-  fto_search: 'Checks whether you can make, use and sell your product without infringing patents.',
-  patent_drafting: 'Drafts a complete, exam-ready patent application from your invention details.',
-  invention_disclosure: 'Captures your raw lab notes into a clean, source-of-truth invention disclosure.',
-  essentiality_claim_chart: 'Builds the claim-to-standard mapping chart needed for standard-essential patents.',
-  formulation: 'Builds regulatory-first formulation ideas for your product category.',
-  materials_find_solutions: 'Solves material problems with evidence-based root-cause analysis.',
+export const AGENT_BLURB_KEYS: Record<string, string> = {
+  triz: 'ab_triz',
+  quick_research: 'ab_quick_research',
+  novelty_search: 'ab_novelty_search',
+  fto_search: 'ab_fto_search',
+  patent_drafting: 'ab_patent_drafting',
+  invention_disclosure: 'ab_invention_disclosure',
+  essentiality_claim_chart: 'ab_essentiality_claim_chart',
+  formulation: 'ab_formulation',
+  materials_find_solutions: 'ab_materials_find_solutions',
 };

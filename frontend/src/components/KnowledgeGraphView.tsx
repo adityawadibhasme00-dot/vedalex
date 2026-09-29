@@ -11,6 +11,8 @@ import {
   InnovationKnowledgeGraphResponse,
 } from '../types';
 import { getInnovationGraph, getPassportInnovationGraph } from '../lib/api';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface DemoInnovation {
   id: string;
@@ -20,12 +22,12 @@ interface DemoInnovation {
 }
 
 const DEMO_INNOVATIONS: DemoInnovation[] = [
-  { id: 'ashwagandha', label: 'Ashwagandha', hint: 'Single herb', ingredients: ['Ashwagandha'] },
-  { id: 'brahmi', label: 'Brahmi', hint: 'Single herb', ingredients: ['Brahmi'] },
-  { id: 'neem', label: 'Neem', hint: 'Single herb', ingredients: ['Neem'] },
-  { id: 'guduchi', label: 'Guduchi', hint: 'Single herb', ingredients: ['Guduchi'] },
-  { id: 'triphala', label: 'Triphala', hint: 'Polyherbal', ingredients: ['Triphala'] },
-  { id: 'custom', label: 'Custom Polyherbal', hint: 'Type ingredients', ingredients: [] },
+  { id: 'ashwagandha', label: 'Ashwagandha', hint: 'kg_hint_single', ingredients: ['Ashwagandha'] },
+  { id: 'brahmi', label: 'Brahmi', hint: 'kg_hint_single', ingredients: ['Brahmi'] },
+  { id: 'neem', label: 'Neem', hint: 'kg_hint_single', ingredients: ['Neem'] },
+  { id: 'guduchi', label: 'Guduchi', hint: 'kg_hint_single', ingredients: ['Guduchi'] },
+  { id: 'triphala', label: 'Triphala', hint: 'kg_hint_poly', ingredients: ['Triphala'] },
+  { id: 'custom', label: 'Custom Polyherbal', hint: 'kg_hint_type', ingredients: [] },
 ];
 
 const CATEGORY_STYLE: Record<string, { chip: string; color: string }> = {
@@ -44,18 +46,18 @@ const CATEGORY_STYLE: Record<string, { chip: string; color: string }> = {
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  ingredient: 'Ingredients (API Monographs)',
-  botanical: 'Botanical Identity',
-  monograph: 'API Monographs / Quality Standards',
-  regulation: 'Statutory Regulations',
-  authority: 'Regulatory Authorities',
-  jurisdiction: 'Jurisdictions',
-  tkdl: 'Traditional Knowledge (TKDL)',
-  patent: 'Patents & Prior Art',
-  paper: 'Peer-Reviewed Research',
-  safety: 'Safety & Toxicity Signals',
-  supplier: 'Certified Sourcing (ABS / NBA)',
-  source: 'Indexed Sources',
+  ingredient: 'kg_cat_ingredient',
+  botanical: 'kg_cat_botanical',
+  monograph: 'kg_cat_monograph',
+  regulation: 'kg_cat_regulation',
+  authority: 'kg_cat_authority',
+  jurisdiction: 'kg_cat_jurisdiction',
+  tkdl: 'kg_cat_tkdl',
+  patent: 'kg_cat_patent',
+  paper: 'kg_cat_paper',
+  safety: 'kg_cat_safety',
+  supplier: 'kg_cat_supplier',
+  source: 'kg_cat_source',
 };
 
 const CURATED_COLLECTIONS = [
@@ -63,14 +65,12 @@ const CURATED_COLLECTIONS = [
   'traditional_knowledge', 'quality_standards', 'safety',
 ];
 
-const JUDGE_LINE =
-  'Ashwagandha aur Brahmi sirf demo examples hain. IP-SAKTI kisi bhi Ayurvedic innovation — single herb, polyherbal formulation, microbial ya animal-derived product — ke liye apne curated RAG knowledge base se evidence retrieve karke answer deta hai. Agar database me evidence nahi hota, to system safely abstain karta hai instead of hallucinating.';
-
 function nodeStyle(category: string) {
   return CATEGORY_STYLE[category] || CATEGORY_STYLE.source;
 }
 
 export default function KnowledgeGraphView({ passportId }: { passportId?: string }) {
+  const { lang } = useLang();
   const [demoId, setDemoId] = useState<string>(passportId ? 'passport' : 'ashwagandha');
   const [customText, setCustomText] = useState('Ashwagandha, Brahmi');
   const [graph, setGraph] = useState<InnovationKnowledgeGraphResponse | null>(null);
@@ -97,7 +97,7 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
           ingredients = customText.split(',').map((s) => s.trim()).filter(Boolean);
         }
         if (ingredients.length === 0) {
-          throw new Error('Enter at least one ingredient for the custom formulation.');
+          throw new Error(t('kg_enter_ingredient', lang));
         }
         data = await getInnovationGraph({
           ingredients,
@@ -107,7 +107,7 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
       }
       setGraph(data);
     } catch (e: any) {
-      setError(e?.message || 'Failed to load knowledge graph');
+      setError(e?.message || t('kg_load_failed', lang));
     } finally {
       setLoading(false);
     }
@@ -118,8 +118,13 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demoId, passportId]);
 
-  const currentKind = graph?.selected_innovation.kind ||
-    (graph ? 'Single Herb' : (demoId === 'triphala' || demoId === 'custom' ? 'Polyherbal Formulation' : 'Single Herb'));
+  const currentKind = (() => {
+    const raw = graph?.selected_innovation.kind ||
+      (graph ? 'Single Herb' : (demoId === 'triphala' || demoId === 'custom' ? 'Polyherbal Formulation' : 'Single Herb'));
+    if (/poly/i.test(raw)) return t('kg_kind_poly', lang);
+    if (/single/i.test(raw)) return t('kg_kind_single', lang);
+    return raw;
+  })();
 
   const nodes = graph?.nodes || [];
   const edges = graph?.edges || [];
@@ -145,11 +150,11 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
           <Network className="w-5 h-5 text-emerald-600" />
           <div>
             <h3 className="text-base font-bold text-slate-900 font-display">
-              Dynamic Bio-Resource Knowledge Graph
+              {t('kg_title', lang)}
             </h3>
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
               <span className="px-2 py-0.5 rounded-full border border-emerald-300 bg-emerald-50 text-[10px] font-bold text-emerald-700">
-                Selected Innovation: Dynamic (Single Herb / Polyherbal Formulation)
+                {t('kg_selected_chip', lang)}
               </span>
               {graph && (
                 <span className="px-2 py-0.5 rounded-full border border-teal-300 bg-teal-50 text-[10px] font-bold text-teal-700">
@@ -166,7 +171,7 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
         <div className="flex items-center gap-2 mb-2.5">
           <Sparkles className="w-4 h-4 text-emerald-600" />
           <span className="text-xs font-bold text-slate-800">
-            Innovation Selector — generate a fresh graph for any Ayurvedic innovation
+            {t('kg_selector_label', lang)}
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -180,7 +185,7 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
                   : 'bg-emerald-50/70 border-emerald-200 text-slate-600 hover:border-emerald-400'
               }`}
             >
-              From Passport
+              {t('kg_from_passport', lang)}
             </button>
           )}
           {DEMO_INNOVATIONS.map((demo) => (
@@ -200,7 +205,7 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
                   demoId === demo.id ? 'text-white/70' : 'text-slate-400'
                 }`}
               >
-                {demo.hint}
+                {t(demo.hint, lang)}
               </span>
             </button>
           ))}
@@ -210,7 +215,7 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
                 type="text"
                 value={customText}
                 onChange={(e) => setCustomText(e.target.value)}
-                placeholder="e.g. Ashwagandha, Brahmi, Shankhapushpi"
+                placeholder={t('kg_custom_placeholder', lang)}
                 className="bg-white border border-emerald-200 rounded-xl px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-emerald-500 min-w-[220px]"
               />
               <button
@@ -218,7 +223,7 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
                 onClick={loadGraph}
                 className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-[11px] font-bold hover:bg-emerald-700 transition"
               >
-                Render Graph
+                {t('kg_render', lang)}
               </button>
             </div>
           )}
@@ -228,7 +233,7 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
       {loading && (
         <div className="glass-panel rounded-2xl p-10 border border-emerald-200 flex items-center justify-center text-slate-500 gap-2">
           <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
-          <span className="text-xs">Retrieving evidence & composing a fresh graph for this innovation…</span>
+          <span className="text-xs">{t('kg_loading', lang)}</span>
         </div>
       )}
 
@@ -236,14 +241,14 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
         <div className="rounded-2xl border border-red-200 bg-red-50 p-5 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
           <div className="text-xs text-red-700 space-y-2">
-            <div className="font-bold">Graph could not be composed</div>
+            <div className="font-bold">{t('kg_compose_failed', lang)}</div>
             <div>{error}</div>
             <button
               type="button"
               onClick={loadGraph}
               className="px-3 py-1 rounded-lg bg-red-600 text-white text-[11px] font-bold hover:bg-red-700"
             >
-              Retry
+              {t('kg_retry', lang)}
             </button>
           </div>
         </div>
@@ -253,10 +258,10 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
         <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 flex items-start gap-3">
           <ShieldCheck className="w-5 h-5 text-amber-600 flex-shrink-0" />
           <div className="text-xs text-amber-800 space-y-1">
-            <div className="font-bold">Hallucination Guard Engaged — No Information Fabricated</div>
-            <div>{graph.evidence_note || 'No verified information found in the current IP-SAKTI knowledge base.'}</div>
+            <div className="font-bold">{t('kg_guard_title', lang)}</div>
+            <div>{graph.evidence_note || t('kg_no_evidence', lang)}</div>
             <div className="text-[10px] text-amber-700/70">
-              The ingredient identity node is shown, but zero indexed documents were retrieved, so no relationships are fabricated.
+              {t('kg_zero_retrieved', lang)}
             </div>
           </div>
         </div>
@@ -270,7 +275,7 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
               <div className="flex items-center gap-1">
                 <Layers className="w-3.5 h-3.5 text-slate-500" />
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                  Retrieved Only From 6 Curated Collections
+                  {t('kg_curated_label', lang)}
                 </span>
               </div>
               <div className="flex flex-wrap gap-1">
@@ -292,7 +297,7 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
                 <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
                 <input
                   type="text"
-                  placeholder="Search graph entities..."
+                  placeholder={t('kg_search_placeholder', lang)}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-emerald-50/70 border border-emerald-200 rounded-lg pl-8 pr-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-emerald-500"
@@ -305,9 +310,9 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="bg-emerald-50/70 border border-emerald-200 rounded-lg px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-emerald-500"
                 >
-                  <option value="all">All Categories</option>
+                  <option value="all">{t('kg_all_categories', lang)}</option>
                   {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-                    <option key={key} value={key}>{label}</option>
+                    <option key={key} value={key}>{t(label, lang)}</option>
                   ))}
                 </select>
               </div>
@@ -316,21 +321,21 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
                 <button
                   onClick={() => setZoom(Math.min(zoom + 0.15, 1.6))}
                   className="p-1 rounded text-slate-500 hover:text-slate-900 hover:bg-emerald-100"
-                  title="Zoom in"
+                  title={t('kg_zoom_in', lang)}
                 >
                   <ZoomIn className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setZoom(Math.max(zoom - 0.15, 0.6))}
                   className="p-1 rounded text-slate-500 hover:text-slate-900 hover:bg-emerald-100"
-                  title="Zoom out"
+                  title={t('kg_zoom_out', lang)}
                 >
                   <ZoomOut className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setZoom(1)}
                   className="p-1 rounded text-slate-500 hover:text-slate-900 hover:bg-emerald-100"
-                  title="Reset view"
+                  title={t('kg_reset_view', lang)}
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                 </button>
@@ -386,7 +391,7 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
               </div>
 
               <div className="sticky bottom-2 left-2 w-fit mt-2 text-[10px] text-slate-600 bg-emerald-50/70 px-2 py-1 rounded-md border border-emerald-200">
-                Click any node to inspect evidence relationships & statutory metadata
+                {t('kg_click_node', lang)}
               </div>
             </div>
 
@@ -401,12 +406,12 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
                     <h4 className="text-base font-bold text-slate-900 mt-1.5 leading-snug">{selectedNode.label}</h4>
                     {selectedNode.sourceAuthority && (
                       <span className="text-xs text-emerald-600 font-semibold block mt-0.5">
-                        Authority: {selectedNode.sourceAuthority}
+                        {t('kg_authority', lang)} {selectedNode.sourceAuthority}
                       </span>
                     )}
                     {selectedNode.collection && (
                       <span className="text-[10px] font-mono text-slate-500 block mt-0.5">
-                        Retrieved from collection: {selectedNode.collection}
+                        {t('kg_from_collection', lang)} {selectedNode.collection}
                       </span>
                     )}
                     {selectedNode.sourceUrl && (
@@ -416,18 +421,18 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
                         rel="noreferrer"
                         className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:underline"
                       >
-                        Open Source Document <ExternalLink className="w-3 h-3" />
+                        {t('kg_open_source', lang)} <ExternalLink className="w-3 h-3" />
                       </a>
                     )}
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200 text-xs text-slate-600 leading-relaxed">
-                    {selectedNode.details || 'No additional details indexed.'}
+                    {selectedNode.details || t('kg_no_details', lang)}
                   </div>
 
                   <div>
                     <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-2">
-                      Connected Graph Relationships:
+                      {t('kg_connected', lang)}
                     </span>
                     <div className="space-y-2 text-xs">
                       {edges
@@ -447,7 +452,7 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
                         })}
                       {edges.filter((e) => e.from === selectedNode.id || e.to === selectedNode.id).length === 0 && (
                         <div className="text-[10px] text-slate-400">
-                          No indexed relationships for this node.
+                          {t('kg_no_relationships', lang)}
                         </div>
                       )}
                     </div>
@@ -457,7 +462,7 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
                 <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 space-y-2">
                   <Network className="w-8 h-8 text-slate-500 animate-pulse" />
                   <p className="text-xs">
-                    Select any node in the knowledge canvas to inspect its source provenance and prior-art connections.
+                    {t('kg_select_node', lang)}
                   </p>
                 </div>
               )}
@@ -468,8 +473,8 @@ export default function KnowledgeGraphView({ passportId }: { passportId?: string
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-xs text-slate-600 leading-relaxed flex items-start gap-2.5">
             <BookOpen className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold text-slate-700 block mb-0.5">How this graph is built (in one breath)</span>
-              {JUDGE_LINE}
+              <span className="font-bold text-slate-700 block mb-0.5">{t('kg_how_built', lang)}</span>
+              {t('kg_judge_1', lang)}
               <span className="block mt-1 text-[10px] text-slate-400">{graph.disclaimer}</span>
             </div>
           </div>

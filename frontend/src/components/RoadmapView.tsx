@@ -8,6 +8,15 @@ import { GlassCard } from './ui/GlassCard';
 import { Badge } from './ui/Badge';
 import { getRoadmap } from '../lib/api';
 import { RoadmapData } from '../types';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
+
+const statusLabelKey: Record<string, string> = {
+  completed: 'rd_status_completed',
+  in_progress: 'rd_status_in_progress',
+  pending: 'rd_status_pending',
+  not_started: 'rd_status_not_started',
+};
 
 const statusView: Record<string, { badge: 'success' | 'warning' | 'info' | 'neutral'; icon: React.ReactNode; bar: string; ring: string }> = {
   completed: { badge: 'success', icon: <CheckCircle2 className="w-5 h-5 text-emerald-600" />, bar: 'bg-emerald-500', ring: 'border-emerald-300' },
@@ -17,6 +26,7 @@ const statusView: Record<string, { badge: 'success' | 'warning' | 'info' | 'neut
 };
 
 export function RoadmapView({ passportId }: { passportId?: string }) {
+  const { lang } = useLang();
   const [data, setData] = useState<RoadmapData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -29,7 +39,7 @@ export function RoadmapView({ passportId }: { passportId?: string }) {
       const res = await getRoadmap(passportId);
       setData(res);
     } catch (e: any) {
-      setError(e.message || 'Failed to load roadmap');
+      setError(e.message || t('rd_load_failed', lang));
       setData(null);
     } finally {
       setLoading(false);
@@ -43,7 +53,7 @@ export function RoadmapView({ passportId }: { passportId?: string }) {
       <GlassCard padding="lg">
         <div className="flex items-center gap-3 text-sm text-slate-600">
           <Route className="w-5 h-5 text-emerald-600" />
-          Create an Innovation Passport first to generate the Regulatory Roadmap.
+          {t('rd_no_passport', lang)}
         </div>
       </GlassCard>
     );
@@ -54,10 +64,10 @@ export function RoadmapView({ passportId }: { passportId?: string }) {
       <GlassCard padding="md">
         <div className="flex items-center gap-2 mb-1">
           <Route className="w-5 h-5 text-emerald-600" />
-          <h3 className="text-sm font-bold text-slate-900 font-display">Regulatory Roadmap</h3>
-          {data && <Badge variant="info" className="ml-auto">Phase {data.current_phase} of {data.total_phases}</Badge>}
+          <h3 className="text-sm font-bold text-slate-900 font-display">{t('regulatory_roadmap', lang)}</h3>
+          {data && <Badge variant="info" className="ml-auto">{t('rd_phase_of', lang).replace('{current}', String(data.current_phase)).replace('{total}', String(data.total_phases))}</Badge>}
         </div>
-        <p className="text-xs text-slate-500">The filing journey from prior art to market launch, computed for this passport.</p>
+        <p className="text-xs text-slate-500">{t('rd_subtitle', lang)}</p>
         {error && <p className="mt-2 text-xs text-red-600 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> {error}</p>}
       </GlassCard>
 
@@ -70,10 +80,10 @@ export function RoadmapView({ passportId }: { passportId?: string }) {
           <GlassCard padding="sm" className="border-emerald-300">
             <div className="flex flex-wrap items-center gap-3 text-xs text-slate-700">
               <MapPin className="w-4 h-4 text-emerald-600" />
-              <span><span className="font-semibold">Estimated completion:</span> {data.estimated_completion}</span>
+              <span><span className="font-semibold">{t('rd_estimated_completion', lang)}</span> {data.estimated_completion}</span>
               <span className="hidden sm:inline text-slate-300">|</span>
               <ArrowRight className="hidden sm:block w-4 h-4 text-emerald-600" />
-              <span><span className="font-semibold">Next action:</span> {data.next_action}</span>
+              <span><span className="font-semibold">{t('rd_next_action_label', lang)}</span> {data.next_action}</span>
             </div>
           </GlassCard>
 
@@ -93,9 +103,9 @@ export function RoadmapView({ passportId }: { passportId?: string }) {
                         <div className="flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full">{ui.icon}</span>
                           <h4 className="text-sm font-bold text-slate-900 font-display">{phase.title}</h4>
-                          {isCurrent && <Badge variant="warning" dot>Current</Badge>}
+                          {isCurrent && <Badge variant="warning" dot>{t('rd_current', lang)}</Badge>}
                         </div>
-                        <Badge variant={ui.badge}>{phase.status.replace(/_/g, ' ')}</Badge>
+                        <Badge variant={ui.badge}>{t(statusLabelKey[phase.status] || 'rd_status_not_started', lang)}</Badge>
                       </div>
                       <p className="text-xs text-slate-600">{phase.description}</p>
                       <div className="text-[11px] text-slate-400 mt-1"><Clock className="w-3 h-3 inline mr-1" />{phase.duration}</div>
@@ -113,10 +123,9 @@ export function RoadmapView({ passportId }: { passportId?: string }) {
           </div>
 
           <GlassCard padding="md">
-            <h3 className="text-sm font-bold text-slate-900 font-display mb-2 flex items-center gap-2"><Sparkles className="w-4 h-4 text-violet-600" /> Filing tip</h3>
+            <h3 className="text-sm font-bold text-slate-900 font-display mb-2 flex items-center gap-2"><Sparkles className="w-4 h-4 text-violet-600" /> {t('rd_filing_tip', lang)}</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Roadmap phases reflect standard Ayurveda/IP filing flows. Re-run each intelligence engine on this passport to close gaps
-              before the Evidence Collection and Compliance Submission phases.
+              {t('rd_tip_body', lang)}
             </p>
           </GlassCard>
         </>

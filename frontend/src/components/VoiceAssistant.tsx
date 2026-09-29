@@ -88,7 +88,7 @@ export default function VoiceAssistant({ onCommand }: VoiceAssistantProps) {
 
             {lastCommand && !isListening && (
               <div className="w-full">
-                <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1 text-center">Heard</div>
+                <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1 text-center">{t('voice_heard', lang)}</div>
                 <p className="text-xs text-slate-700 text-center bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 truncate">
                   “{lastCommand}”
                 </p>
@@ -99,13 +99,13 @@ export default function VoiceAssistant({ onCommand }: VoiceAssistantProps) {
           <div className="mt-3 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
             <span className="flex items-center gap-2 text-xs font-semibold text-slate-700">
               {voiceOutput ? <Volume2 className="w-4 h-4 text-blue-600" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
-              Voice replies
+              {t('voice_voice_replies', lang)}
             </span>
             <button
               type="button"
               role="switch"
               aria-checked={voiceOutput}
-              aria-label="Toggle voice output"
+              aria-label={t('voice_toggle_output', lang)}
               onClick={toggleVoiceOutput}
               className={`relative w-11 h-6 rounded-full transition-colors ${voiceOutput ? 'bg-blue-600' : 'bg-slate-300'}`}
             >
@@ -118,7 +118,7 @@ export default function VoiceAssistant({ onCommand }: VoiceAssistantProps) {
           </div>
 
           {!voiceOutput && (
-            <p className="text-[10px] text-center text-slate-400 mt-2">Assistant voice output is off. You can still tap the mic and speak commands.</p>
+            <p className="text-[10px] text-center text-slate-400 mt-2">{t('voice_output_off', lang)}</p>
           )}
 
           {error && (

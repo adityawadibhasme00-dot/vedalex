@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { User, Lock, Mail, Shield, CheckCircle2, X, KeyRound, Building, Sparkles } from 'lucide-react';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -10,6 +12,7 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
+  const { lang } = useLang();
   const [mode, setMode] = useState<'login' | 'signup' | 'otp' | 'forgot'>('login');
   const [role, setRole] = useState('Startup / MSME Founder');
   const [email, setEmail] = useState('founder@ayurstartup.in');
@@ -35,11 +38,11 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
   };
 
   const roles = [
-    { id: 'Researcher', title: 'Ayurveda Researcher / Academic', desc: 'Prior-art novelty and botanical extraction studies' },
-    { id: 'Startup / MSME Founder', title: 'Startup / MSME Founder', desc: 'Fast-track ASU / Ayurveda Aahara licensing' },
-    { id: 'Commercial Manufacturer', title: 'Commercial Manufacturer', desc: 'Schedule T GMP and export certification' },
-    { id: 'Registered Patent Agent', title: 'Patent Agent / Legal Expert', desc: 'Section 3(p) TK triage and FTO assessments' },
-    { id: 'Institutional Admin', title: 'Institutional Admin / AYUSH Hub', desc: 'Cohort analytics and reviewer assignment' }
+    { id: 'Researcher', titleKey: 'auth_role_researcher_title', descKey: 'auth_role_researcher_desc' },
+    { id: 'Startup / MSME Founder', titleKey: 'auth_role_startup_title', descKey: 'auth_role_startup_desc' },
+    { id: 'Commercial Manufacturer', titleKey: 'auth_role_manufacturer_title', descKey: 'auth_role_manufacturer_desc' },
+    { id: 'Registered Patent Agent', titleKey: 'auth_role_agent_title', descKey: 'auth_role_agent_desc' },
+    { id: 'Institutional Admin', titleKey: 'auth_role_admin_title', descKey: 'auth_role_admin_desc' }
   ];
 
   return (
@@ -60,12 +63,12 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
           </div>
           <div>
             <h3 className="text-lg font-bold text-slate-900 font-display">
-              {mode === 'login' && 'Sign in to IP-SAKTI'}
-              {mode === 'signup' && 'Create Innovation Account'}
-              {mode === 'otp' && 'Verify 2FA Security Token'}
-              {mode === 'forgot' && 'Reset Access Key'}
+              {mode === 'login' && t('auth_title_login', lang)}
+              {mode === 'signup' && t('auth_title_signup', lang)}
+              {mode === 'otp' && t('auth_title_otp', lang)}
+              {mode === 'forgot' && t('auth_title_forgot', lang)}
             </h3>
-            <p className="text-xs text-slate-500">Enterprise DPDP-Compliant Authentication</p>
+            <p className="text-xs text-slate-500">{t('auth_subtitle', lang)}</p>
           </div>
         </div>
 
@@ -73,7 +76,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           {mode === 'signup' && (
             <div>
-              <label className="text-slate-500 font-medium block mb-1">Full Name & Credentials:</label>
+              <label className="text-slate-500 font-medium block mb-1">{t('auth_full_name_label', lang)}</label>
               <input
                 type="text"
                 value={name}
@@ -87,7 +90,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
           {mode !== 'otp' && (
             <>
               <div>
-                <label className="text-slate-500 font-medium block mb-1">Select Persona Role (RBAC):</label>
+                <label className="text-slate-500 font-medium block mb-1">{t('auth_select_role', lang)}</label>
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
@@ -95,14 +98,14 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
                 >
                   {roles.map((r) => (
                     <option key={r.id} value={r.id} className="bg-white">
-                      {r.title}
+                      {t(r.titleKey, lang)}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="text-slate-500 font-medium block mb-1">Official Email Address:</label>
+                <label className="text-slate-500 font-medium block mb-1">{t('auth_email_label', lang)}</label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
                   <input
@@ -118,13 +121,13 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
               {mode !== 'forgot' && (
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-slate-500 font-medium">Password:</label>
+                    <label className="text-slate-500 font-medium">{t('login_password', lang)}</label>
                     <button
                       type="button"
                       onClick={() => setMode('forgot')}
                       className="text-[11px] text-emerald-600 hover:underline"
                     >
-                      Forgot?
+                      {t('auth_forgot_short', lang)}
                     </button>
                   </div>
                   <div className="relative">
@@ -144,7 +147,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
 
           {mode === 'otp' && (
             <div>
-              <label className="text-slate-500 font-medium block mb-1">Enter 6-Digit One-Time Password:</label>
+              <label className="text-slate-500 font-medium block mb-1">{t('auth_otp_label', lang)}</label>
               <div className="relative">
                 <KeyRound className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
                 <input
@@ -157,7 +160,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
                 />
               </div>
               <p className="text-[11px] text-slate-500 mt-1.5">
-                Simulated demo OTP token <strong className="text-emerald-600">626108</strong> automatically injected.
+                {t('auth_otp_note', lang)} <strong className="text-emerald-600">626108</strong>
               </p>
             </div>
           )}
@@ -167,7 +170,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
             disabled={isLoading}
             className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 text-white font-semibold text-xs shadow-lg shadow-emerald-900/40 transition disabled:opacity-50 mt-2"
           >
-            {isLoading ? 'Verifying Credentials...' : mode === 'login' ? 'Authenticate & Enter Dashboard' : mode === 'signup' ? 'Proceed to 2FA Token' : 'Confirm Access'}
+            {isLoading ? t('auth_verifying', lang) : mode === 'login' ? t('auth_submit_login', lang) : mode === 'signup' ? t('auth_submit_signup', lang) : t('auth_submit_confirm', lang)}
           </button>
         </form>
 
@@ -175,16 +178,16 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
         <div className="mt-4 pt-3 border-t border-emerald-200 text-center text-xs text-slate-500">
           {mode === 'login' ? (
             <span>
-              New innovator?{' '}
+              {t('auth_new_innovator', lang)}{' '}
               <button onClick={() => setMode('signup')} className="text-emerald-600 font-semibold hover:underline">
-                Create Account
+                {t('create_account', lang)}
               </button>
             </span>
           ) : (
             <span>
-              Already registered?{' '}
+              {t('auth_already_registered', lang)}{' '}
               <button onClick={() => setMode('login')} className="text-emerald-600 font-semibold hover:underline">
-                Sign In
+                {t('sign_in', lang)}
               </button>
             </span>
           )}

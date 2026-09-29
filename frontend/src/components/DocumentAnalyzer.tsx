@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { UploadCloud, FileText, ShieldAlert, CheckCircle2, ArrowRight, AlertTriangle, Eye, Sparkles } from 'lucide-react';
 import { sanitizeDocument } from '../lib/api';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface DocumentAnalyzerProps {
   onApplyToPassport: (extractedText: string) => void;
@@ -10,6 +12,7 @@ interface DocumentAnalyzerProps {
 }
 
 export default function DocumentAnalyzer({ onApplyToPassport, passportId }: DocumentAnalyzerProps) {
+  const { lang } = useLang();
   const [file, setFile] = useState<File | null>(null);
   const [extractedText, setExtractedText] = useState<string>(
     `CERTIFICATE OF ANALYSIS & FORMULATION SPECIFICATION\n` +
@@ -62,15 +65,15 @@ export default function DocumentAnalyzer({ onApplyToPassport, passportId }: Docu
         <div className="flex items-center space-x-2.5 mb-1">
           <FileText className="w-5 h-5 text-emerald-600" />
           <h3 className="text-base font-bold text-slate-900 font-display">
-            AI Document & Certificate Analyzer (OCR + Sandboxing)
+            {t('da_title', lang)}
           </h3>
         </div>
         <p className="text-xs text-slate-500">
-          Upload Certificates of Analysis (COA), lab assays, or label PDFs. The sandboxed OCR extractor isolates typed factual parameters and sanitizes adversarial prompt-injections before model reasoning.
+          {t('da_subtitle', lang)}
         </p>
         {passportId && (
           <p className="mt-2 text-[11px] text-emerald-700 inline-flex items-center gap-1.5">
-            <ArrowRight className="w-3.5 h-3.5" /> Applying analysis to passport <code className="font-mono">{passportId.slice(0, 8)}</code> — results update all passport-linked modules.
+            <ArrowRight className="w-3.5 h-3.5" /> {t('da_applying', lang)} <code className="font-mono">{passportId.slice(0, 8)}</code> — {t('da_applying_suffix', lang)}
           </p>
         )}
       </div>
@@ -90,18 +93,18 @@ export default function DocumentAnalyzer({ onApplyToPassport, passportId }: Docu
             </div>
             <div>
               <span className="text-sm font-bold text-slate-900 block">
-                {file ? file.name : 'Click to Upload or Drag & Drop Document'}
+                {file ? file.name : t('da_upload_label', lang)}
               </span>
               <span className="text-xs text-slate-500 block mt-0.5">
-                Supports PDF, DOCX, Scanned COA Images (Max 25MB)
+                {t('da_supports', lang)}
               </span>
             </div>
           </div>
 
           <div className="glass-panel p-4 rounded-2xl border border-emerald-200 space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold uppercase text-slate-500">Extracted Document Text:</label>
-              <span className="text-[10px] text-emerald-600 font-mono">OCR Quality: 99.2%</span>
+              <label className="text-xs font-bold uppercase text-slate-500">{t('da_extracted_label', lang)}</label>
+              <span className="text-[10px] text-emerald-600 font-mono">{t('da_ocr_quality', lang)} 99.2%</span>
             </div>
             <textarea
               rows={8}
@@ -114,7 +117,7 @@ export default function DocumentAnalyzer({ onApplyToPassport, passportId }: Docu
               disabled={isProcessing}
               className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition disabled:opacity-50 flex items-center justify-center space-x-2"
             >
-              {isProcessing ? 'Extracting Entities & Running Sandboxing...' : 'Analyze Document & Extract Facts'}
+              {isProcessing ? t('da_extracting', lang) : t('da_analyze', lang)}
             </button>
           </div>
         </div>
@@ -127,7 +130,7 @@ export default function DocumentAnalyzer({ onApplyToPassport, passportId }: Docu
               <div className="glass-panel p-5 rounded-2xl border border-emerald-500/30 space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-600 flex items-center space-x-1.5">
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Structured Entities & Monograph Anchorings</span>
+                  <span>{t('da_entities_header', lang)}</span>
                 </h4>
                 <div className="space-y-2">
                   {analysisResult.entitiesDetected.map((ent: any, i: number) => (
@@ -148,7 +151,7 @@ export default function DocumentAnalyzer({ onApplyToPassport, passportId }: Docu
               <div className="glass-panel p-5 rounded-2xl border border-amber-500/30 space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-amber-600 flex items-center space-x-1.5">
                   <ShieldAlert className="w-4 h-4" />
-                  <span>Patent Risk Sentinel (Pre-Filing Vulnerabilities)</span>
+                  <span>{t('da_patent_risk_header', lang)}</span>
                 </h4>
                 {analysisResult.patentRiskFlags.map((risk: any, rIdx: number) => (
                   <div key={rIdx} className="p-3 rounded-xl bg-amber-100 border border-amber-300 text-xs text-amber-800">
@@ -164,13 +167,13 @@ export default function DocumentAnalyzer({ onApplyToPassport, passportId }: Docu
                 className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-xl shadow-emerald-900/40 transition"
               >
                 <Sparkles className="w-4 h-4" />
-                <span>Auto-Populate Innovation Passport with Extracted Facts</span>
+                <span>{t('da_apply_passport', lang)}</span>
               </button>
             </div>
           ) : (
             <div className="glass-panel p-8 rounded-2xl border border-emerald-200 h-full flex flex-col items-center justify-center text-center text-slate-500">
               <FileText className="w-8 h-8 text-slate-600 mb-2" />
-              <p className="text-xs">Upload a document or click &quot;Analyze Document&quot; on the left to inspect structured facts.</p>
+              <p className="text-xs">{t('da_empty', lang)}</p>
             </div>
           )}
         </div>

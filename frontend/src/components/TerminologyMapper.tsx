@@ -9,6 +9,8 @@ import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
 import { mapTerminology } from '../lib/api';
 import { TerminologyMapResponse } from '../types';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 const viaBadge: Record<string, 'success' | 'warning' | 'neutral' | 'danger'> = {
   exact: 'success',
@@ -24,6 +26,7 @@ interface TerminologyMapperProps {
 }
 
 export function TerminologyMapper({ passportIngredients = [] }: TerminologyMapperProps) {
+  const { lang } = useLang();
   const [query, setQuery] = useState('');
   const [result, setResult] = useState<TerminologyMapResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,7 +43,7 @@ export function TerminologyMapper({ passportIngredients = [] }: TerminologyMappe
       const res = await mapTerminology(qs);
       setResult(res);
     } catch (e: any) {
-      setError(e.message || 'Mapping failed');
+      setError(e.message || t('tm_mapping_failed', lang));
       setResult(null);
     } finally {
       setLoading(false);
@@ -54,17 +57,17 @@ export function TerminologyMapper({ passportIngredients = [] }: TerminologyMappe
       <GlassCard padding="md">
         <div className="flex items-center gap-2 mb-1">
           <BookMarked className="w-5 h-5 text-emerald-600" />
-          <h3 className="text-sm font-bold text-slate-900 font-display">Terminology Mapper</h3>
-          <Badge variant="info" className="ml-auto">For RAG indexing</Badge>
+          <h3 className="text-sm font-bold text-slate-900 font-display">{t('tm_title', lang)}</h3>
+          <Badge variant="info" className="ml-auto">{t('tm_badge', lang)}</Badge>
         </div>
-        <p className="text-xs text-slate-500">Resolve any written form of an Ayurvedic botanical — script native name, IAST transliteration, regional synonym or binomial — to one canonical entity key used by the passport and retrieval index.</p>
+        <p className="text-xs text-slate-500">{t('tm_subtitle', lang)}</p>
 
         <div className="flex gap-2 mt-4">
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') run(); }}
-            placeholder="e.g. Amukkuram, Aśvagandhā, ബ്രഹ്മി, Withania somnifera"
+            placeholder={t('tm_placeholder', lang)}
             className={inputCls}
           />
           <Button variant="primary" onClick={() => run()} disabled={loading}>
@@ -85,7 +88,7 @@ export function TerminologyMapper({ passportIngredients = [] }: TerminologyMappe
           <div className="mt-4">
             <div className="flex items-center gap-2 mb-1.5">
               <Link2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="text-[11px] font-semibold text-slate-600">From this passport</span>
+              <span className="text-[11px] font-semibold text-slate-600">{t('tm_from_passport', lang)}</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {unique.map((n, i) => (
@@ -111,14 +114,14 @@ export function TerminologyMapper({ passportIngredients = [] }: TerminologyMappe
             <div className="flex flex-wrap items-center gap-3">
               {result.matched ? <CheckCircle2 className="w-6 h-6 text-emerald-600" /> : <XCircle className="w-6 h-6 text-amber-500" />}
               <div className="flex-1 min-w-[180px]">
-                <div className="text-[11px] text-slate-500 uppercase tracking-wider">Query · “{result.query}”</div>
+                <div className="text-[11px] text-slate-500 uppercase tracking-wider">{t('tm_query_label', lang)} · “{result.query}”</div>
                 {result.matched ? (
                   <div className="text-base font-bold text-slate-900 font-display italic">{result.botanical_name}</div>
                 ) : (
-                  <div className="text-sm font-semibold text-slate-800">No canonical match</div>
+                  <div className="text-sm font-semibold text-slate-800">{t('tm_no_match', lang)}</div>
                 )}
               </div>
-              <Badge variant={viaBadge[result.matched_via] || 'neutral'} dot>matched via {result.matched_via}</Badge>
+              <Badge variant={viaBadge[result.matched_via] || 'neutral'} dot>{t('tm_matched_via', lang)} {result.matched_via}</Badge>
             </div>
           </GlassCard>
 
@@ -126,16 +129,16 @@ export function TerminologyMapper({ passportIngredients = [] }: TerminologyMappe
             <>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <GlassCard padding="md">
-                  <div className="text-[11px] text-slate-500 uppercase tracking-wider mb-1">Canonical entity key</div>
+                  <div className="text-[11px] text-slate-500 uppercase tracking-wider mb-1">{t('tm_canonical_key', lang)}</div>
                   <div className="text-sm font-bold font-mono text-slate-900">{result.canonical_id}</div>
                   <div className="text-[11px] text-slate-500 mt-1">{result.family}</div>
                 </GlassCard>
                 <GlassCard padding="md">
-                  <div className="text-[11px] text-slate-500 uppercase tracking-wider mb-1">API monograph</div>
+                  <div className="text-[11px] text-slate-500 uppercase tracking-wider mb-1">{t('tm_api_monograph', lang)}</div>
                   <div className="text-sm font-bold font-mono text-slate-900">{result.api_monograph_id || '—'}</div>
                 </GlassCard>
                 <GlassCard padding="md">
-                  <div className="text-[11px] text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1"><Languages className="w-3 h-3" /> Transliterations</div>
+                  <div className="text-[11px] text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1"><Languages className="w-3 h-3" /> {t('tm_transliterations', lang)}</div>
                   <div className="flex flex-wrap gap-1">
                     {result.transliterations.map((t, i) => <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">{t}</span>)}
                   </div>
@@ -143,7 +146,7 @@ export function TerminologyMapper({ passportIngredients = [] }: TerminologyMappe
               </div>
 
               <GlassCard padding="md">
-                <h3 className="text-sm font-bold text-slate-900 font-display mb-2 flex items-center gap-2"><Library className="w-4 h-4 text-blue-600" /> Classical Ayurvedic uses</h3>
+                <h3 className="text-sm font-bold text-slate-900 font-display mb-2 flex items-center gap-2"><Library className="w-4 h-4 text-blue-600" /> {t('tm_classical_uses', lang)}</h3>
                 <div className="flex flex-wrap gap-1.5">
                   {result.classical_uses.map((u, i) => <Badge key={i} variant="info">{u}</Badge>)}
                 </div>
@@ -160,7 +163,7 @@ export function TerminologyMapper({ passportIngredients = [] }: TerminologyMappe
               </GlassCard>
 
               <GlassCard padding="md" className="border-violet-200">
-                <h3 className="text-sm font-bold text-slate-900 font-display mb-2 flex items-center gap-2"><ScanSearch className="w-4 h-4 text-violet-600" /> RAG hint</h3>
+                <h3 className="text-sm font-bold text-slate-900 font-display mb-2 flex items-center gap-2"><ScanSearch className="w-4 h-4 text-violet-600" /> {t('tm_rag_hint', lang)}</h3>
                 <p className="text-xs text-slate-600 leading-relaxed flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-violet-500 flex-shrink-0 mt-0.5" /> {result.rag_hint}</p>
               </GlassCard>
             </>
@@ -168,7 +171,7 @@ export function TerminologyMapper({ passportIngredients = [] }: TerminologyMappe
 
           {!result.matched && result.nearest_possible.length > 0 && (
             <GlassCard padding="md">
-              <div className="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1.5"><ArrowRight className="w-3.5 h-3.5 text-amber-600" /> Nearest vocabulary entries</div>
+              <div className="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1.5"><ArrowRight className="w-3.5 h-3.5 text-amber-600" /> {t('tm_nearest_entries', lang)}</div>
               <div className="flex flex-wrap gap-1.5">
                 {result.nearest_possible.map((n, i) => (
                   <button key={i} onClick={() => { setQuery(n); run(n); }}
@@ -180,7 +183,7 @@ export function TerminologyMapper({ passportIngredients = [] }: TerminologyMappe
             </GlassCard>
           )}
 
-          <p className="text-[10px] text-slate-400 italic px-1">Source: {result.source}</p>
+          <p className="text-[10px] text-slate-400 italic px-1">{t('common_source', lang)} {result.source}</p>
         </>
       )}
     </div>

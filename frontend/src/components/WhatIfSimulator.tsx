@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { WhatIfSimulationResponse } from '../types';
 import { Play, AlertTriangle, ArrowRight, CheckCircle2, ShieldAlert, Sparkles, RefreshCw } from 'lucide-react';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface WhatIfSimulatorProps {
   passportId: string;
@@ -17,12 +19,13 @@ export default function WhatIfSimulator({
   simulationResult,
   isLoading
 }: WhatIfSimulatorProps) {
+  const { lang } = useLang();
   const [claimInput, setClaimInput] = useState('Treats chronic insomnia and eliminates sleep disorders');
 
   const presetOptions = [
-    { label: 'Wellness: "Supports healthy sleep"', value: 'Supports healthy sleep and natural relaxation' },
-    { label: 'Disease: "Treats chronic insomnia"', value: 'Treats chronic insomnia and eliminates sleep disorders' },
-    { label: 'Anxiety: "Cures clinical stress & anxiety"', value: 'Cures clinical depression, panic attacks and anxiety' }
+    { labelKey: 'wi_preset1', value: 'Supports healthy sleep and natural relaxation' },
+    { labelKey: 'wi_preset2', value: 'Treats chronic insomnia and eliminates sleep disorders' },
+    { labelKey: 'wi_preset3', value: 'Cures clinical depression, panic attacks and anxiety' }
   ];
 
   return (
@@ -32,11 +35,11 @@ export default function WhatIfSimulator({
         <div className="flex items-center space-x-2.5 mb-1">
           <Sparkles className="w-5 h-5 text-amber-600" />
           <h3 className="text-base font-bold text-slate-900 font-display">
-            Section 6.6 Live Reactive What-If Simulator
+            {t('wi_title', lang)}
           </h3>
         </div>
         <p className="text-xs text-slate-500">
-          Mutate promotional claims or formulation parameters live. The reactive dependency DAG recomputes only the affected classifier/rule nodes and highlights the precise compliance diff.
+          {t('wi_subtitle', lang)}
         </p>
       </div>
 
@@ -45,11 +48,11 @@ export default function WhatIfSimulator({
         {/* Left: Mutation Editor */}
         <div className="lg:col-span-5 glass-panel rounded-2xl p-5 border border-emerald-200 space-y-4">
           <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider">
-            1. Mutate Promotional Claim
+            {t('wi_step1', lang)}
           </h4>
 
           <div className="space-y-2">
-            <label className="text-xs text-slate-500 font-medium">New Proposed Claim Wording:</label>
+            <label className="text-xs text-slate-500 font-medium">{t('wi_label', lang)}</label>
             <textarea
               rows={3}
               value={claimInput}
@@ -59,7 +62,7 @@ export default function WhatIfSimulator({
           </div>
 
           <div className="space-y-2">
-            <span className="text-[11px] text-slate-500 font-medium block">Quick Presets:</span>
+            <span className="text-[11px] text-slate-500 font-medium block">{t('wi_presets', lang)}</span>
             <div className="space-y-1.5">
               {presetOptions.map((opt, idx) => (
                 <button
@@ -68,7 +71,7 @@ export default function WhatIfSimulator({
                   onClick={() => setClaimInput(opt.value)}
                   className="w-full text-left px-3 py-2 rounded-xl bg-emerald-50/70 hover:bg-emerald-100 border border-emerald-200 text-xs text-slate-600 transition truncate"
                 >
-                  {opt.label}
+                  {t(opt.labelKey, lang)}
                 </button>
               ))}
             </div>
@@ -82,12 +85,12 @@ export default function WhatIfSimulator({
             {isLoading ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Traversing Dependency Graph...</span>
+                <span>{t('wi_traversing', lang)}</span>
               </>
             ) : (
               <>
                 <Play className="w-4 h-4" />
-                <span>Simulate Downstream Impact</span>
+                <span>{t('wi_run_btn', lang)}</span>
               </>
             )}
           </button>
@@ -99,10 +102,10 @@ export default function WhatIfSimulator({
             <div className="space-y-4">
               <div className="flex items-center justify-between glass-panel p-3.5 rounded-xl border border-emerald-200">
                 <span className="text-xs text-slate-600">
-                  Affected Dependency Nodes: <strong className="text-amber-600">{simulationResult.affected_nodes_count}</strong>
+                  {t('wi_affected', lang)} <strong className="text-amber-600">{simulationResult.affected_nodes_count}</strong>
                 </span>
                 <span className="text-[11px] font-bold uppercase rounded px-2 py-0.5 bg-amber-100 text-amber-700 border border-amber-500/30">
-                  Reactive Diff Generated
+                  {t('wi_diff_generated', lang)}
                 </span>
               </div>
 
@@ -112,7 +115,7 @@ export default function WhatIfSimulator({
                     <div>
                       <span className="text-xs font-bold uppercase text-slate-500">{diff.jurisdiction}</span>
                       <h4 className="text-base font-bold text-red-600 mt-0.5">
-                        Shifted to: {diff.new_classification}
+                        {t('wi_shifted_to', lang)} {diff.new_classification}
                       </h4>
                     </div>
                     <span className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full bg-red-100 text-red-700 border border-red-500/40">
@@ -128,7 +131,7 @@ export default function WhatIfSimulator({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs pt-1">
                     <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200">
                       <span className="text-slate-500 font-semibold block mb-1 text-[11px] uppercase">
-                        Removed Requirements:
+                        {t('wi_removed', lang)}
                       </span>
                       <ul className="space-y-1 text-slate-500">
                         {diff.removed_requirements.length > 0 ? (
@@ -136,14 +139,14 @@ export default function WhatIfSimulator({
                             <li key={i} className="line-through text-slate-500">- {r}</li>
                           ))
                         ) : (
-                          <li className="text-slate-500">None</li>
+                          <li className="text-slate-500">{t('wi_none', lang)}</li>
                         )}
                       </ul>
                     </div>
 
                     <div className="p-3 rounded-xl bg-emerald-50/70 border border-red-500/20">
                       <span className="text-red-700 font-semibold block mb-1 text-[11px] uppercase">
-                        Newly Required Compliance:
+                        {t('wi_new_required', lang)}
                       </span>
                       <ul className="space-y-1 text-red-700">
                         {diff.new_requirements.map((r, i) => (
@@ -158,7 +161,7 @@ export default function WhatIfSimulator({
           ) : (
             <div className="glass-panel rounded-2xl p-8 text-center border border-emerald-200 h-full flex flex-col items-center justify-center">
               <Sparkles className="w-8 h-8 text-slate-500 mb-2" />
-              <p className="text-slate-500 text-xs">Run a simulation on the left to see reactive diffs appear here.</p>
+              <p className="text-slate-500 text-xs">{t('wi_empty', lang)}</p>
             </div>
           )}
         </div>

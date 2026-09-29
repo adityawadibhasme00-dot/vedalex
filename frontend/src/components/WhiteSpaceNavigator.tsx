@@ -12,6 +12,8 @@ import { Skeleton } from './ui/Skeleton';
 import { Button } from './ui/Button';
 import { ReadinessGauge } from './ReadinessGauge';
 import { getWhiteSpaceAnalysis } from '../lib/api';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 import {
   WhiteSpaceResponse, WhiteSpaceCard, WhiteSpaceHeatmap, WhiteSpaceLandscape,
 } from '../types';
@@ -20,36 +22,37 @@ interface WhiteSpaceNavigatorProps {
   passportId?: string;
 }
 
-const BAND_META: Record<string, { color: string; variant: 'success' | 'warning' | 'danger'; label: string }> = {
-  'High Innovation Opportunity': { color: '#10B981', variant: 'success', label: 'Blue ocean' },
-  'Good Opportunity': { color: '#34D399', variant: 'success', label: 'Promising' },
-  Moderate: { color: '#F59E0B', variant: 'warning', label: 'Balanced' },
-  Crowded: { color: '#EF4444', variant: 'danger', label: 'Saturated' },
+const BAND_META: Record<string, { color: string; variant: 'success' | 'warning' | 'danger'; labelKey: string }> = {
+  'High Innovation Opportunity': { color: '#10B981', variant: 'success', labelKey: 'ws_band_blue_ocean' },
+  'Good Opportunity': { color: '#34D399', variant: 'success', labelKey: 'ws_band_promising' },
+  Moderate: { color: '#F59E0B', variant: 'warning', labelKey: 'ws_band_balanced' },
+  Crowded: { color: '#EF4444', variant: 'danger', labelKey: 'ws_band_saturated' },
 };
 
-const CARD_BADGE: Record<string, { variant: 'success' | 'warning' | 'danger'; label: string }> = {
-  opportunity: { variant: 'success', label: 'Opportunity' },
-  medium: { variant: 'warning', label: 'Medium' },
-  crowded: { variant: 'danger', label: 'Crowded' },
+const CARD_BADGE: Record<string, { variant: 'success' | 'warning' | 'danger'; labelKey: string }> = {
+  opportunity: { variant: 'success', labelKey: 'ws_badge_opportunity' },
+  medium: { variant: 'warning', labelKey: 'ws_badge_medium' },
+  crowded: { variant: 'danger', labelKey: 'ws_badge_crowded' },
 };
 
-function overallBand(status: string): { color: string; variant: 'success' | 'warning' | 'danger'; label: string } {
+function overallBand(status: string): { color: string; variant: 'success' | 'warning' | 'danger'; labelKey: string } {
   return BAND_META[status] ?? BAND_META.Moderate;
 }
 
 function riskTone(v: number) {
-  if (v >= 60) return { variant: 'danger' as const, note: 'High exposure — TKDL overlap likely' };
-  if (v >= 35) return { variant: 'warning' as const, note: 'Moderate exposure — monitor prior art' };
-  return { variant: 'success' as const, note: 'Low exposure — clear runway' };
+  if (v >= 60) return { variant: 'danger' as const, noteKey: 'ws_risk_high' };
+  if (v >= 35) return { variant: 'warning' as const, noteKey: 'ws_risk_moderate' };
+  return { variant: 'success' as const, noteKey: 'ws_risk_low' };
 }
 
 function OpportunityHeatmap({ heatmap }: { heatmap: WhiteSpaceHeatmap }) {
+  const { lang } = useLang();
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-[11px] border-separate border-spacing-1.5">
         <thead>
           <tr>
-            <th className="text-left text-slate-500 font-semibold px-1">Ingredient × Delivery</th>
+            <th className="text-left text-slate-500 font-semibold px-1">{t('ws_ingredient_x_delivery', lang)}</th>
             {heatmap.forms.map((f) => (
               <th key={f} className="text-center text-slate-500 font-semibold">{f}</th>
             ))}
@@ -92,6 +95,7 @@ function OpportunityHeatmap({ heatmap }: { heatmap: WhiteSpaceHeatmap }) {
 }
 
 function OpportunityCard({ card, index }: { card: WhiteSpaceCard; index: number }) {
+  const { lang } = useLang();
   const meta = CARD_BADGE[card.badge] ?? CARD_BADGE.medium;
   const [open, setOpen] = useState(false);
   return (
@@ -104,8 +108,8 @@ function OpportunityCard({ card, index }: { card: WhiteSpaceCard; index: number 
           <div>
             <h4 className="text-sm font-bold text-slate-900 font-display">{card.title}</h4>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <Badge variant={meta.variant} dot>{meta.label}</Badge>
-              <span className="text-[10px] text-slate-500">Patent density: {card.patent_density}</span>
+              <Badge variant={meta.variant} dot>{t(meta.labelKey, lang)}</Badge>
+              <span className="text-[10px] text-slate-500">{t('ws_patent_density', lang).replace('{n}', String(card.patent_density))}</span>
             </div>
           </div>
         </div>
@@ -113,7 +117,7 @@ function OpportunityCard({ card, index }: { card: WhiteSpaceCard; index: number 
           <div className={`text-2xl font-black leading-none ${card.score >= 66 ? 'text-emerald-600' : card.score >= 40 ? 'text-amber-600' : 'text-red-500'}`}>
             {card.score}
           </div>
-          <div className="text-[9px] text-slate-500 font-semibold">score</div>
+          <div className="text-[9px] text-slate-500 font-semibold">{t('ws_score', lang)}</div>
         </div>
       </div>
 
@@ -121,7 +125,7 @@ function OpportunityCard({ card, index }: { card: WhiteSpaceCard; index: number 
 
       <div className="mt-3 rounded-xl bg-emerald-50 border border-emerald-200 p-3">
         <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-1">
-          <ArrowRight className="w-3 h-3" /> Next action
+          <ArrowRight className="w-3 h-3" /> {t('ws_next_action_label', lang)}
         </div>
         <p className="text-[11px] text-slate-600 leading-relaxed">{card.next_action}</p>
       </div>
@@ -132,18 +136,18 @@ function OpportunityCard({ card, index }: { card: WhiteSpaceCard; index: number 
         className="mt-3 flex items-center gap-1.5 text-[10px] font-bold text-slate-500 hover:text-blue-600 transition"
         aria-expanded={open}
       >
-        <GitBranch className="w-3 h-3" /> How was this scored? <ArrowRight className={`w-3 h-3 transition-transform ${open ? 'rotate-90' : ''}`} />
+        <GitBranch className="w-3 h-3" /> {t('ws_how_scored', lang)} <ArrowRight className={`w-3 h-3 transition-transform ${open ? 'rotate-90' : ''}`} />
       </button>
 
       {open && (
         <div className="mt-2 space-y-2 rounded-xl border border-slate-200 bg-white/70 p-3 text-[10px] text-slate-500">
           <div className="flex items-center justify-between">
-            <span className="font-semibold text-slate-600">Confidence</span>
+            <span className="font-semibold text-slate-600">{t('ws_scored_dimensions', lang)}</span>
             <span className="font-bold text-slate-700">{card.xai.confidence}%</span>
           </div>
           {card.xai.tkdl_overlap && (
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-slate-600">TKDL overlap</span>
+              <span className="font-semibold text-slate-600">{t('ws_tkdl_overlap', lang)}</span>
               <span>{card.xai.tkdl_overlap}</span>
             </div>
           )}
@@ -158,7 +162,7 @@ function OpportunityCard({ card, index }: { card: WhiteSpaceCard; index: number 
           {card.xai.insufficient && (
             <div className="flex items-start gap-1.5 text-amber-700">
               <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
-              <span>Insufficient verified evidence — strengthen with patent/TKDL/study hits before acting.</span>
+              <span>{t('ws_insufficient_evidence', lang)}</span>
             </div>
           )}
         </div>
@@ -168,6 +172,7 @@ function OpportunityCard({ card, index }: { card: WhiteSpaceCard; index: number 
 }
 
 function LandscapeGraph({ landscape }: { landscape: WhiteSpaceLandscape }) {
+  const { lang } = useLang();
   const patentNodes = landscape.nodes.filter((n) => n.type === 'patent' || n.type === 'tk');
   const methodNodes = landscape.nodes.filter((n) => n.type === 'method');
   const ingredientNodes = landscape.nodes.filter((n) => n.type === 'ingredient');
@@ -176,7 +181,7 @@ function LandscapeGraph({ landscape }: { landscape: WhiteSpaceLandscape }) {
       {ingredientNodes.length > 0 && (
         <div>
           <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-            <MapPin className="w-3 h-3 text-emerald-600" /> Formulation ingredients
+            <MapPin className="w-3 h-3 text-emerald-600" /> {t('ws_formulation_ingredients', lang)}
           </div>
           <div className="flex flex-wrap gap-1.5">
             {ingredientNodes.map((n) => (
@@ -190,7 +195,7 @@ function LandscapeGraph({ landscape }: { landscape: WhiteSpaceLandscape }) {
       {methodNodes.length > 0 && (
         <div>
           <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-            <Layers className="w-3 h-3 text-violet-600" /> Extraction / process methods
+            <Layers className="w-3 h-3 text-violet-600" /> {t('ws_extraction_methods', lang)}
           </div>
           <div className="flex flex-wrap gap-1.5">
             {methodNodes.map((n) => (
@@ -204,7 +209,7 @@ function LandscapeGraph({ landscape }: { landscape: WhiteSpaceLandscape }) {
       {patentNodes.length > 0 && (
         <div>
           <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-            <Database className="w-3 h-3 text-blue-600" /> Patent / TK landscape clusters
+            <Database className="w-3 h-3 text-blue-600" /> {t('ws_patent_tk_clusters', lang)}
           </div>
           <div className="flex flex-wrap gap-1.5">
             {patentNodes.map((n) => (
@@ -213,7 +218,7 @@ function LandscapeGraph({ landscape }: { landscape: WhiteSpaceLandscape }) {
                 {n.label}
                 {n.type === 'patent' && (
                   <span className="text-[9px] text-blue-500 font-normal">
-                    {landscape.links.filter((l) => l.target === n.id).length} links
+                    {t('ws_links_count', lang).replace('{n}', String(landscape.links.filter((l) => l.target === n.id).length))}
                   </span>
                 )}
               </span>
@@ -222,14 +227,15 @@ function LandscapeGraph({ landscape }: { landscape: WhiteSpaceLandscape }) {
         </div>
       )}
       <div className="flex items-center justify-between text-[10px] text-slate-500 pt-2 border-t border-slate-100">
-        <span>{landscape.nodes.length} entities</span>
-        <span>{landscape.links.length} relationships</span>
+        <span>{t('ws_entities_count', lang).replace('{n}', String(landscape.nodes.length))}</span>
+        <span>{t('ws_relationships_count', lang).replace('{n}', String(landscape.links.length))}</span>
       </div>
     </div>
   );
 }
 
 export function WhiteSpaceNavigator({ passportId }: WhiteSpaceNavigatorProps) {
+  const { lang } = useLang();
   const [data, setData] = useState<WhiteSpaceResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -247,7 +253,7 @@ export function WhiteSpaceNavigator({ passportId }: WhiteSpaceNavigatorProps) {
       const res = await getWhiteSpaceAnalysis(passportId);
       setData(res);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load white space analysis');
+      setError(err instanceof Error ? err.message : t('ws_load_failed', lang));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -279,7 +285,7 @@ export function WhiteSpaceNavigator({ passportId }: WhiteSpaceNavigatorProps) {
       <GlassCard padding="lg">
         <div className="flex items-center gap-3 text-sm text-slate-500">
           <Compass className="w-5 h-5 text-emerald-600" />
-          Create an Innovation Passport to run the White Space Navigator.
+          {t('ws_no_passport', lang)}
         </div>
       </GlassCard>
     );
@@ -291,10 +297,10 @@ export function WhiteSpaceNavigator({ passportId }: WhiteSpaceNavigatorProps) {
         <div className="flex items-start gap-3 text-sm text-red-600">
           <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <div>
-            <div className="font-bold">White Space analysis failed</div>
+            <div className="font-bold">{t('ws_analysis_failed', lang)}</div>
             <div className="text-xs text-slate-500 mt-1">{error}</div>
             <Button variant="secondary" size="sm" className="mt-3" onClick={() => fetchAnalysis()}>
-              <RefreshCw className="w-3.5 h-3.5" /> Retry
+              <RefreshCw className="w-3.5 h-3.5" /> {t('common_retry', lang)}
             </Button>
           </div>
         </div>
@@ -318,16 +324,16 @@ export function WhiteSpaceNavigator({ passportId }: WhiteSpaceNavigatorProps) {
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
-                White Space Navigator
+                {t('ws_navigator_title', lang)}
                 <Badge variant={band.variant} dot><Target className="w-3 h-3" /> {data.status}</Badge>
               </h3>
-              <p className="text-[11px] text-slate-500">{data.case_title} · generated {new Date(data.generated_at).toLocaleString()}</p>
+              <p className="text-[11px] text-slate-500">{data.case_title} · {t('ws_generated_at', lang)} {new Date(data.generated_at).toLocaleString()}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="neutral"><Hash className="w-3 h-3" /> Confidence {data.confidence}%</Badge>
+            <Badge variant="neutral"><Hash className="w-3 h-3" /> {t('common_confidence', lang)} {data.confidence}%</Badge>
             <Button variant="secondary" size="sm" onClick={() => fetchAnalysis(true)} disabled={refreshing}>
-              <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} /> Refresh
+              <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} /> {t('common_refresh', lang)}
             </Button>
           </div>
         </div>
@@ -337,10 +343,10 @@ export function WhiteSpaceNavigator({ passportId }: WhiteSpaceNavigatorProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Overall score gauge */}
         <GlassCard padding="lg" className="flex flex-col items-center">
-          <ReadinessGauge value={data.overall_score} label="White Space Opportunity Score" size={220} />
+          <ReadinessGauge value={data.overall_score} label={t('ws_opportunity_score_label', lang)} size={220} />
           <div className="flex items-center gap-1.5 mt-2 text-[11px] text-slate-500">
             <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
-            {band.label} innovation window
+            {t('ws_innovation_window', lang).replace('{band}', t(band.labelKey, lang))}
           </div>
         </GlassCard>
 
@@ -348,7 +354,7 @@ export function WhiteSpaceNavigator({ passportId }: WhiteSpaceNavigatorProps) {
         <GlassCard padding="lg" className="lg:col-span-1">
           <div className="flex items-center gap-2 mb-2">
             <Target className="w-4 h-4 text-blue-600" />
-            <h4 className="text-sm font-bold text-slate-900">Scored dimensions</h4>
+            <h4 className="text-sm font-bold text-slate-900">{t('ws_scored_dimensions', lang)}</h4>
           </div>
           <div className="h-56">
             {radarData.length > 0 ? (
@@ -365,7 +371,7 @@ export function WhiteSpaceNavigator({ passportId }: WhiteSpaceNavigatorProps) {
                 </RadarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-slate-400">No dimension data</div>
+              <div className="h-full flex items-center justify-center text-xs text-slate-400">{t('ws_no_dimension_data', lang)}</div>
             )}
           </div>
           <div className="grid grid-cols-2 gap-1.5 mt-2">
@@ -380,20 +386,20 @@ export function WhiteSpaceNavigator({ passportId }: WhiteSpaceNavigatorProps) {
 
         {/* Risk / readiness status */}
         <GlassCard padding="lg" className="space-y-3">
-          <h4 className="text-sm font-bold text-slate-900">TK & patent posture</h4>
+          <h4 className="text-sm font-bold text-slate-900">{t('ws_tk_patent_posture', lang)}</h4>
           <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200">
             <div className="flex items-center justify-between text-xs">
               <span className="text-slate-500 font-medium flex items-center gap-1.5">
-                <ShieldAlert className="w-3.5 h-3.5 text-amber-500" /> TK risk
+                <ShieldAlert className="w-3.5 h-3.5 text-amber-500" /> {t('ws_tk_risk', lang)}
               </span>
               <Badge variant={tk.variant} dot>{data.tk_risk}%</Badge>
             </div>
-            <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">{tk.note}</p>
+            <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">{t(tk.noteKey, lang)}</p>
           </div>
           <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200">
             <div className="flex items-center justify-between text-xs">
               <span className="text-slate-500 font-medium flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Patent readiness
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> {t('ws_patent_readiness', lang)}
               </span>
               <span className="font-bold text-slate-800">{data.patent_readiness}/100</span>
             </div>
@@ -418,7 +424,7 @@ export function WhiteSpaceNavigator({ passportId }: WhiteSpaceNavigatorProps) {
         <div className="flex items-center gap-2 mb-3">
           <Layers className="w-4 h-4 text-emerald-600" />
           <h4 className="text-sm font-bold text-slate-900">{data.heatmap.title}</h4>
-          <span className="ml-auto text-[10px] text-slate-400">Cells score 0–100 · higher = more open white space</span>
+          <span className="ml-auto text-[10px] text-slate-400">{t('ws_heatmap_note', lang)}</span>
         </div>
         <OpportunityHeatmap heatmap={data.heatmap} />
       </GlassCard>
@@ -427,7 +433,7 @@ export function WhiteSpaceNavigator({ passportId }: WhiteSpaceNavigatorProps) {
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="w-4 h-4 text-blue-600" />
-          <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Top opportunities</h4>
+          <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider">{t('ws_top_opportunities', lang)}</h4>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {data.cards.map((card, i) => (
@@ -441,7 +447,7 @@ export function WhiteSpaceNavigator({ passportId }: WhiteSpaceNavigatorProps) {
         <GlassCard padding="lg">
           <div className="flex items-center gap-2 mb-3">
             <ListChecks className="w-4 h-4 text-blue-600" />
-            <h4 className="text-sm font-bold text-slate-900">Recommendations</h4>
+            <h4 className="text-sm font-bold text-slate-900">{t('ws_recommendations', lang)}</h4>
           </div>
           <ol className="space-y-2">
             {data.recommendations.map((rec, i) => (
@@ -459,7 +465,7 @@ export function WhiteSpaceNavigator({ passportId }: WhiteSpaceNavigatorProps) {
         <GlassCard padding="lg">
           <div className="flex items-center gap-2 mb-3">
             <Database className="w-4 h-4 text-violet-600" />
-            <h4 className="text-sm font-bold text-slate-900">Patent & TK landscape</h4>
+            <h4 className="text-sm font-bold text-slate-900">{t('ws_patent_tk_landscape', lang)}</h4>
           </div>
           <LandscapeGraph landscape={data.landscape} />
         </GlassCard>

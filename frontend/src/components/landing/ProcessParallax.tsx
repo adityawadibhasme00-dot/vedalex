@@ -5,110 +5,66 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { useLang } from '../../lib/LangContext';
+import { t } from '../../lib/i18n';
 import Text3D from './Text3D';
 
 interface Step {
   key: string;
-  label: string;
-  hilabel: string;
+  labelKey: string;
   icon: React.ComponentType<{ className?: string }>;
-  descEn: string;
-  descHi: string;
-  points: [string, string][];
-  tagEn: string;
-  tagHi: string;
+  descKey: string;
+  pointKeys: string[];
+  tagKey: string;
 }
 
 const STEPS: Step[] = [
   {
     key: 'idea',
-    label: 'Idea',
-    hilabel: 'विचार',
+    labelKey: 'process_idea_label',
     icon: Lightbulb,
-    descEn: 'Document your formulation, botanical ingredients and intended claims in a structured innovation dossier.',
-    descHi: 'अपने फॉर्मूलेशन, वनस्पति घटकों और इच्छित दावों को संरचित इनोवेशन डोज़ियर में दर्ज करें।',
-    points: [
-      ['Record your formulation & ingredients', 'अपना फॉर्मूलेशन और घटक दर्ज करें'],
-      ['List proposed claims & intended use', 'प्रस्तावित दावे और उपयोग सूचीबद्ध करें'],
-      ['One structured innovation dossier', 'एक संरचित इनोवेशन डोज़ियर'],
-    ],
-    tagEn: 'Capture',
-    tagHi: 'पकड़ें',
+    descKey: 'process_idea_desc',
+    pointKeys: ['process_idea_p1', 'process_idea_p2', 'process_idea_p3'],
+    tagKey: 'process_idea_tag',
   },
   {
     key: 'verification',
-    label: 'Verification',
-    hilabel: 'जाँच',
+    labelKey: 'process_verification_label',
     icon: Search,
-    descEn: 'AI validates botanical identity, cross-matches 9 Indian languages and flags missing evidence.',
-    descHi: 'AI वनस्पति पहचान सत्यापित करता है, 9 भारतीय भाषाओं में मिलान करता है और लुप्त साक्ष्य चिह्नित करता है।',
-    points: [
-      ['Botanical identity auto-validated', 'वनस्पति पहचान स्वतः सत्यापित'],
-      ['9 Indian languages cross-matched', '9 भारतीय भाषाओं में मिलान'],
-      ['Missing evidence flagged instantly', 'लुप्त साक्ष्य तुरंत चिह्नित'],
-    ],
-    tagEn: 'Screen',
-    tagHi: 'जाँचें',
+    descKey: 'process_verification_desc',
+    pointKeys: ['process_verification_p1', 'process_verification_p2', 'process_verification_p3'],
+    tagKey: 'process_verification_tag',
   },
   {
     key: 'prior-art',
-    label: 'Prior Art',
-    hilabel: 'पूर्व आधार',
+    labelKey: 'process_prior_art_label',
     icon: FileText,
-    descEn: 'RAG engine sweeps TKDL, IP India, WIPO, PubMed and WHO to uncover overlapping disclosures.',
-    descHi: 'RAG इंजन TKDL, IP India, WIPO, PubMed और WHO में झाँककर अतिव्यापी प्रकटीकरण खोजता है।',
-    points: [
-      ['TKDL · IP India · WIPO sweep', 'TKDL · IP India · WIPO खोज'],
-      ['PubMed & WHO manuscripts', 'PubMed और WHO दस्तावेज़'],
-      ['Overlapping disclosures revealed', 'अतिव्यापी प्रकटीकरण सामने आएं'],
-    ],
-    tagEn: 'Search',
-    tagHi: 'खोजें',
+    descKey: 'process_prior_art_desc',
+    pointKeys: ['process_prior_art_p1', 'process_prior_art_p2', 'process_prior_art_p3'],
+    tagKey: 'process_prior_art_tag',
   },
   {
     key: 'readiness',
-    label: 'Patent Readiness',
-    hilabel: 'पेटेंट तैयारी',
+    labelKey: 'patent_readiness',
     icon: BadgeCheck,
-    descEn: 'Section 3(p) compliance score with TKDL grounding and claim-by-claim risk analysis.',
-    descHi: 'TKDL-पुष्ट सेक्शन 3(p) अनुपालन स्कोर और दावे-दर-दावे जोखिम विश्लेषण।',
-    points: [
-      ['Section 3(p) compliance score', 'सेक्शन 3(p) अनुपालन स्कोर'],
-      ['TKDL-grounded reasoning', 'TKDL-पुष्ट तर्क'],
-      ['Claim-by-claim risk analysis', 'दावे-दर-दावे जोखिम विश्लेषण'],
-    ],
-    tagEn: 'Assess',
-    tagHi: 'मूल्यांकन',
+    descKey: 'process_readiness_desc',
+    pointKeys: ['process_readiness_p1', 'process_readiness_p2', 'process_readiness_p3'],
+    tagKey: 'process_readiness_tag',
   },
   {
     key: 'passport',
-    label: 'Innovation Passport',
-    hilabel: 'इनोवेशन पासपोर्ट',
+    labelKey: 'innovation_passport',
     icon: QrCode,
-    descEn: 'A verifiable digital passport with QR authenticity, version history and PDF export.',
-    descHi: 'QR प्रामाणिकता, संस्करण इतिहास और PDF निर्यात के साथ सत्यापन-योग्य डिजिटल पासपोर्ट।',
-    points: [
-      ['Verifiable digital passport', 'सत्यापन-योग्य डिजिटल पासपोर्ट'],
-      ['QR authenticity stamp', 'QR प्रामाणिकता मुहर'],
-      ['Version history & PDF export', 'संस्करण इतिहास और PDF निर्यात'],
-    ],
-    tagEn: 'Generate',
-    tagHi: 'बनाएँ',
+    descKey: 'process_passport_desc',
+    pointKeys: ['process_passport_p1', 'process_passport_p2', 'process_passport_p3'],
+    tagKey: 'process_passport_tag',
   },
   {
     key: 'export',
-    label: 'Export',
-    hilabel: 'निर्यात',
+    labelKey: 'process_export_label',
     icon: FileDown,
-    descEn: 'Regulatory pathway maps for IN · US · CA jurisdictions to launch your innovation worldwide.',
-    descHi: 'IN · US · CA क्षेत्रों के लिए विनियामक मार्ग-मानचित्र — वैश्विक स्तर पर लॉन्च करें।',
-    points: [
-      ['IN · US · CA pathway maps', 'IN · US · CA मार्ग मानचित्र'],
-      ['Jurisdiction risk preview', 'क्षेत्रीय जोखिम पूर्वाभास'],
-      ['Launch globally with confidence', 'आत्मविश्वास के साथ वैश्विक लॉन्च'],
-    ],
-    tagEn: 'Go Global',
-    tagHi: 'वैश्विक पहुँच',
+    descKey: 'process_export_desc',
+    pointKeys: ['process_export_p1', 'process_export_p2', 'process_export_p3'],
+    tagKey: 'process_export_tag',
   },
 ];
 
@@ -146,7 +102,6 @@ function useScrollProgress() {
 
 function ProcessStep({ step, index }: { step: Step; index: number }) {
   const { lang } = useLang();
-  const Hi = (en: string, hi: string) => (lang === 'hi' ? hi : en);
   const { ref, progress } = useScrollProgress();
   const isLeft = index % 2 === 0;
   const Icon = step.icon;
@@ -184,18 +139,18 @@ function ProcessStep({ step, index }: { step: Step; index: number }) {
               </div>
               <div>
                 <div className="flex items-center gap-2.5">
-                  <span className="text-[10px] font-black tracking-[0.2em] uppercase text-amber-400">{Hi(step.tagEn, step.tagHi)}</span>
+                  <span className="text-[10px] font-black tracking-[0.2em] uppercase text-amber-400">{t(step.tagKey, lang)}</span>
                   <span className="h-px w-8 bg-emerald-500/40" aria-hidden="true" />
                   <span className="text-[10px] font-bold text-emerald-300/70">{String(index + 1).padStart(2, '0')}</span>
                 </div>
-                <h4 className="text-xl font-black text-white font-display leading-tight">{Hi(step.label, step.hilabel)}</h4>
+                <h4 className="text-xl font-black text-white font-display leading-tight">{t(step.labelKey, lang)}</h4>
               </div>
               <CheckCircle2
                 className={`w-5 h-5 text-emerald-400 ml-auto hidden lg:block transition-all duration-700 ${r > 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}
               />
             </div>
 
-            <p className="mt-2 text-sm text-emerald-100/75 leading-relaxed max-w-md">{Hi(step.descEn, step.descHi)}</p>
+            <p className="mt-2 text-sm text-emerald-100/75 leading-relaxed max-w-md">{t(step.descKey, lang)}</p>
 
             {/* Fill line that grows with scroll */}
             <div className="mt-4 h-px bg-emerald-700/40 overflow-hidden" aria-hidden="true">
@@ -204,11 +159,11 @@ function ProcessStep({ step, index }: { step: Step; index: number }) {
 
             {/* Points revealed one-by-one */}
             <ul className="mt-3 space-y-1.5">
-              {step.points.map((pt, i) => {
+              {step.pointKeys.map((pt, i) => {
                 const shown = r > 0.2 + i * 0.16;
                 return (
                   <li
-                    key={i}
+                    key={pt}
                     className="flex items-start gap-2 text-xs text-emerald-100/80 transition-all duration-300"
                     style={{ opacity: shown ? 1 : 0.3, transform: `translateX(${(1 - r) * 12}px)` }}
                   >
@@ -216,7 +171,7 @@ function ProcessStep({ step, index }: { step: Step; index: number }) {
                       className="w-3.5 h-3.5 text-amber-400 mt-0.5 flex-shrink-0 transition-all duration-300"
                       style={{ opacity: shown ? 1 : 0.35, transform: shown ? 'scale(1)' : 'scale(0.7)' }}
                     />
-                    <span>{Hi(pt[0], pt[1])}</span>
+                    <span>{t(pt, lang)}</span>
                   </li>
                 );
               })}
@@ -235,24 +190,23 @@ function ProcessStep({ step, index }: { step: Step; index: number }) {
 
 export default function ProcessParallax() {
   const { lang } = useLang();
-  const Hi = (en: string, hi: string) => (lang === 'hi' ? hi : en);
 
   return (
     <section id="process" className="scroll-mt-20 rounded-3xl bg-emerald-900 shadow-xl shadow-emerald-900/20 overflow-hidden">
       <div className="px-6 lg:px-10 py-10 lg:py-14">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider mb-4 animate-fade-in-up">
-            <Lightbulb className="w-3 h-3" /> {Hi('Why Choose IP-SAKTI', 'IP-SAKTI \u0915\u094D\u092F\u094B\u0902 \u091A\u0941\u0928\u0947\u0902')}
+            <Lightbulb className="w-3 h-3" /> {t('process_why_choose', lang)}
           </span>
           <Text3D
             as="h3"
-            text={Hi('One journey, every safeguard', '\u090F\u0915 \u092F\u093E\u0924\u094D\u0930\u093E, \u0939\u0930 \u0938\u0941\u0930\u0915\u094D\u0937\u093E')}
+            text={t('landing_one_journey', lang)}
             style="neon-glow"
             delay={200}
             className="text-3xl font-black text-white font-display"
           />
           <p className="mt-3 text-sm text-emerald-200/90 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            {Hi('Scroll through the journey — each stage glides in from its side as you scroll.', '\u092F\u093E\u0924\u094D\u0930\u093E को स्क्रॉल करें — हर चरण स्क्रॉल करते ही अपनी ओर से ग्लाइड करके सामने आता है।')}
+            {t('process_scroll_hint', lang)}
           </p>
         </div>
 
@@ -268,7 +222,7 @@ export default function ProcessParallax() {
         </div>
 
         <p className="mt-12 text-center text-[11px] text-emerald-300/70">
-          {Hi('Every stage is grounded in statutory sources — TKDL, IP India, WIPO, PubMed, and WHO.', 'हर चरण क़ानूनी स्रोतों से पुष्ट — TKDL, IP India, WIPO, PubMed, और WHO।')}
+          {t('process_sources_note', lang)}
         </p>
       </div>
     </section>

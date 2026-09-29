@@ -9,6 +9,8 @@ import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
 import { analyzeClaimSafety } from '../lib/api';
 import { ClaimSafetyAnalysisResponse } from '../types';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 const MARKETS = ['India', 'United States', 'Canada'];
 
@@ -38,6 +40,7 @@ interface ClaimSafetyIntelligenceProps {
 }
 
 export function ClaimSafetyIntelligence({ passportId, initialClaims }: ClaimSafetyIntelligenceProps) {
+  const { lang } = useLang();
   const [claimsText, setClaimsText] = useState((initialClaims || []).join('\n'));
   const [ingredientsText, setIngredientsText] = useState('');
   const [markets, setMarkets] = useState<string[]>(MARKETS);
@@ -60,7 +63,7 @@ export function ClaimSafetyIntelligence({ passportId, initialClaims }: ClaimSafe
       });
       setResult(res);
     } catch (e: any) {
-      setError(e.message || 'Analysis failed');
+      setError(e.message || t('cs_analysis_failed', lang));
       setResult(null);
     } finally {
       setLoading(false);
@@ -80,33 +83,33 @@ export function ClaimSafetyIntelligence({ passportId, initialClaims }: ClaimSafe
       <GlassCard padding="md">
         <div className="flex items-center gap-2 mb-3">
           <ShieldCheck className="w-5 h-5 text-emerald-600" />
-          <h3 className="text-sm font-bold text-slate-900 font-display">Claim &amp; Safety Intelligence</h3>
-          <Badge variant="info" className="ml-auto">Ayush Suraksha aware</Badge>
+          <h3 className="text-sm font-bold text-slate-900 font-display">{t('cs_title', lang)}</h3>
+          <Badge variant="info" className="ml-auto">{t('cs_ayush_aware', lang)}</Badge>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
-            <label className="text-xs text-slate-500 mb-1.5 block">Proposed claims (one per line)</label>
+            <label className="text-xs text-slate-500 mb-1.5 block">{t('cs_claims_label', lang)}</label>
             <textarea
               value={claimsText}
               onChange={(e) => setClaimsText(e.target.value)}
               rows={4}
-              placeholder={'Supports healthy sleep\nTreats chronic insomnia'}
+              placeholder={t('cs_claims_placeholder', lang)}
               className="w-full px-4 py-2.5 bg-emerald-50/50 border border-emerald-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-emerald-500"
             />
           </div>
           <div className="space-y-3">
             <div>
-              <label className="text-xs text-slate-500 mb-1.5 block">Ingredients (comma separated)</label>
+              <label className="text-xs text-slate-500 mb-1.5 block">{t('cs_ingredients_label', lang)}</label>
               <input
                 value={ingredientsText}
                 onChange={(e) => setIngredientsText(e.target.value)}
-                placeholder={'Ashwagandha, Brahmi'}
+                placeholder={t('cs_ingredients_placeholder', lang)}
                 className="w-full px-4 py-2.5 bg-emerald-50/50 border border-emerald-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div>
-              <label className="text-xs text-slate-500 mb-1.5 block">Target markets</label>
+              <label className="text-xs text-slate-500 mb-1.5 block">{t('cs_markets_label', lang)}</label>
               <div className="flex flex-wrap gap-2">
                 {MARKETS.map((m) => (
                   <button
@@ -125,13 +128,13 @@ export function ClaimSafetyIntelligence({ passportId, initialClaims }: ClaimSafe
             </div>
             <Button variant="primary" className="w-full" onClick={() => run()} disabled={loading}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldAlert className="w-4 h-4" />}
-              {loading ? 'Scanning claims…' : 'Analyze Claims'}
+              {loading ? t('cs_scanning', lang) : t('cs_analyze', lang)}
             </Button>
           </div>
         </div>
         {passportId && (
           <p className="mt-2 text-[11px] text-slate-500">
-            Linked passport <code className="font-mono">{passportId}</code> — leave claims &amp; ingredients blank to pull them from the passport.
+            {t('cs_linked_passport', lang)} <code className="font-mono">{passportId}</code> — {t('cs_linked_note', lang)}
           </p>
         )}
       </GlassCard>
@@ -162,13 +165,13 @@ export function ClaimSafetyIntelligence({ passportId, initialClaims }: ClaimSafe
 
           {/* Claim results */}
           <div className="space-y-3">
-            <h3 className="text-sm font-bold text-slate-900 font-display flex items-center gap-2"><Scale className="w-4 h-4 text-blue-600" /> Per-claim assessment</h3>
+            <h3 className="text-sm font-bold text-slate-900 font-display flex items-center gap-2"><Scale className="w-4 h-4 text-blue-600" /> {t('cs_per_claim', lang)}</h3>
             {result.claims.map((c, i) => (
               <GlassCard key={i} padding="sm">
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                   <div className="flex-1 min-w-[220px]">
                     <div className="text-sm font-semibold text-slate-900">{c.claim_text}</div>
-                    <div className="text-[11px] text-slate-500 mt-0.5 capitalize">{c.claim_category} claim · {c.regulation}</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5 capitalize">{c.claim_category} {t('cs_claim_word', lang)} · {c.regulation}</div>
                   </div>
                   <div className="flex gap-1.5 flex-wrap">
                     <Badge variant={riskBadge[c.risk_level] || 'warning'}>{c.risk_level}</Badge>
@@ -180,7 +183,7 @@ export function ClaimSafetyIntelligence({ passportId, initialClaims }: ClaimSafe
                   <div className="mt-3 flex items-start gap-2 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200">
                     <BadgeCheck className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
                     <div className="text-xs text-emerald-800">
-                      <span className="font-semibold">Compliant alternative wording:</span> “{c.suggested_alternative}”
+                      <span className="font-semibold">{t('cs_compliant_alt', lang)}</span> “{c.suggested_alternative}”
                     </div>
                   </div>
                 )}
@@ -193,7 +196,7 @@ export function ClaimSafetyIntelligence({ passportId, initialClaims }: ClaimSafe
             <GlassCard padding="sm" className="border-red-300">
               <div className="flex items-center gap-2 mb-2">
                 <ShieldAlert className="w-5 h-5 text-red-600" />
-                <h3 className="text-sm font-bold text-slate-900 font-display">Misleading advertising risk</h3>
+                <h3 className="text-sm font-bold text-slate-900 font-display">{t('cs_misleading_risk', lang)}</h3>
               </div>
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {result.misleading_ad_risk.flagged_phrases.map((p, i) => (
@@ -210,8 +213,8 @@ export function ClaimSafetyIntelligence({ passportId, initialClaims }: ClaimSafe
             <GlassCard padding="sm">
               <div className="flex items-center gap-2 mb-3">
                 <Activity className="w-5 h-5 text-amber-600" />
-                <h3 className="text-sm font-bold text-slate-900 font-display">Pharmacovigilance signals</h3>
-                <Badge variant="warning" className="ml-auto">{result.safety_signals.length} signals</Badge>
+                <h3 className="text-sm font-bold text-slate-900 font-display">{t('cs_pharmacovigilance', lang)}</h3>
+                <Badge variant="warning" className="ml-auto">{result.safety_signals.length} {t('cs_signals_count', lang)}</Badge>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {result.safety_signals.map((s, i) => (
@@ -222,7 +225,7 @@ export function ClaimSafetyIntelligence({ passportId, initialClaims }: ClaimSafe
                     </div>
                     <p className="text-xs text-slate-700 mt-1.5">{s.signal}</p>
                     <p className="text-[11px] text-amber-700 mt-1">⚠ {s.precaution}</p>
-                    <p className="text-[10px] text-slate-500 mt-1 italic">Source: {s.evidence_source}</p>
+                    <p className="text-[10px] text-slate-500 mt-1 italic">{t('cs_source', lang)} {s.evidence_source}</p>
                   </div>
                 ))}
               </div>
@@ -231,7 +234,7 @@ export function ClaimSafetyIntelligence({ passportId, initialClaims }: ClaimSafe
 
           {/* Regulatory alerts */}
           <GlassCard padding="sm">
-            <h3 className="text-sm font-bold text-slate-900 font-display mb-2 flex items-center gap-2"><Sparkles className="w-4 h-4 text-violet-600" /> Regulatory alerts</h3>
+            <h3 className="text-sm font-bold text-slate-900 font-display mb-2 flex items-center gap-2"><Sparkles className="w-4 h-4 text-violet-600" /> {t('cs_reg_alerts', lang)}</h3>
             <ul className="space-y-1.5">
               {result.regulatory_alerts.map((a, i) => (
                 <li key={i} className="flex items-start gap-2 text-xs text-slate-600">

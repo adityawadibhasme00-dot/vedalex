@@ -5,6 +5,8 @@ import { exportDossier } from '../lib/api';
 import { GlassCard } from './ui/GlassCard';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface DossierViewProps {
   passportId: string;
@@ -26,12 +28,13 @@ function triggerDownload(url: string) {
 }
 
 export default function DossierView({ passportId }: DossierViewProps) {
+  const { lang } = useLang();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<null | { filename: string; download_url: string; generated_at: string }>(null);
   const [error, setError] = useState<string | null>(null);
 
   const runExport = async (format: string) => {
-    if (!passportId) { setError('No passport available. Create one first.'); return; }
+    if (!passportId) { setError(t('ds_no_passport', lang)); return; }
     setLoading(true);
     setError(null);
     setResult(null);
@@ -42,7 +45,7 @@ export default function DossierView({ passportId }: DossierViewProps) {
       // Trigger the download shortly after rendering the result card
       setTimeout(() => { try { triggerDownload(url); } catch { /* handled below */ } }, 80);
     } catch (e: any) {
-      setError(e?.message || 'Export failed. Make sure the backend is running.');
+      setError(e?.message || t('ds_export_failed', lang));
     } finally {
       setLoading(false);
     }
@@ -57,17 +60,17 @@ export default function DossierView({ passportId }: DossierViewProps) {
       <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:bg-blue-200 transition">
         {icon}
       </div>
-      <span className="text-sm font-semibold text-slate-900">Dossier {label}</span>
-      <span className="text-[10px] text-slate-500">Filing-ready report</span>
+      <span className="text-sm font-semibold text-slate-900">{t('ds_dossier', lang).replace('{format}', label)}</span>
+      <span className="text-[10px] text-slate-500">{t('ds_filing_ready', lang)}</span>
     </button>
   );
 
   return (
     <div className="space-y-6">
       <GlassCard padding="lg">
-        <h3 className="text-sm font-bold text-slate-900 font-display mb-1">Generate filing-ready documents</h3>
+        <h3 className="text-sm font-bold text-slate-900 font-display mb-1">{t('ds_generate_title', lang)}</h3>
         <p className="text-xs text-slate-500 mb-6">
-          Combine your Innovation Passport, regulatory assessment, evidence status and QR verification into a polished dossier.
+          {t('ds_generate_sub', lang)}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {formatBtn('PDF', <FileText className="w-6 h-6" />)}
@@ -80,15 +83,15 @@ export default function DossierView({ passportId }: DossierViewProps) {
             <div className="w-12 h-12 rounded-2xl bg-violet-100 text-violet-600 flex items-center justify-center group-hover:bg-violet-200 transition">
               <FileCheck2 className="w-6 h-6" />
             </div>
-            <span className="text-sm font-semibold text-slate-900">Checklist</span>
-            <span className="text-[10px] text-slate-500">Filings & requirements</span>
+            <span className="text-sm font-semibold text-slate-900">{t('ds_checklist', lang)}</span>
+            <span className="text-[10px] text-slate-500">{t('ds_filings_reqs', lang)}</span>
           </button>
         </div>
       </GlassCard>
 
       {loading && (
         <GlassCard padding="lg" className="flex items-center gap-3 text-sm text-blue-600">
-          <Loader2 className="w-5 h-5 animate-spin" /> Generating dossier...
+          <Loader2 className="w-5 h-5 animate-spin" /> {t('ds_generating', lang)}
         </GlassCard>
       )}
 
@@ -104,9 +107,9 @@ export default function DossierView({ passportId }: DossierViewProps) {
             <div className="flex items-center gap-3">
               <CheckCircle2 className="w-6 h-6 text-emerald-600 flex-shrink-0" />
               <div>
-                <p className="text-sm font-bold text-slate-900">Dossier generated successfully</p>
+                <p className="text-sm font-bold text-slate-900">{t('ds_generated_ok', lang)}</p>
                 <p className="text-xs text-slate-500 mt-0.5">{result.filename}</p>
-                <p className="text-[10px] text-slate-500 mt-1">Generated {new Date(result.generated_at).toLocaleString()}</p>
+                <p className="text-[10px] text-slate-500 mt-1">{t('ds_generated_at', lang).replace('{date}', new Date(result.generated_at).toLocaleString())}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -115,22 +118,22 @@ export default function DossierView({ passportId }: DossierViewProps) {
                 onClick={(e) => { e.preventDefault(); triggerDownload(resolveDownloadUrl(result.download_url)); }}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition"
               >
-                <Download className="w-4 h-4" /> Download again
+                <Download className="w-4 h-4" /> {t('ds_download_again', lang)}
               </a>
               <a
                 href={resolveDownloadUrl(result.download_url)}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-emerald-300 hover:bg-emerald-50 text-emerald-700 text-xs font-bold transition"
-                title="Open in new tab"
+                title={t('ds_open_new_tab', lang)}
               >
                 <ExternalLink className="w-4 h-4" />
               </a>
             </div>
           </div>
           <div className="mt-4 pt-4 border-t border-emerald-200">
-            <Badge variant="success" dot>QR Verified</Badge>
-            <Badge variant="info" dot>DPDP Compliant</Badge>
+            <Badge variant="success" dot>{t('ds_qr_verified', lang)}</Badge>
+            <Badge variant="info" dot>{t('ds_dpdp_compliant', lang)}</Badge>
           </div>
         </GlassCard>
       )}

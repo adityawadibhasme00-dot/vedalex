@@ -3,6 +3,8 @@
 import React from 'react';
 import { ClarificationQuery } from '../types';
 import { AlertCircle, ArrowRight, Check } from 'lucide-react';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface ClarificationAlertProps {
   clarifications: ClarificationQuery[];
@@ -15,6 +17,7 @@ export default function ClarificationAlert({
   currentLang,
   onResolve
 }: ClarificationAlertProps) {
+  const { lang } = useLang();
   if (!clarifications || clarifications.length === 0) return null;
 
   const query = clarifications[0];
@@ -29,12 +32,12 @@ export default function ClarificationAlert({
         <div className="flex-1">
           <div className="flex items-center space-x-2">
             <span className="px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider rounded bg-amber-200 text-amber-700 border border-amber-300">
-              Decision-Critical Clarification Required
+              {t('clarify_badge', lang)}
             </span>
           </div>
           <h2 className="text-base font-semibold text-slate-900 mt-1.5">{questionText}</h2>
           <p className="text-xs text-amber-700/90 mt-1">
-            Resolving this variable determines whether your product falls under the FSSAI Ayurveda Aahara food category or requires an AYUSH Drug Manufacturing License under Rule 158-B.
+            {t('clarify_desc', lang)}
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3.5">

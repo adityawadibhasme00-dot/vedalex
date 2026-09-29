@@ -9,178 +9,180 @@ import { GlassCard } from './ui/GlassCard';
 import TiltCard from './TiltCard';
 import clsx from 'clsx';
 import { HerbSprig, TulsiLeaf } from './BotanicalDecor';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 export interface FeatureDef {
   id: string;
-  title: string;
-  description: string;
-  category: string;
+  titleKey: string;
+  descKey: string;
+  categoryKey: string;
   categoryColor: 'red' | 'blue' | 'amber' | 'violet' | 'emerald' | 'cyan';
   icon: React.ReactNode;
   api: string;
-  steps: string[];
+  stepKeys: string[];
 }
 
 const FEATURES: FeatureDef[] = [
   {
     id: 'disclosure',
-    title: 'Patent Disclosure Sentinel',
-    description: 'Detect risky public disclosures before patent filing.',
-    category: 'Critical',
+    titleKey: 'fh_disclosure_title',
+    descKey: 'fh_disclosure_desc',
+    categoryKey: 'feature_cat_critical',
     categoryColor: 'red',
     icon: <ShieldAlert className="w-5 h-5" />,
     api: 'POST /upload/disclosure-check',
-    steps: ['Upload PDF/PPT', 'Detect invention-revealing sentences', 'Generate risk score'],
+    stepKeys: ['fh_disclosure_s1', 'fh_disclosure_s2', 'fh_disclosure_s3'],
   },
   {
     id: 'fto',
-    title: 'Freedom-to-Operate Map',
-    description: 'Check whether selling may infringe existing patents.',
-    category: 'High Impact',
+    titleKey: 'fh_fto_title',
+    descKey: 'fh_fto_desc',
+    categoryKey: 'feature_cat_high_impact',
     categoryColor: 'blue',
     icon: <Map className="w-5 h-5" />,
     api: 'POST /fto/check',
-    steps: ['Search patent metadata', 'Claim-level overlap', 'Risk summary'],
+    stepKeys: ['fh_fto_s1', 'fh_fto_s2', 'fh_fto_s3'],
   },
   {
     id: 'label',
-    title: 'Claim Firewall',
-    description: 'Prevent risky marketing claims on your labels.',
-    category: 'Compliance',
+    titleKey: 'fh_label_title',
+    descKey: 'fh_label_desc',
+    categoryKey: 'feature_cat_compliance',
     categoryColor: 'amber',
     icon: <FileWarning className="w-5 h-5" />,
     api: 'POST /label/analyze',
-    steps: ['Analyze labels', 'Safe wording', 'Flag risky statements'],
+    stepKeys: ['fh_label_s1', 'fh_label_s2', 'fh_label_s3'],
   },
   {
     id: 'roadmap',
-    title: 'Regulatory Roadmap',
-    description: 'Visual filing journey with blockers and milestones.',
-    category: 'Roadmap',
+    titleKey: 'regulatory_roadmap',
+    descKey: 'fh_roadmap_desc',
+    categoryKey: 'feature_cat_roadmap',
     categoryColor: 'violet',
     icon: <Route className="w-5 h-5" />,
     api: 'GET /roadmap/{id}',
-    steps: ['Prior Art', 'ABS', 'Patent', 'Evidence', 'Compliance', 'Market'],
+    stepKeys: ['fh_roadmap_s1', 'fh_roadmap_s2', 'fh_roadmap_s3', 'fh_roadmap_s4', 'fh_roadmap_s5', 'fh_roadmap_s6'],
   },
   {
     id: 'whitespace',
-    title: 'White Space Navigator',
-    description: 'Find less-crowded patent & delivery windows for your formulation.',
-    category: 'Discovery',
+    titleKey: 'fh_whitespace_title',
+    descKey: 'fh_whitespace_desc',
+    categoryKey: 'feature_cat_discovery',
     categoryColor: 'emerald',
     icon: <Sparkles className="w-5 h-5" />,
     api: 'GET /whitespace/{id}',
-    steps: ['Opportunity grid', 'TK risk & Section 3(p)', 'Ranked opportunity cards'],
+    stepKeys: ['fh_whitespace_s1', 'fh_whitespace_s2', 'fh_whitespace_s3'],
   },
   {
     id: 'abs',
-    title: 'Bio-Resource Ledger',
-    description: 'Track ingredient lineage and ABS compliance.',
-    category: 'Ayurveda',
+    titleKey: 'fh_abs_title',
+    descKey: 'fh_abs_desc',
+    categoryKey: 'feature_cat_ayurveda',
     categoryColor: 'emerald',
     icon: <Leaf className="w-5 h-5" />,
     api: 'GET /abs/{id}',
-    steps: ['Source state', 'Supplier', 'ABS status'],
+    stepKeys: ['fh_abs_s1', 'fh_abs_s2', 'fh_abs_s3'],
   },
   {
     id: 'evidence-matrix',
-    title: 'Evidence Matrix',
-    description: 'Map claims to supporting evidence with strength indicators.',
-    category: 'Evidence',
+    titleKey: 'evidence_matrix',
+    descKey: 'fh_evidence_matrix_desc',
+    categoryKey: 'feature_cat_evidence',
     categoryColor: 'cyan',
     icon: <ClipboardList className="w-5 h-5" />,
     api: 'GET /evidence/matrix/{id}',
-    steps: ['Strong evidence', 'Missing evidence', 'Strength indicator'],
+    stepKeys: ['fh_evidence_matrix_s1', 'fh_evidence_matrix_s2', 'fh_evidence_matrix_s3'],
   },
   {
     id: 'claim-safety',
-    title: 'Claim & Safety Intelligence',
-    description: 'Test claims against evidence, regulations & pharmacovigilance signals.',
-    category: 'Safety',
+    titleKey: 'claim_safety_intelligence',
+    descKey: 'fh_claim_safety_desc',
+    categoryKey: 'feature_cat_safety',
     categoryColor: 'red',
     icon: <ShieldCheck className="w-5 h-5" />,
     api: 'POST /intelligence/claim-safety/analyze',
-    steps: ['Risk-score each claim', 'Compliant alternative wording', 'Ayush Suraksha signals'],
+    stepKeys: ['fh_claim_safety_s1', 'fh_claim_safety_s2', 'fh_claim_safety_s3'],
   },
   {
     id: 'evidence-quality',
-    title: 'Evidence & Quality Intelligence',
-    description: 'Research evidence ladder + pharmacopoeia quality readiness per ingredient.',
-    category: 'Quality',
+    titleKey: 'evidence_quality_intelligence',
+    descKey: 'fh_evidence_quality_desc',
+    categoryKey: 'feature_cat_quality',
     categoryColor: 'cyan',
     icon: <FlaskConical className="w-5 h-5" />,
     api: 'GET /intelligence/evidence-quality/{id}',
-    steps: ['Evidence support %', 'Quality readiness %', 'Heavy metals & markers'],
+    stepKeys: ['fh_evidence_quality_s1', 'fh_evidence_quality_s2', 'fh_evidence_quality_s3'],
   },
   {
     id: 'bio-resource',
-    title: 'Bio-Resource Intelligence Graph',
-    description: 'Per-plant provenance, conservation, ABS, TK & IP posture for every botanical.',
-    category: 'Ayurveda',
+    titleKey: 'bio_resource_intelligence',
+    descKey: 'fh_bio_resource_desc',
+    categoryKey: 'feature_cat_ayurveda',
     categoryColor: 'emerald',
     icon: <Sprout className="w-5 h-5" />,
     api: 'GET /intelligence/bio-resource/{id}',
-    steps: ['Names & plant parts', 'Provenance & geography', 'ABS / TK / IP posture'],
+    stepKeys: ['fh_bio_resource_s1', 'fh_bio_resource_s2', 'fh_bio_resource_s3'],
   },
   {
     id: 'product-classifier',
-    title: 'Ayurveda Aahara Product Classifier',
-    description: 'Proposes the likely regulatory class from product form, claims & process.',
-    category: 'Classification',
+    titleKey: 'product_classifier',
+    descKey: 'fh_product_classifier_desc',
+    categoryKey: 'feature_cat_classification',
     categoryColor: 'violet',
     icon: <Layers className="w-5 h-5" />,
     api: 'POST /intelligence/product-classify',
-    steps: ['Form & dosage', 'Claims & process', 'Scored pathway + reasons'],
+    stepKeys: ['fh_product_classifier_s1', 'fh_product_classifier_s2', 'fh_product_classifier_s3'],
   },
   {
     id: 'export-readiness',
-    title: 'Export / Market Readiness Engine',
-    description: 'Gap comparison against India, US, EU & Canada requirement sets.',
-    category: 'Export',
+    titleKey: 'export_readiness',
+    descKey: 'fh_export_readiness_desc',
+    categoryKey: 'feature_cat_export',
     categoryColor: 'blue',
     icon: <FileBadge className="w-5 h-5" />,
     api: 'GET /intelligence/export-readiness/{id}',
-    steps: ['Market-by-market %', 'Gaps with actions', 'Recommended first market'],
+    stepKeys: ['fh_export_readiness_s1', 'fh_export_readiness_s2', 'fh_export_readiness_s3'],
   },
   {
     id: 'terminology-mapper',
-    title: 'Terminology Mapper for RAG',
-    description: 'Resolve any script/transliteration of a botanical to one canonical entity key.',
-    category: 'RAG',
+    titleKey: 'terminology_mapper',
+    descKey: 'fh_terminology_mapper_desc',
+    categoryKey: 'feature_cat_rag',
     categoryColor: 'amber',
     icon: <BookMarked className="w-5 h-5" />,
     api: 'POST /intelligence/terminology/map',
-    steps: ['Matched via exact/fuzzy', 'Canonical ID + monograph', 'RAG metadata hint'],
+    stepKeys: ['fh_terminology_mapper_s1', 'fh_terminology_mapper_s2', 'fh_terminology_mapper_s3'],
   },
   {
     id: 'dossier',
-    title: 'Dossier Export',
-    description: 'Generate filing-ready documents and checklists.',
-    category: 'Export',
+    titleKey: 'dossier_export',
+    descKey: 'fh_dossier_desc',
+    categoryKey: 'feature_cat_export',
     categoryColor: 'blue',
     icon: <FileDown className="w-5 h-5" />,
     api: 'POST /export/dossier',
-    steps: ['PDF', 'DOCX', 'Checklist'],
+    stepKeys: ['fh_dossier_s1', 'fh_dossier_s2', 'fh_dossier_s3'],
   },
   {
     id: 'expert',
-    title: 'Expert Review Workspace',
-    description: 'Prepare complete cases for legal experts.',
-    category: 'Expert Review',
+    titleKey: 'fh_expert_title',
+    descKey: 'fh_expert_desc',
+    categoryKey: 'feature_cat_expert_review',
     categoryColor: 'violet',
     icon: <Scale className="w-5 h-5" />,
     api: 'GET /expert/package/{id}',
-    steps: ['Package all evidence', 'List unresolved risks', 'Export review bundle'],
+    stepKeys: ['fh_expert_s1', 'fh_expert_s2', 'fh_expert_s3'],
   },
   {
     id: 'what-if',
-    title: 'What-If Simulator',
-    description: 'Mutate claims live and see reactive compliance diffs.',
-    category: 'Simulation',
+    titleKey: 'what_if',
+    descKey: 'fh_what_if_desc',
+    categoryKey: 'feature_cat_simulation',
     categoryColor: 'amber',
     icon: <RefreshCw className="w-5 h-5" />,
     api: 'POST /what-if/simulate',
-    steps: ['Mutate claim wording', 'Traverse dependency DAG', 'Risk diff & alert'],
+    stepKeys: ['fh_what_if_s1', 'fh_what_if_s2', 'fh_what_if_s3'],
   },
 ];
 
@@ -216,12 +218,13 @@ interface FeatureHubProps {
 }
 
 export function FeatureHub({ onOpen }: FeatureHubProps) {
+  const { lang } = useLang();
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 flex-wrap">
         <HerbSprig className="w-6 h-6 text-emerald-500" />
         <Sparkles className="w-4 h-4 text-blue-600" />
-        <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Feature Hub</h2>
+        <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider">{t('feature_hub_title', lang)}</h2>
         <div className="flex-1 min-w-[40px] h-px bg-gradient-to-r from-emerald-300/70 to-transparent" />
         <TulsiLeaf className="w-5 h-5 text-amber-500 hidden sm:block" />
       </div>
@@ -239,23 +242,23 @@ export function FeatureHub({ onOpen }: FeatureHubProps) {
                   {f.icon}
                 </div>
                 <span className={clsx('text-[10px] font-semibold px-2 py-0.5 rounded-full border', categoryStyles[f.categoryColor])}>
-                  {f.category}
+                  {t(f.categoryKey, lang)}
                 </span>
               </div>
-              <h3 className="text-sm font-bold text-slate-900 font-display mb-1.5">{f.title}</h3>
-              <p className="text-xs text-slate-500 mb-4 leading-relaxed">{f.description}</p>
+              <h3 className="text-sm font-bold text-slate-900 font-display mb-1.5">{t(f.titleKey, lang)}</h3>
+              <p className="text-xs text-slate-500 mb-4 leading-relaxed">{t(f.descKey, lang)}</p>
               <div className="mt-auto space-y-1.5 mb-4">
-                {f.steps.map((step, i) => (
+                {f.stepKeys.map((step, i) => (
                   <div key={i} className="flex items-center gap-2 text-[11px] text-slate-600">
                     <span className="w-1 h-1 rounded-full bg-slate-400" />
-                    {step}
+                    {t(step, lang)}
                   </div>
                 ))}
               </div>
               <div className="flex items-center justify-between pt-3 border-t border-emerald-200">
                 <code className="text-[10px] text-blue-600/70 font-mono">{f.api}</code>
                 <span className="flex items-center gap-1 text-xs font-semibold text-blue-600 group-hover:text-blue-500 transition">
-                  Open <ArrowRight className="w-3.5 h-3.5" />
+                  {t('feature_hub_open', lang)} <ArrowRight className="w-3.5 h-3.5" />
                 </span>
               </div>
             </GlassCard>

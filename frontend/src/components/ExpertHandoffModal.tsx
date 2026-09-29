@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { dispatchExpertHandoff } from '../lib/api';
 import { ShieldCheck, UserCheck, X, FileText, Check, AlertCircle } from 'lucide-react';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface ExpertHandoffModalProps {
   isOpen: boolean;
@@ -30,6 +32,7 @@ export default function ExpertHandoffModal({
   passportId,
   initialExpertType
 }: ExpertHandoffModalProps) {
+  const { lang } = useLang();
   const [userName, setUserName] = useState('Dr. Rajesh Vaidya');
   const [userEmail, setUserEmail] = useState('rajesh.vaidya@ayurstartup.in');
   const [expertType, setExpertType] = useState(
@@ -56,7 +59,7 @@ export default function ExpertHandoffModal({
       });
       setSuccessResponse(res);
     } catch (err) {
-      alert('Failed to dispatch expert handoff');
+      alert(t('expert_error', lang));
     } finally {
       setIsLoading(false);
     }
@@ -73,10 +76,10 @@ export default function ExpertHandoffModal({
             </div>
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">
-                Section 7.3.2 Escalation Pathway
+                {t('expert_escalation_pathway', lang)}
               </span>
               <h3 className="text-lg font-bold text-slate-900 font-display">
-                Certified Expert Handoff Bridge
+                {t('expert_bridge_title', lang)}
               </h3>
             </div>
           </div>
@@ -90,25 +93,25 @@ export default function ExpertHandoffModal({
             <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
               <Check className="w-6 h-6" />
             </div>
-            <h4 className="text-base font-bold text-slate-900">Case Successfully Queued for Dispatch</h4>
+            <h4 className="text-base font-bold text-slate-900">{t('expert_success_heading', lang)}</h4>
             <p className="text-xs text-slate-600 max-w-md mx-auto">{successResponse.message}</p>
             <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 text-xs text-left font-mono space-y-1">
-              <div><strong className="text-slate-500">Ticket ID:</strong> {successResponse.ticket_id}</div>
-              <div><strong className="text-slate-500">Assigned Hub:</strong> {successResponse.assigned_facilitation_center}</div>
-              <div><strong className="text-slate-500">DPDP Consent Hash:</strong> {successResponse.consent_audit_hash.slice(0, 16)}...</div>
-              <div><strong className="text-slate-500">SLA Response:</strong> 48 Hours</div>
+              <div><strong className="text-slate-500">{t('expert_ticket_id', lang)}</strong> {successResponse.ticket_id}</div>
+              <div><strong className="text-slate-500">{t('expert_assigned_hub', lang)}</strong> {successResponse.assigned_facilitation_center}</div>
+              <div><strong className="text-slate-500">{t('expert_dpdp_hash', lang)}</strong> {successResponse.consent_audit_hash.slice(0, 16)}...</div>
+              <div><strong className="text-slate-500">{t('expert_sla', lang)}</strong> {t('expert_sla_value', lang)}</div>
             </div>
             <button
               onClick={onClose}
               className="px-6 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition"
             >
-              Close Window
+              {t('expert_close_window', lang)}
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 my-4 text-xs">
             <div>
-              <label className="text-slate-500 font-medium block mb-1">Select Professional Expert Track:</label>
+              <label className="text-slate-500 font-medium block mb-1">{t('expert_select_track', lang)}</label>
               <select
                 value={expertType}
                 onChange={(e) => setExpertType(e.target.value)}
@@ -122,7 +125,7 @@ export default function ExpertHandoffModal({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-slate-500 font-medium block mb-1">Contact Name:</label>
+                <label className="text-slate-500 font-medium block mb-1">{t('expert_contact_name', lang)}</label>
                 <input
                   type="text"
                   value={userName}
@@ -132,7 +135,7 @@ export default function ExpertHandoffModal({
                 />
               </div>
               <div>
-                <label className="text-slate-500 font-medium block mb-1">Contact Email:</label>
+                <label className="text-slate-500 font-medium block mb-1">{t('expert_contact_email', lang)}</label>
                 <input
                   type="email"
                   value={userEmail}
@@ -154,7 +157,7 @@ export default function ExpertHandoffModal({
                   required
                 />
                 <span className="text-[11px] text-slate-700">
-                  <strong>DPDP Act 2023 Consent:</strong> I give explicit consent to share this Innovation Passport and extracted laboratory documents with registered IP Facilitation Center professionals for triage review.
+                  <strong>{t('expert_dpdp_label', lang)}</strong> {t('expert_dpdp_body', lang)}
                 </span>
               </label>
 
@@ -167,7 +170,7 @@ export default function ExpertHandoffModal({
                   required
                 />
                 <span className="text-[11px] text-slate-700">
-                  <strong>Liability Boundary Acknowledgment:</strong> I understand that IP-SAKTI AI provides structured first-pass triage and evidence gap assessment; certified professionals provide formal liability-bearing legal/regulatory opinions.
+                  <strong>{t('expert_liability_label', lang)}</strong> {t('expert_liability_body', lang)}
                 </span>
               </label>
             </div>
@@ -177,7 +180,7 @@ export default function ExpertHandoffModal({
               disabled={isLoading || !dpdpConsent || !liabilityAck}
               className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 text-white font-semibold text-xs shadow-lg transition disabled:opacity-50"
             >
-              {isLoading ? 'Dispatching to Facilitation Queue...' : 'Submit Case to Certified Expert'}
+              {isLoading ? t('expert_dispatching', lang) : t('expert_submit', lang)}
             </button>
           </form>
         )}

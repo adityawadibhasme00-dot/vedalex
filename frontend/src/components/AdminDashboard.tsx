@@ -13,8 +13,11 @@ import {
   Lock,
   Sparkles
 } from 'lucide-react';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 export default function AdminDashboard() {
+  const { lang } = useLang();
   const [featureFlags, setFeatureFlags] = useState({
     stitch3DAssistant: true,
     whatIfReactiveDAG: true,
@@ -41,18 +44,18 @@ export default function AdminDashboard() {
           <div className="flex items-center space-x-2">
             <Server className="w-5 h-5 text-emerald-600" />
             <h3 className="text-base font-bold text-slate-900 font-display">
-              Enterprise System Administration & Security Hub
+              {t('ad_title', lang)}
             </h3>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Real-time control plane for feature flags, AI agent execution telemetry, and DPDP cryptographic audit trails.
+            {t('ad_subtitle', lang)}
           </p>
         </div>
 
         <div className="flex items-center space-x-2">
           <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-600 border border-emerald-500/30 text-xs font-bold flex items-center space-x-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>FastAPI Monolith â€¢ All Systems Operational</span>
+            <span>{t('ad_status', lang)}</span>
           </span>
         </div>
       </div>
@@ -62,14 +65,14 @@ export default function AdminDashboard() {
         <div className="lg:col-span-6 glass-panel p-5 rounded-2xl border border-emerald-200 space-y-4 text-xs">
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center space-x-1.5">
             <Sparkles className="w-4 h-4 text-amber-600" />
-            <span>Dynamic Feature Flags (Zero Downtime Toggle)</span>
+            <span>{t('ad_flags_title', lang)}</span>
           </h4>
 
           <div className="space-y-2.5">
             <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 flex items-center justify-between">
               <div>
                 <strong className="text-slate-900 block">IP-SAKTI Assistant</strong>
-                <span className="text-slate-500">Enables WebGL floating companion & mood state machine</span>
+                <span className="text-slate-500">{t('ad_flag1_desc', lang)}</span>
               </div>
               <button onClick={() => toggleFlag('stitch3DAssistant')}>
                 {featureFlags.stitch3DAssistant ? (
@@ -82,8 +85,8 @@ export default function AdminDashboard() {
 
             <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 flex items-center justify-between">
               <div>
-                <strong className="text-slate-900 block">Reactive What-If Simulation DAG</strong>
-                <span className="text-slate-500">Enables live AST dependency node traversal</span>
+                <strong className="text-slate-900 block">{t('ad_flag2_name', lang)}</strong>
+                <span className="text-slate-500">{t('ad_flag2_desc', lang)}</span>
               </div>
               <button onClick={() => toggleFlag('whatIfReactiveDAG')}>
                 {featureFlags.whatIfReactiveDAG ? (
@@ -97,7 +100,7 @@ export default function AdminDashboard() {
             <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 flex items-center justify-between">
               <div>
                 <strong className="text-slate-900 block">DPDP Act 2023 Consent Audit Hashes</strong>
-                <span className="text-slate-500">Cryptographic logging of all external escalations</span>
+                <span className="text-slate-500">{t('ad_flag3_desc', lang)}</span>
               </div>
               <button onClick={() => toggleFlag('dpdpConsentHashing')}>
                 {featureFlags.dpdpConsentHashing ? (
@@ -114,7 +117,7 @@ export default function AdminDashboard() {
         <div className="lg:col-span-6 glass-panel p-5 rounded-2xl border border-emerald-200 space-y-4 text-xs">
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center space-x-1.5">
             <Lock className="w-4 h-4 text-emerald-600" />
-            <span>Cryptographic Consent & Access Audit Logs (SHA-256)</span>
+            <span>{t('ad_audit_title', lang)}</span>
           </h4>
 
           <div className="space-y-2">
@@ -124,7 +127,7 @@ export default function AdminDashboard() {
                   <span>{log.timestamp}</span>
                   <span className="text-emerald-600 font-semibold">{log.action}</span>
                 </div>
-                <div className="text-slate-600 truncate">User: {log.user}</div>
+                <div className="text-slate-600 truncate">{t('ad_user', lang)} {log.user}</div>
                 <div className="text-[10px] text-slate-500 truncate">SHA256: {log.hash}</div>
               </div>
             ))}

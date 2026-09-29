@@ -342,8 +342,8 @@ export default function DashboardPage() {
                   <HerbSprig className="w-16 h-16 text-emerald-500/15 absolute -right-2 -bottom-3 rotate-[25deg] pointer-events-none" />
                   <TurmericRoot className="w-10 h-10 text-amber-500/15 absolute right-16 bottom-1 pointer-events-none" />
                   <PageHeader
-                    title="Create a New Innovation Passport"
-                    subtitle="Import a formulation to start your Idea → Patent → Compliance journey"
+                    title={t('dash_passport_header_title', lang)}
+                    subtitle={t('dash_passport_header_sub', lang)}
                     icon={<Sparkles className="w-5 h-5" />}
                   />
                   <InnovationPassportForm
@@ -369,14 +369,14 @@ export default function DashboardPage() {
 
           {activeTab === 'innolab' && (
             <div className="space-y-4">
-              <PageHeader title={t('innovation_lab', lang)} subtitle="AI-assisted research, engineering, IP, scientific, and materials workflows" icon={<FlaskConical className="w-5 h-5" />} />
+              <PageHeader title={t('innovation_lab', lang)} subtitle={t('dash_innolab_sub', lang)} icon={<FlaskConical className="w-5 h-5" />} />
               <InnovationLabWorkspace />
             </div>
           )}
 
           {activeTab === 'passport' && (
             <div className="space-y-4">
-              <PageHeader title={t('innovation_passport', lang)} subtitle="5-step guided intake to build your patent-ready profile" icon={<FileText className="w-5 h-5" />} />
+              <PageHeader title={t('innovation_passport', lang)} subtitle={t('dash_passport_sub', lang)} icon={<FileText className="w-5 h-5" />} />
               {passport ? (
                 <>
                   <IPRouteAdvisor passport={passport} />
@@ -397,7 +397,7 @@ export default function DashboardPage() {
 
           {activeTab === 'ipreg' && (
             <div className="space-y-4">
-              <PageHeader title={t('ip_regulatory_analysis', lang)} subtitle="IP Analysis · Jurisdiction Matrix · Regulatory Roadmap" icon={<Search className="w-5 h-5" />} />
+              <PageHeader title={t('ip_regulatory_analysis', lang)} subtitle={t('dash_ipreg_sub', lang)} icon={<Search className="w-5 h-5" />} />
               <IPRegulatoryPanel
                 passportId={passport?.id}
                 findings={assessment?.findings || []}
@@ -410,7 +410,7 @@ export default function DashboardPage() {
 
           {activeTab === 'evidence' && (
             <div className="space-y-4">
-              <PageHeader title={t('evidence_compliance', lang)} subtitle="Evidence Matrix · Claim & Safety · Quality · Document OCR" icon={<ClipboardList className="w-5 h-5" />} />
+              <PageHeader title={t('evidence_compliance', lang)} subtitle={t('dash_evidence_sub', lang)} icon={<ClipboardList className="w-5 h-5" />} />
               <EvidenceCompliancePanel
                 passport={passport}
                 passportId={passport?.id}
@@ -424,42 +424,42 @@ export default function DashboardPage() {
 
           {activeTab === 'copilot' && (
             <div className="space-y-4">
-              <PageHeader title="Jurisdiction-Aware AI Copilot" subtitle="Evidence-grounded · jurisdiction-routed · rule-verified — with decision traces" icon={<Bot className="w-5 h-5" />} />
+              <PageHeader title={t('dash_copilot_title', lang)} subtitle={t('dash_copilot_sub', lang)} icon={<Bot className="w-5 h-5" />} />
               <AICopilot passportId={passport?.id} lang={lang} />
             </div>
           )}
 
           {activeTab === 'biores' && (
             <div className="space-y-4">
-              <PageHeader title={t('bio_resource_intelligence', lang)} subtitle="Provenance · conservation · ABS · TK · IP per plant — with decision-trace graph" icon={<Sprout className="w-5 h-5" />} />
+              <PageHeader title={t('bio_resource_intelligence', lang)} subtitle={t('dash_biores_sub', lang)} icon={<Sprout className="w-5 h-5" />} />
               <BioResourcePanel passportId={passport?.id} />
             </div>
           )}
 
           {activeTab === 'classify' && (
             <div className="space-y-4">
-              <PageHeader title={t('product_classifier', lang)} subtitle="Classical Medicine · Patent & Proprietary · New Drug · Phytopharmaceutical · Aahar · Cosmetic" icon={<Layers className="w-5 h-5" />} />
+              <PageHeader title={t('product_classifier', lang)} subtitle={t('dash_classify_sub', lang)} icon={<Layers className="w-5 h-5" />} />
               <ProductClassifier passportId={passport?.id} passport={passport} />
             </div>
           )}
 
           {activeTab === 'market' && (
             <div className="space-y-4">
-              <PageHeader title={t('market_readiness', lang)} subtitle="India · United States · European Union · Canada gap comparison" icon={<FileBadge className="w-5 h-5" />} />
+              <PageHeader title={t('market_readiness', lang)} subtitle={t('dash_market_sub', lang)} icon={<FileBadge className="w-5 h-5" />} />
               <ExportReadiness passportId={passport?.id} />
             </div>
           )}
 
           {activeTab === 'dossier' && (
             <div className="space-y-4">
-              <PageHeader title={t('dossier_export', lang)} subtitle="Generate filing-ready documents" icon={<FileDown className="w-5 h-5" />} />
+              <PageHeader title={t('dossier_export', lang)} subtitle={t('dash_dossier_sub', lang)} icon={<FileDown className="w-5 h-5" />} />
               <DossierView passportId={passport?.id || ''} />
             </div>
           )}
 
           {activeTab === 'whatif' && (
             <div className="space-y-4">
-              <PageHeader title={t('what_if', lang)} subtitle="Live reactive what-if compliance simulation" icon={<RefreshCw className="w-5 h-5" />} />
+              <PageHeader title={t('what_if', lang)} subtitle={t('dash_whatif_sub', lang)} icon={<RefreshCw className="w-5 h-5" />} />
               <WhatIfSimulator
                 passportId={passport?.id || ''}
                 onSimulate={handleWhatIfSimulate}
@@ -471,7 +471,7 @@ export default function DashboardPage() {
 
           {activeTab === 'settings' && (
             <div className="space-y-4">
-              <PageHeader title={t('language_settings', lang)} subtitle="Language · Terminology Mapper · Profile · Preferences" icon={<Settings className="w-5 h-5" />} />
+              <PageHeader title={t('language_settings', lang)} subtitle={t('dash_settings_sub', lang)} icon={<Settings className="w-5 h-5" />} />
               <LanguageSettingsPanel
                 user={user}
                 passportIngredients={passport?.ingredients?.map((i) => i.raw_name) || []}

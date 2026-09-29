@@ -17,6 +17,8 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { InnovationPassport, RegulatoryFinding } from '../types';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface Dashboard3DCardsProps {
   passport: InnovationPassport | null;
@@ -29,14 +31,15 @@ export default function Dashboard3DCards({
   findings,
   onNavigateTab
 }: Dashboard3DCardsProps) {
+  const { lang } = useLang();
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-base font-bold text-slate-900 font-display flex items-center space-x-2">
           <Sparkles className="w-4 h-4 text-emerald-600" />
-          <span>Enterprise 3D Interactive Intelligence Cards</span>
+          <span>{t('c3_title', lang)}</span>
         </h3>
-        <span className="text-xs text-slate-500">Move cursor to tilt in 3D • Click &apos;Inspect Stat&apos; to flip</span>
+        <span className="text-xs text-slate-500">{t('c3_hint', lang)}</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -46,10 +49,10 @@ export default function Dashboard3DCards({
           isFlippable
           backContent={
             <div className="space-y-2 text-xs">
-              <span className="text-emerald-600 font-bold uppercase text-[10px]">Statutory Breakdown</span>
-              <p className="text-slate-600">Indian Patents Act Section 3(p) clearance requires proving non-additive synergy.</p>
+              <span className="text-emerald-600 font-bold uppercase text-[10px]">{t('c3_statutory', lang)}</span>
+              <p className="text-slate-600">{t('c3_sec3p', lang)}</p>
               <div className="p-2 rounded-lg bg-emerald-100/60 text-emerald-700 text-[11px] font-mono">
-                IPO Form 1 Ready: 85%
+                {t('c3_form1', lang)}
               </div>
             </div>
           }
@@ -60,19 +63,19 @@ export default function Dashboard3DCards({
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-500/30">
-                Active
+                {t('c3_active', lang)}
               </span>
             </div>
             <div>
-              <span className="text-[11px] text-slate-500 font-medium block">Patent Readiness Index</span>
+              <span className="text-[11px] text-slate-500 font-medium block">{t('c3_pri', lang)}</span>
               <strong className="text-2xl font-black text-slate-900 font-display block">88 / 100</strong>
             </div>
-            <p className="text-xs text-slate-600">Section 3(p) Traditional Knowledge pre-screened. Synergistic ratio verified.</p>
+            <p className="text-xs text-slate-600">{t('c3_pri_desc', lang)}</p>
             <button
               onClick={() => onNavigateTab('matrix')}
               className="text-xs text-emerald-600 font-semibold flex items-center space-x-1 hover:underline pt-1"
             >
-              <span>View Jurisdiction Matrix</span>
+              <span>{t('c3_view_matrix', lang)}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -84,8 +87,8 @@ export default function Dashboard3DCards({
           isFlippable
           backContent={
             <div className="space-y-2 text-xs">
-              <span className="text-cyan-600 font-bold uppercase text-[10px]">LangGraph Agents</span>
-              <p className="text-slate-600">Coordinator Agent + Patent Agent + TKDL Agent + Regulatory Agent active in parallel.</p>
+              <span className="text-cyan-600 font-bold uppercase text-[10px]">{t('c3_langgraph', lang)}</span>
+              <p className="text-slate-600">{t('c3_agents_desc', lang)}</p>
             </div>
           }
         >
@@ -95,19 +98,19 @@ export default function Dashboard3DCards({
                 <Bot className="w-5 h-5" />
               </div>
               <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-cyan-100 text-cyan-700 border border-cyan-500/30">
-                6 Agents Live
+                {t('c3_6agents', lang)}
               </span>
             </div>
             <div>
-              <span className="text-[11px] text-slate-500 font-medium block">AI Multi-Agent Copilot</span>
+              <span className="text-[11px] text-slate-500 font-medium block">{t('c3_copilot', lang)}</span>
               <strong className="text-2xl font-black text-slate-900 font-display block">IP-SAKTI Copilot</strong>
             </div>
-            <p className="text-xs text-slate-600">Grounded strictly on primary statutory gazettes with zero hallucination rate.</p>
+            <p className="text-xs text-slate-600">{t('c3_copilot_desc', lang)}</p>
             <button
               onClick={() => onNavigateTab('copilot')}
               className="text-xs text-cyan-600 font-semibold flex items-center space-x-1 hover:underline pt-1"
             >
-              <span>Trigger AI Agent Reasoner</span>
+              <span>{t('c3_trigger', lang)}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -119,8 +122,8 @@ export default function Dashboard3DCards({
           isFlippable
           backContent={
             <div className="space-y-2 text-xs">
-              <span className="text-amber-600 font-bold uppercase text-[10px]">Graph Connectivity</span>
-              <p className="text-slate-600">Over 14,000+ API monograph entities linked with Charaka Samhita and FSSAI schedules.</p>
+              <span className="text-amber-600 font-bold uppercase text-[10px]">{t('c3_graph_conn', lang)}</span>
+              <p className="text-slate-600">{t('c3_graph_desc', lang)}</p>
             </div>
           }
         >
@@ -130,19 +133,19 @@ export default function Dashboard3DCards({
                 <Network className="w-5 h-5" />
               </div>
               <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-500/30">
-                Interactive
+                {t('c3_interactive', lang)}
               </span>
             </div>
             <div>
-              <span className="text-[11px] text-slate-500 font-medium block">Knowledge Canvas</span>
+              <span className="text-[11px] text-slate-500 font-medium block">{t('c3_canvas', lang)}</span>
               <strong className="text-2xl font-black text-slate-900 font-display block">9 Core Nodes</strong>
             </div>
-            <p className="text-xs text-slate-600">Live relationship topology linking ingredients, patents, and regulations.</p>
+            <p className="text-xs text-slate-600">{t('c3_canvas_desc', lang)}</p>
             <button
               onClick={() => onNavigateTab('knowledge_graph')}
               className="text-xs text-amber-600 font-semibold flex items-center space-x-1 hover:underline pt-1"
             >
-              <span>Explore Canvas Graph</span>
+              <span>{t('c3_explore', lang)}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -154,8 +157,8 @@ export default function Dashboard3DCards({
           isFlippable
           backContent={
             <div className="space-y-2 text-xs">
-              <span className="text-violet-600 font-bold uppercase text-[10px]">Regulatory Sprints</span>
-              <p className="text-slate-600">FSSAI Ayurveda Aahara approval projected in 45 days; NHP NPN in 60 days.</p>
+              <span className="text-violet-600 font-bold uppercase text-[10px]">{t('c3_sprints', lang)}</span>
+              <p className="text-slate-600">{t('c3_sprints_desc', lang)}</p>
             </div>
           }
         >
@@ -165,19 +168,19 @@ export default function Dashboard3DCards({
                 <Clock className="w-5 h-5" />
               </div>
               <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-violet-100 text-violet-700 border border-violet-500/30">
-                On Track
+                {t('c3_on_track', lang)}
               </span>
             </div>
             <div>
-              <span className="text-[11px] text-slate-500 font-medium block">Critical Path Timeline</span>
-              <strong className="text-2xl font-black text-slate-900 font-display block">45 Days to Launch</strong>
+              <span className="text-[11px] text-slate-500 font-medium block">{t('c3_critical', lang)}</span>
+              <strong className="text-2xl font-black text-slate-900 font-display block">{t('c3_45days', lang)}</strong>
             </div>
-            <p className="text-xs text-slate-600">Milestone dependency scheduler for Indian & North American market entry.</p>
+            <p className="text-xs text-slate-600">{t('c3_critical_desc', lang)}</p>
             <button
               onClick={() => onNavigateTab('flagship')}
               className="text-xs text-violet-600 font-semibold flex items-center space-x-1 hover:underline pt-1"
             >
-              <span>Inspect Critical Path</span>
+              <span>{t('c3_inspect', lang)}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

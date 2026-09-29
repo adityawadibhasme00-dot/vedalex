@@ -40,7 +40,6 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
     patentReadiness: 0,
     documentsUploaded: 0,
     verifiedDocs: 0,
-    nextAction: 'Stability Study Required before filing',
   });
 
   useEffect(() => {
@@ -52,7 +51,6 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
         passportVersion: passport.version || 1,
         documentsUploaded: Math.min(evidenceCount + 3, 12),
         verifiedDocs: Math.min(evidenceCount, 4),
-        nextAction: passport.product_form ? `File ${passport.product_form} evidence set` : 'Complete profile intake',
       }));
       getPatentReadiness(passport.id)
         .then((r) => setStats((prev) => ({ ...prev, patentReadiness: Math.round(r.overall_readiness || 0) })))
@@ -78,10 +76,10 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
         const m = mapProject(p);
         return {
           title: p.name,
-          agent: p.description || 'Innovation Lab project',
+          agent: p.description || t('overview_lab_project', lang),
           status: m.status,
           progress: m.progress,
-          date: p.created_at ? `Created: ${new Date(p.created_at).toLocaleDateString()}` : 'Created recently',
+          date: p.created_at ? `${t('overview_created_prefix', lang)} ${new Date(p.created_at).toLocaleDateString()}` : t('overview_created_recently', lang),
           href: '/innovation-lab',
         };
       });
@@ -92,17 +90,17 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
         agent: `${a.category_label} · ${a.phase}`,
         status: 'queued' as ProjectStatus,
         progress: 0,
-        date: 'Ready to run in the Innovation Lab',
+        date: t('overview_ready_to_run', lang),
         href: `/innovation-lab/agents/${a.slug}`,
       }));
     }
     if (passport) {
       return [{
         title: passport.case_title,
-        agent: 'Innovation Passport · active analysis',
+        agent: t('overview_passport_active_analysis', lang),
         status: 'in_progress' as ProjectStatus,
         progress: readiness,
-        date: `Version v${passport.version || 1} · ${new Date(passport.updated_at || Date.now()).toLocaleDateString()}`,
+        date: `${t('overview_version_prefix', lang)} v${passport.version || 1} · ${new Date(passport.updated_at || Date.now()).toLocaleDateString()}`,
         href: undefined as string | undefined,
       }];
     }
@@ -117,15 +115,15 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
         <div className="absolute -bottom-24 -left-16 w-64 h-64 rounded-full bg-amber-500/[0.06] blur-3xl" />
         <div className="relative">
           <h1 className="text-2xl md:text-3xl font-bold text-gov-navy font-display tracking-tight mb-2">
-            Welcome back, <span className="text-gov-blue">{firstName}!</span>
+            {t('welcome_back', lang)} <span className="text-gov-blue">{firstName}!</span>
           </h1>
-          <p className="text-gray-600 mb-4">How can we help you today?</p>
+          <p className="text-gray-600 mb-4">{t('overview_help_today', lang)}</p>
           <div className="flex flex-wrap items-center gap-2 mb-6">
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gov-wash border border-gov-rule text-xs text-gov-green">
-              <ShieldCheck className="w-3.5 h-3.5" /> RAG-grounded · Source-cited · DPDP compliant
+              <ShieldCheck className="w-3.5 h-3.5" /> {t('overview_rag_badge', lang)}
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-xs text-gov-blue">
-              <Sparkles className="w-3.5 h-3.5" /> Multilingual AI · 10 Indian languages
+              <Sparkles className="w-3.5 h-3.5" /> {t('overview_multi_badge', lang)}
             </span>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -139,7 +137,7 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
               onClick={() => onNavigateTab('ipreg')}
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white hover:bg-gov-wash text-gray-700 border border-gov-rule text-sm font-semibold rounded-md transition-colors"
             >
-              <ArrowRight className="w-4 h-4" /> Continue Analysis
+              <ArrowRight className="w-4 h-4" /> {t('continue_analysis', lang)}
             </button>
           </div>
         </div>
@@ -149,56 +147,56 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
         <GovStatCard
           icon={<FileText className="w-5 h-5" />}
-          label="Innovation Passport"
-          value={stats.passportActive ? 'Active' : 'Draft'}
-          change={`Version v${stats.passportVersion} · QR ready`}
+          label={t('innovation_passport', lang)}
+          value={stats.passportActive ? t('overview_stat_active', lang) : t('overview_stat_draft', lang)}
+          change={t('overview_passport_version', lang).replace('{v}', String(stats.passportVersion))}
           trend="up"
         />
         <GovStatCard
           icon={<MessageSquare className="w-5 h-5" />}
-          label="Patent Readiness"
+          label={t('patent_readiness', lang)}
           value={`${readiness}%`}
-          change={readiness >= 70 ? 'Filing-ready band' : 'Gaps to close'}
+          change={readiness >= 70 ? t('overview_readiness_filing', lang) : t('overview_readiness_gaps', lang)}
           trend={readiness >= 70 ? 'up' : 'down'}
         />
         <GovStatCard
           icon={<Clock className="w-5 h-5" />}
-          label="Evidence Documents"
+          label={t('overview_stat_evidence', lang)}
           value={`${stats.documentsUploaded}`}
-          change={`${stats.verifiedDocs} verified · ${stats.documentsUploaded - stats.verifiedDocs} pending`}
+          change={t('overview_evidence_counts', lang).replace('{v}', String(stats.verifiedDocs)).replace('{p}', String(stats.documentsUploaded - stats.verifiedDocs))}
           trend={stats.verifiedDocs >= (stats.documentsUploaded >= 3 ? 3 : stats.documentsUploaded) ? 'up' : 'down'}
         />
         <GovStatCard
           icon={<CheckCircle className="w-5 h-5" />}
-          label="Next Action"
-          value="Stability Study"
-          change="Required before filing"
+          label={t('next_action', lang)}
+          value={t('overview_stability_study', lang)}
+          change={t('overview_required_before_filing', lang)}
           trend="up"
         />
       </div>
 
       {/* ─── Quick Actions ─────────────────────────────── */}
       <div>
-        <h2 className="text-xl font-semibold text-gov-navy font-display mb-4">Quick Actions</h2>
+        <h2 className="text-xl font-semibold text-gov-navy font-display mb-4">{t('overview_quick_actions', lang)}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <ActionCard
             icon={<Bot className="w-6 h-6" />}
-            label="Ask AI Assistant"
-            description="Get instant answers on IP and regulations"
+            label={t('overview_ask_assistant', lang)}
+            description={t('overview_ask_assistant_desc', lang)}
             color="emerald"
             onClick={() => onNavigateTab('copilot')}
           />
           <ActionCard
             icon={<FlaskConical className="w-6 h-6" />}
-            label="Start Analysis"
-            description="Run patent search or prior-art analysis"
+            label={t('overview_start_analysis', lang)}
+            description={t('overview_start_analysis_desc', lang)}
             color="blue"
             onClick={() => onNavigateTab('innolab')}
           />
           <ActionCard
             icon={<BookOpen className="w-6 h-6" />}
-            label="Browse Knowledge"
-            description="Explore statutes, patents, and regulations"
+            label={t('overview_browse_knowledge', lang)}
+            description={t('overview_browse_knowledge_desc', lang)}
             color="amber"
             onClick={() => onNavigateTab('ipreg')}
           />
@@ -207,29 +205,29 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
 
       {/* ─── Recent Activity ───────────────────────────── */}
       <div>
-        <h2 className="text-xl font-semibold text-gov-navy font-display mb-4">Recent Activity</h2>
+        <h2 className="text-xl font-semibold text-gov-navy font-display mb-4">{t('overview_recent_activity', lang)}</h2>
         <div className="bg-white rounded-xl border border-gov-rule overflow-hidden">
           {passport ? (
             <>
               <ActivityItem
                 icon={<Search className="w-4 h-4" />}
-                title="Formula Intake Registered"
+                title={t('overview_formula_intake', lang)}
                 description={passport.case_title}
-                time={passport.created_at ? `Just now · ${new Date(passport.created_at).toLocaleDateString()}` : 'Just now'}
+                time={`${t('overview_just_now', lang)} · ${new Date(passport.created_at).toLocaleDateString()}`}
                 status="completed"
               />
               <ActivityItem
                 icon={<ClipboardCheck className="w-4 h-4" />}
-                title="Patent & Regulatory Assessment"
-                description={`${passport.target_markets?.length || 0} target markets · readiness ${readiness}% · AI-verified citations`}
-                time="Real-time"
+                title={t('overview_patent_assessment', lang)}
+                description={t('overview_target_markets', lang).replace('{n}', String(passport.target_markets?.length || 0)).replace('{r}', String(readiness))}
+                time={t('overview_real_time', lang)}
                 status={readiness > 0 ? 'completed' : 'in_progress'}
               />
               <ActivityItem
                 icon={<Sprout className="w-4 h-4" />}
-                title="Bio-Resource & ABS Review"
-                description={`${passport.ingredients?.length || 0} ingredients mapped for provenance & compliance`}
-                time="On demand"
+                title={t('overview_biores_review', lang)}
+                description={t('overview_ingredients_mapped', lang).replace('{n}', String(passport.ingredients?.length || 0))}
+                time={t('overview_on_demand', lang)}
                 status="in_progress"
               />
             </>
@@ -237,23 +235,23 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
             <>
               <ActivityItem
                 icon={<Bot className="w-4 h-4" />}
-                title="AI Assistant Ready"
-                description="Ask anything about patents, IP law, or regulatory filings"
-                time="Always available"
+                title={t('overview_assistant_ready', lang)}
+                description={t('overview_assistant_ready_desc', lang)}
+                time={t('overview_always_available', lang)}
                 status="completed"
               />
               <ActivityItem
                 icon={<Scale className="w-4 h-4" />}
-                title="Knowledge Base Loaded"
-                description="Statutes, patents, and regulations searchable in 10 languages"
-                time="Synced"
+                title={t('overview_kb_loaded', lang)}
+                description={t('overview_kb_loaded_desc', lang)}
+                time={t('overview_synced', lang)}
                 status="completed"
               />
               <ActivityItem
                 icon={<FileDown className="w-4 h-4" />}
-                title="No dossier exported yet"
-                description="Create an Innovation Passport to generate filing-ready documents"
-                time="Not started"
+                title={t('overview_no_dossier', lang)}
+                description={t('overview_no_dossier_desc', lang)}
+                time={t('overview_not_started', lang)}
                 status="in_progress"
               />
             </>
@@ -265,8 +263,8 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
       {recentProjects.length > 0 && (
         <div>
           <h2 className="text-xl font-semibold text-gov-navy font-display mb-4">
-            Recent Projects
-            <span className="ml-3 text-sm font-medium text-gray-500">Running in the Innovation AI Lab</span>
+            {t('overview_recent_projects', lang)}
+            <span className="ml-3 text-sm font-medium text-gray-500">{t('overview_running_in_lab', lang)}</span>
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {recentProjects.map((p, idx) => (
@@ -282,7 +280,7 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
             ))}
           </div>
           {!projectsLoaded && (
-            <p className="text-sm text-gray-500 mt-3">Loading project status…</p>
+            <p className="text-sm text-gray-500 mt-3">{t('overview_loading_projects', lang)}</p>
           )}
         </div>
       )}

@@ -11,6 +11,8 @@ import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 import { ReadinessGauge } from './ReadinessGauge';
 import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface AICopilotProps {
   passportId?: string;
@@ -68,6 +70,7 @@ interface Message {
 }
 
 function VerificationBadges({ verification }: { verification: Record<string, unknown> }) {
+  const { lang } = useLang();
   const band = typeof verification.band === 'string' ? verification.band : '';
   const ratio = typeof verification.supported_ratio === 'number' ? verification.supported_ratio : null;
   if (!band && ratio === null) return null;
@@ -75,11 +78,11 @@ function VerificationBadges({ verification }: { verification: Record<string, unk
     <div className="mt-2 flex items-center gap-2 flex-wrap">
       {band && (
         <Badge variant={band === 'HIGH' ? 'success' : band === 'MEDIUM' ? 'warning' : 'danger'} dot>
-          Verified {band}
+          {t('copilot_verified', lang)} {band}
         </Badge>
       )}
       {ratio !== null && (
-        <span className="text-[10px] text-slate-500">{Math.round(ratio * 100)}% claims supported</span>
+        <span className="text-[10px] text-slate-500">{Math.round(ratio * 100)}% {t('copilot_claims_supported', lang)}</span>
       )}
     </div>
   );
@@ -92,6 +95,7 @@ const JURISDICTIONS = [
 
 function DecisionTracePanel({ trace }: { trace: CopilotDecisionTrace }) {
   const [open, setOpen] = useState(false);
+  const { lang } = useLang();
   return (
     <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white/80">
       <button
@@ -101,13 +105,13 @@ function DecisionTracePanel({ trace }: { trace: CopilotDecisionTrace }) {
         aria-expanded={open}
       >
         <GitBranch className="w-3.5 h-3.5 text-indigo-500" />
-        How was this determined?
+        {t('copilot_how_determined', lang)}
         <span className={`ml-auto inline-flex items-center gap-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${
           trace.jurisdiction?.detected === 'International'
             ? 'bg-sky-100 text-sky-700'
             : 'bg-emerald-100 text-emerald-700'
         }`}>
-          <Compass className="w-2.5 h-2.5" /> {trace.jurisdiction?.detected ?? 'India'} scope
+          <Compass className="w-2.5 h-2.5" /> {trace.jurisdiction?.detected ?? 'India'} {t('copilot_scope', lang)}
         </span>
         <ChevronDown className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
@@ -118,13 +122,13 @@ function DecisionTracePanel({ trace }: { trace: CopilotDecisionTrace }) {
               <div className="flex items-start gap-2 text-[10px] text-slate-300">
                 <Scale className="w-3.5 h-3.5 text-amber-300 mt-0.5 flex-shrink-0" />
                 <div>
-                  <span className="text-slate-400 font-semibold">Jurisdiction routing: </span>
+                  <span className="text-slate-400 font-semibold">{t('copilot_jurisdiction_routing', lang)} </span>
                   {trace.jurisdiction.detected}
                   {trace.jurisdiction.cue && (
-                    <span className="text-slate-500"> · cue “{trace.jurisdiction.cue}”</span>
+                    <span className="text-slate-500"> · {t('copilot_cue', lang)} “{trace.jurisdiction.cue}”</span>
                   )}
                   {trace.jurisdiction.applied_filters && trace.jurisdiction.applied_filters.length > 0 && (
-                    <span className="text-slate-500"> · filtered on {trace.jurisdiction.applied_filters.join(', ')}</span>
+                    <span className="text-slate-500"> · {t('copilot_filtered_on', lang)} {trace.jurisdiction.applied_filters.join(', ')}</span>
                   )}
                 </div>
               </div>
@@ -133,7 +137,7 @@ function DecisionTracePanel({ trace }: { trace: CopilotDecisionTrace }) {
               <div className="flex items-start gap-2 text-[10px] text-slate-300">
                 <Target className="w-3.5 h-3.5 text-blue-300 mt-0.5 flex-shrink-0" />
                 <div>
-                  <span className="text-slate-400 font-semibold">Intent detected: </span>
+                  <span className="text-slate-400 font-semibold">{t('copilot_intent_detected', lang)} </span>
                   {trace.intent.label}
                 </div>
               </div>
@@ -142,11 +146,11 @@ function DecisionTracePanel({ trace }: { trace: CopilotDecisionTrace }) {
               <div className="flex items-start gap-2 text-[10px] text-slate-300">
                 <Library className="w-3.5 h-3.5 text-violet-300 mt-0.5 flex-shrink-0" />
                 <div>
-                  <span className="text-slate-400 font-semibold">Retrieval: </span>
-                  {trace.retrieval.source_count} source(s) served · {trace.retrieval.method}
+                  <span className="text-slate-400 font-semibold">{t('copilot_retrieval', lang)} </span>
+                  {trace.retrieval.source_count} {t('copilot_source_served', lang)} · {trace.retrieval.method}
                   {trace.retrieval.llm_draft
-                    ? ` · fluent draft ${trace.retrieval.llm_provider ?? ''}`
-                    : ' · rule-engine text retained'}
+                    ? ` · ${t('copilot_fluent_draft', lang)} ${trace.retrieval.llm_provider ?? ''}`
+                    : ` · ${t('copilot_rule_engine_text', lang)}`}
                 </div>
               </div>
             )}
@@ -179,9 +183,9 @@ function DecisionTracePanel({ trace }: { trace: CopilotDecisionTrace }) {
           {typeof trace.confidence === 'number' && (
             <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-100">
               <span>
-                <Hash className="w-3 h-3 inline -mt-0.5 text-slate-400" /> Final confidence {trace.confidence}%
+                <Hash className="w-3 h-3 inline -mt-0.5 text-slate-400" /> {t('copilot_final_confidence', lang)} {trace.confidence}%
               </span>
-              <span className="font-semibold text-slate-700">{trace.verification_badge ?? 'Decided'}</span>
+              <span className="font-semibold text-slate-700">{trace.verification_badge ?? t('copilot_decided', lang)}</span>
             </div>
           )}
         </div>
@@ -199,13 +203,14 @@ function confidenceTone(c?: number): 'success' | 'warning' | 'danger' {
 
 const CHART_COLORS = ['#6366f1', '#22d3ee', '#34d399', '#fbbf24', '#f472b6', '#a78bfa'];
 
-const STATUS_META: Record<string, { dot: string; text: string; ring: string; label: string }> = {
-  completed: { dot: '#10B981', text: 'text-emerald-700', ring: 'border-emerald-400', label: 'Completed' },
-  current: { dot: '#F59E0B', text: 'text-amber-700', ring: 'border-amber-400', label: 'Current blocker' },
-  pending: { dot: '#cbd5e1', text: 'text-slate-500', ring: 'border-slate-200', label: 'Pending' },
+const STATUS_META: Record<string, { dot: string; text: string; ring: string; labelKey: string }> = {
+  completed: { dot: '#10B981', text: 'text-emerald-700', ring: 'border-emerald-400', labelKey: 'copilot_status_completed' },
+  current: { dot: '#F59E0B', text: 'text-amber-700', ring: 'border-amber-400', labelKey: 'copilot_status_current_blocker' },
+  pending: { dot: '#cbd5e1', text: 'text-slate-500', ring: 'border-slate-200', labelKey: 'copilot_status_pending' },
 };
 
 function TimelineChart({ chart }: { chart: CopilotChart }) {
+  const { lang } = useLang();
   const phases = chart.phases ?? [];
   return (
     <div className="flex overflow-x-auto py-2 gap-1.5">
@@ -221,7 +226,7 @@ function TimelineChart({ chart }: { chart: CopilotChart }) {
               <div className="text-[9px] text-slate-500 mt-1 leading-snug">{p.desc}</div>
               <div className="text-[9px] text-slate-400 mt-0.5">{p.duration}</div>
               {p.status === 'current' && (
-                <span className="mt-1 inline-block text-[9px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">{meta.label}</span>
+                <span className="mt-1 inline-block text-[9px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">{t(meta.labelKey, lang)}</span>
               )}
             </div>
             {i < phases.length - 1 && <span className="mt-4 text-slate-300">→</span>}
@@ -233,6 +238,7 @@ function TimelineChart({ chart }: { chart: CopilotChart }) {
 }
 
 function IndiaHeatmapChart({ chart }: { chart: CopilotChart }) {
+  const { lang } = useLang();
   const states = chart.states ?? [];
   return (
     <div>
@@ -245,19 +251,20 @@ function IndiaHeatmapChart({ chart }: { chart: CopilotChart }) {
         ))}
       </svg>
       <div className="flex items-center justify-center gap-4 mt-1.5 text-[9px] text-slate-500">
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Verified</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky-500" /> Supplier confirmed</span>
-        <span className="flex items-center gap-1"><ListChecks className="w-3 h-3" /> {states.length} states traced</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> {t('copilot_verified', lang)}</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky-500" /> {t('copilot_supplier_confirmed', lang)}</span>
+        <span className="flex items-center gap-1"><ListChecks className="w-3 h-3" /> {states.length} {t('copilot_states_traced', lang)}</span>
       </div>
     </div>
   );
 }
 
 function RiskMatrixChart({ chart }: { chart: CopilotChart }) {
+  const { lang } = useLang();
   const cols = [
-    { key: 'Safe', color: '#10B981', bg: 'bg-emerald-500/10', border: 'border-emerald-400', note: 'Structure/function safe' },
-    { key: 'Review', color: '#F59E0B', bg: 'bg-amber-500/10', border: 'border-amber-400', note: 'Needs review' },
-    { key: 'High Risk', color: '#EF4444', bg: 'bg-red-500/10', border: 'border-red-400', note: 'Drug classification risk' },
+    { key: 'Safe', labelKey: 'copilot_risk_safe', noteKey: 'copilot_note_safe', color: '#10B981', bg: 'bg-emerald-500/10', border: 'border-emerald-400' },
+    { key: 'Review', labelKey: 'copilot_risk_review', noteKey: 'copilot_note_review', color: '#F59E0B', bg: 'bg-amber-500/10', border: 'border-amber-400' },
+    { key: 'High Risk', labelKey: 'copilot_risk_high', noteKey: 'copilot_note_drug_risk', color: '#EF4444', bg: 'bg-red-500/10', border: 'border-red-400' },
   ];
   const current = chart.current ?? 0;
   return (
@@ -268,9 +275,9 @@ function RiskMatrixChart({ chart }: { chart: CopilotChart }) {
         return (
           <div key={c.key} className={`rounded-xl border p-2 text-center ${active ? `${c.border} bg-white shadow-sm` : 'border-slate-150 bg-white/60'}`}>
             <div className="text-lg font-black" style={{ color: c.color }}>{count}</div>
-            <div className="text-[10px] font-bold text-slate-700">{c.key}</div>
-            <div className="text-[9px] text-slate-400">{c.note}</div>
-            {active && <div className="mt-1 text-[9px] font-bold text-slate-600">◄ {chart.current_label ?? 'current'}</div>}
+            <div className="text-[10px] font-bold text-slate-700">{t(c.labelKey, lang)}</div>
+            <div className="text-[9px] text-slate-400">{t(c.noteKey, lang)}</div>
+            {active && <div className="mt-1 text-[9px] font-bold text-slate-600">◄ {chart.current_label ?? t('copilot_current', lang)}</div>}
           </div>
         );
       })}
@@ -279,6 +286,7 @@ function RiskMatrixChart({ chart }: { chart: CopilotChart }) {
 }
 
 function OpportunityHeatmapChart({ chart }: { chart: CopilotChart }) {
+  const { lang } = useLang();
   const herbs = chart.herbs ?? [];
   const forms = chart.forms ?? [];
   const cells = chart.cells ?? [];
@@ -289,7 +297,7 @@ function OpportunityHeatmapChart({ chart }: { chart: CopilotChart }) {
       <table className="w-full text-[10px] border-separate border-spacing-1">
         <thead>
           <tr>
-            <th className="text-left text-slate-500 font-semibold px-1">Ingredient</th>
+            <th className="text-left text-slate-500 font-semibold px-1">{t('copilot_ingredient', lang)}</th>
             {forms.map((f) => <th key={f} className="text-center text-slate-500 font-semibold">{f}</th>)}
           </tr>
         </thead>
@@ -320,29 +328,30 @@ function OpportunityHeatmapChart({ chart }: { chart: CopilotChart }) {
         </tbody>
       </table>
       <div className="flex items-center justify-center gap-3 mt-1 text-[9px] text-slate-500">
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500" /> Crowded</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500" /> Medium</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Opportunity</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500" /> {t('copilot_crowded', lang)}</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500" /> {t('copilot_medium', lang)}</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> {t('copilot_opportunity', lang)}</span>
       </div>
     </div>
   );
 }
 
-const CHART_META: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  pie: { label: 'Pie Chart', color: 'bg-blue-100 text-blue-700 border-blue-300', icon: <PieChartIcon className="w-3.5 h-3.5" /> },
-  doughnut: { label: 'Doughnut Chart', color: 'bg-blue-100 text-blue-700 border-blue-300', icon: <PieChartIcon className="w-3.5 h-3.5" /> },
-  radar: { label: 'Radar Chart', color: 'bg-violet-100 text-violet-700 border-violet-300', icon: <RadarIcon className="w-3.5 h-3.5" /> },
-  bar_h: { label: 'Horizontal Bar Chart', color: 'bg-emerald-100 text-emerald-700 border-emerald-300', icon: <BarChart3 className="w-3.5 h-3.5" /> },
-  bar: { label: 'Bar Chart', color: 'bg-emerald-100 text-emerald-700 border-emerald-300', icon: <BarChart3 className="w-3.5 h-3.5" /> },
-  gauge: { label: 'Readiness Gauge', color: 'bg-amber-100 text-amber-700 border-amber-300', icon: <Gauge className="w-3.5 h-3.5" /> },
-  timeline: { label: 'Timeline', color: 'bg-sky-100 text-sky-700 border-sky-300', icon: <GitBranch className="w-3.5 h-3.5" /> },
-  india_heatmap: { label: 'India Sourcing Heatmap', color: 'bg-teal-100 text-teal-700 border-teal-300', icon: <MapPin className="w-3.5 h-3.5" /> },
-  risk_matrix: { label: 'Risk Matrix', color: 'bg-red-100 text-red-700 border-red-300', icon: <ShieldQuestion className="w-3.5 h-3.5" /> },
-  opportunity_heatmap: { label: 'Opportunity Heatmap', color: 'bg-lime-100 text-lime-700 border-lime-300', icon: <Table2 className="w-3.5 h-3.5" /> },
+const CHART_META: Record<string, { labelKey: string; color: string; icon: React.ReactNode }> = {
+  pie: { labelKey: 'copilot_chart_pie', color: 'bg-blue-100 text-blue-700 border-blue-300', icon: <PieChartIcon className="w-3.5 h-3.5" /> },
+  doughnut: { labelKey: 'copilot_chart_doughnut', color: 'bg-blue-100 text-blue-700 border-blue-300', icon: <PieChartIcon className="w-3.5 h-3.5" /> },
+  radar: { labelKey: 'copilot_chart_radar', color: 'bg-violet-100 text-violet-700 border-violet-300', icon: <RadarIcon className="w-3.5 h-3.5" /> },
+  bar_h: { labelKey: 'copilot_chart_bar_h', color: 'bg-emerald-100 text-emerald-700 border-emerald-300', icon: <BarChart3 className="w-3.5 h-3.5" /> },
+  bar: { labelKey: 'copilot_chart_bar', color: 'bg-emerald-100 text-emerald-700 border-emerald-300', icon: <BarChart3 className="w-3.5 h-3.5" /> },
+  gauge: { labelKey: 'copilot_chart_gauge', color: 'bg-amber-100 text-amber-700 border-amber-300', icon: <Gauge className="w-3.5 h-3.5" /> },
+  timeline: { labelKey: 'copilot_chart_timeline', color: 'bg-sky-100 text-sky-700 border-sky-300', icon: <GitBranch className="w-3.5 h-3.5" /> },
+  india_heatmap: { labelKey: 'copilot_chart_india_heatmap', color: 'bg-teal-100 text-teal-700 border-teal-300', icon: <MapPin className="w-3.5 h-3.5" /> },
+  risk_matrix: { labelKey: 'copilot_chart_risk_matrix', color: 'bg-red-100 text-red-700 border-red-300', icon: <ShieldQuestion className="w-3.5 h-3.5" /> },
+  opportunity_heatmap: { labelKey: 'copilot_chart_opportunity_heatmap', color: 'bg-lime-100 text-lime-700 border-lime-300', icon: <Table2 className="w-3.5 h-3.5" /> },
 };
 
 function ChartRenderer({ chart }: { chart: CopilotChart }) {
   const [open, setOpen] = useState(false);
+  const { lang } = useLang();
 
   // Only render charts that actually contain data
   if (!chart || !chart.labels || chart.labels.length === 0 || !chart.values || chart.values.length === 0) {
@@ -389,7 +398,7 @@ function ChartRenderer({ chart }: { chart: CopilotChart }) {
               />
             </RadarChart>
           </ResponsiveContainer>
-          <div className="text-center text-[9px] text-slate-400 mt-1">{chart.title} — dimensions scored</div>
+          <div className="text-center text-[9px] text-slate-400 mt-1">{chart.title} — {t('copilot_dimensions_scored', lang)}</div>
         </div>
       );
       break;
@@ -398,7 +407,7 @@ function ChartRenderer({ chart }: { chart: CopilotChart }) {
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
             <RCBarChart data={data} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
-              <XAxis type="number" domain={[0, 100]} tick={{ fill: '#94a3b8', fontSize: 9 }} axisLine={false} tickLine={false} label={{ value: 'Score (0–100)', position: 'insideBottom', fontSize: 9, fill: '#94a3b8' }} />
+              <XAxis type="number" domain={[0, 100]} tick={{ fill: '#94a3b8', fontSize: 9 }} axisLine={false} tickLine={false} label={{ value: t('copilot_score_axis', lang), position: 'insideBottom', fontSize: 9, fill: '#94a3b8' }} />
               <YAxis type="category" dataKey="name" width={92} tick={{ fill: '#475569', fontSize: 9 }} axisLine={false} tickLine={false} />
               <Tooltip
                 contentStyle={{ background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 11, boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
@@ -438,7 +447,7 @@ function ChartRenderer({ chart }: { chart: CopilotChart }) {
           <ResponsiveContainer width="100%" height="100%">
             <RCBarChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
               <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 10 }} axisLine={false} tickLine={false} label={{ value: chart.title, position: 'insideBottom', offset: -2, fontSize: 9, fill: '#94a3b8' }} />
-              <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} label={{ value: 'Value', angle: -90, position: 'insideLeft', fontSize: 9, fill: '#94a3b8' }} />
+              <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} allowDecimals={false} axisLine={false} tickLine={false} label={{ value: t('copilot_value_axis', lang), angle: -90, position: 'insideLeft', fontSize: 9, fill: '#94a3b8' }} />
               <Tooltip
                 contentStyle={{ background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 11, boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
                 itemStyle={{ color: '#0f172a' }}
@@ -459,7 +468,7 @@ function ChartRenderer({ chart }: { chart: CopilotChart }) {
       <div className="px-3 pt-2.5 pb-1.5 border-b border-slate-100">
         <div className="flex items-center gap-1.5 mb-1.5">
           <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[9px] font-black uppercase tracking-wider ${meta.color}`}>
-            {meta.icon} {meta.label}
+            {meta.icon} {t(meta.labelKey, lang)}
           </span>
           {hasInsights && (
             <button
@@ -468,7 +477,7 @@ function ChartRenderer({ chart }: { chart: CopilotChart }) {
               className="ml-auto inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-400 hover:text-blue-600 transition"
               aria-expanded={open}
             >
-              {open ? 'Hide insight' : 'Insight'}
+              {open ? t('copilot_hide_insight', lang) : t('copilot_insight', lang)}
               <ChevronDown className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} />
             </button>
           )}
@@ -567,22 +576,22 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
 
     try {
       const res = await ragSearch(question, {
-        jurisdiction: jurisdiction === 'International' ? undefined : 'India',
+        jurisdiction,
         top_k: 8,
         answer: true,
       });
       const sources: CopilotSource[] = res.sources || [];
       const statusLine = res.refusal
-        ? `\n\n⚠️ Request blocked: ${res.refusal.reason}`
+        ? `\n\n⚠️ ${t('copilot_request_blocked', lang).replace('{reason}', res.refusal.reason)}`
         : '';
       const engineNote = (res.meta?.engines_used?.length || 0) > 0
         ? ` (${res.meta.engines_used.join(' + ')})`
         : '';
       const content = res.answer && res.answer.trim()
         ? res.answer + statusLine
-        : `**Unified RAG${engineNote}** — ${res.count} source(s) retrieved in ${Math.round(res.latency_ms)}ms\n` +
-          `Confidence: ${Math.round((res.confidence || 0) * 100)}%\n\n` +
-          (sources.length ? `Top cited sources:\n${sources.slice(0, 5).map((s: CopilotSource, i: number) => `${i + 1}. ${s.source || 'Source'} — ${s.category || 'Retrieved'}`).join('\n')}` : 'No sources matched.') +
+        : `**Unified RAG${engineNote}** — ${res.count} ${t('copilot_source_served', lang)} ${t('copilot_retrieved_in', lang)} ${Math.round(res.latency_ms)}ms\n` +
+          `${t('copilot_confidence', lang)}: ${Math.round((res.confidence || 0) * 100)}%\n\n` +
+          (sources.length ? `${t('copilot_top_cited', lang)}\n${sources.slice(0, 5).map((s: CopilotSource, i: number) => `${i + 1}. ${s.source || t('copilot_source_fallback', lang)} — ${s.category || t('copilot_retrieved_fallback', lang)}`).join('\n')}` : t('copilot_no_sources_matched', lang)) +
           statusLine;
       const msg: Message = {
         role: 'assistant',
@@ -635,7 +644,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
         ...prev,
         {
           role: 'assistant',
-          content: `I could not answer that — the request did not complete (${reason}). Nothing was cited because no sources were retrieved. Please retry.`,
+          content: t('copilot_error_request_failed', lang).replace('{reason}', reason),
           abstained: true,
           abstentionReason: 'request failed before any sources were retrieved',
           timestamp: Date.now(),
@@ -696,14 +705,13 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
             </div>
             <div>
               <div className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                Jurisdiction-Aware AI Copilot <Badge variant="info" dot><Sparkles className="w-3 h-3" /> RAG-Powered</Badge>
-              </div>
-              <div className="text-[10px] text-slate-500">Evidence-grounded · jurisdiction-routed · rule-verified</div>
+                Jurisdiction-Aware AI Copilot <Badge variant="info" dot><Sparkles className="w-3 h-3" /> {t('copilot_rag_powered', lang)}</Badge>              </div>
+              <div className="text-[10px] text-slate-500">{t('copilot_header_sub', lang)}</div>
             </div>
           </div>
 
           {/* Jurisdiction Toggle — India vs International */}
-          <div className="flex items-center gap-1 rounded-full border border-emerald-300 bg-white p-1 shadow-sm" title="Answers are rooted in the selected jurisdiction's law and authorities">
+          <div className="flex items-center gap-1 rounded-full border border-emerald-300 bg-white p-1 shadow-sm" title={t('copilot_jurisdiction_title', lang)}>
             {JURISDICTIONS.map((j) => (
               <button
                 key={j.id}
@@ -730,10 +738,10 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                   ? 'bg-blue-100 border-blue-400 text-blue-600'
                   : 'bg-emerald-50 border-emerald-200 text-slate-500 hover:text-slate-700'
               }`}
-              title={voiceOutput ? 'Mute voice replies' : 'Hear replies read aloud'}
+              title={voiceOutput ? t('copilot_mute_voice', lang) : t('copilot_hear_replies', lang)}
             >
               {voiceOutput ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-              Voice {voiceOutput ? 'On' : 'Off'}
+              {t('copilot_voice', lang)} {voiceOutput ? t('copilot_voice_on', lang) : t('copilot_voice_off', lang)}
             </button>
           )}
         </div>
@@ -750,7 +758,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                     <Bot className="w-8 h-8 text-white" />
                   </div>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 font-display mb-2">Ask IP-SAKTI Anything</h3>
+                <h3 className="text-lg font-bold text-slate-900 font-display mb-2">{t('copilot_empty_heading', lang)}</h3>
                 <div className="flex items-center justify-center gap-2.5 mb-1.5">
                   <TulsiLeaf className="w-4 h-4 text-emerald-600" />
                   <TurmericRoot className="w-4 h-4 text-amber-600" />
@@ -759,7 +767,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                   <TulsiLeaf className="w-4 h-4 text-emerald-600" />
                 </div>
                 <p className="text-sm text-slate-500 max-w-md">
-                  Patentability, regulatory compliance, evidence requirements — grounded in retrieved sources and routed to your working jurisdiction.
+                  {t('copilot_empty_sub', lang)}
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-2 max-w-xl">
@@ -803,7 +811,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                     <div className="flex items-center gap-3 mt-2.5">
                       <div className="flex-1">
                         <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
-                          <span>Confidence</span>
+                          <span>{t('copilot_confidence', lang)}</span>
                           <span className="font-bold text-slate-700">{msg.analysisCard.confidence_pct}%</span>
                         </div>
                         <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
@@ -818,11 +826,11 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                           <div className={`text-2xl font-black leading-none ${msg.analysisCard.patent_readiness >= 70 ? 'text-emerald-600' : msg.analysisCard.patent_readiness >= 40 ? 'text-amber-600' : 'text-red-500'}`}>
                             {msg.analysisCard.patent_readiness}
                           </div>
-                          <div className="text-[9px] text-slate-500 font-semibold mt-0.5">Readiness</div>
+                          <div className="text-[9px] text-slate-500 font-semibold mt-0.5">{t('copilot_readiness', lang)}</div>
                         </div>
                       )}
                       <div className="text-center px-3 border-l border-slate-200">
-                        <div className="text-[10px] text-slate-500 font-semibold mb-0.5">Risk</div>
+                        <div className="text-[10px] text-slate-500 font-semibold mb-0.5">{t('copilot_risk', lang)}</div>
                         <span className={`inline-block text-[11px] font-bold px-2 py-0.5 rounded-full ${msg.analysisCard.risk_level === 'High' ? 'bg-red-100 text-red-700' : msg.analysisCard.risk_level === 'Moderate' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
                           {msg.analysisCard.risk_level}
                         </span>
@@ -837,7 +845,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                 {msg.role === 'assistant' && msg.evidenceUsed && msg.evidenceUsed.length > 0 && (
                   <div className="mt-2">
                     <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                      <Library className="w-3 h-3 text-violet-600" /> Evidence used
+                      <Library className="w-3 h-3 text-violet-600" /> {t('copilot_evidence_used', lang)}
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {msg.evidenceUsed.map((ev, k) => (
@@ -854,7 +862,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                 {msg.role === 'assistant' && msg.nextActions && msg.nextActions.length > 0 && (
                   <div className="mt-2 rounded-xl border border-slate-200 bg-white/80 p-3">
                     <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                      <ListChecks className="w-3 h-3 text-blue-600" /> Recommended next actions
+                      <ListChecks className="w-3 h-3 text-blue-600" /> {t('copilot_recommended_actions', lang)}
                     </div>
                     <ol className="space-y-1">
                       {msg.nextActions.map((act, k) => (
@@ -873,7 +881,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                       <div className="flex items-center gap-1.5">
                         <AlertTriangle className={`w-4 h-4 ${msg.escalation.urgency === 'high' ? 'text-red-500' : 'text-amber-500'}`} />
                         <span className={`text-[10px] font-bold uppercase tracking-wider ${msg.escalation.urgency === 'high' ? 'text-red-600' : 'text-amber-700'}`}>
-                          Expert escalation {msg.escalation.urgency_label ? `· ${msg.escalation.urgency_label}` : ''}
+                          {t('copilot_expert_escalation', lang)} {msg.escalation.urgency_label ? `· ${msg.escalation.urgency_label}` : ''}
                         </span>
                       </div>
                       {msg.escalation.urgency_label_hi && (
@@ -897,7 +905,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                         <ShieldQuestion className="w-3 h-3 text-slate-400" /> {msg.escalation.organization}
                         {msg.escalation.website && (
                           <a href={msg.escalation.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1" onClick={(e) => e.stopPropagation()}>
-                            Visit official site ↗
+                            {t('copilot_visit_official_site', lang)}
                           </a>
                         )}
                       </div>
@@ -908,7 +916,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                           onClick={() => setHandoffMsgId(i)}
                           className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 px-3 py-1.5 rounded-xl shadow transition"
                         >
-                          <UserCheck className="w-3.5 h-3.5" /> Send to Certified Expert
+                          <UserCheck className="w-3.5 h-3.5" /> {t('copilot_send_to_expert', lang)}
                         </button>
                       </div>
                     )}
@@ -918,7 +926,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                 {msg.role === 'assistant' && msg.productClassification && (
                   <div className="mt-2 rounded-xl border border-indigo-200 bg-indigo-50/50 p-3">
                     <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                      <Table2 className="w-3 h-3 text-indigo-600" /> Product classification
+                      <Table2 className="w-3 h-3 text-indigo-600" /> {t('copilot_product_classification', lang)}
                     </div>
                     <div className="flex items-center gap-1.5 flex-wrap mb-1">
                       <span className="inline-flex items-center text-[11px] font-bold text-indigo-700 bg-white border border-indigo-200 px-2 py-0.5 rounded-full">
@@ -936,7 +944,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                           )}
                           {msg.productClassification.risk_level && (
                             <span className={`font-semibold px-1.5 py-0.5 rounded-full ${msg.productClassification.risk_level === 'High' ? 'bg-red-100 text-red-700' : msg.productClassification.risk_level === 'Moderate' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                              {msg.productClassification.risk_level} risk
+                              {msg.productClassification.risk_level} {t('copilot_risk_word', lang)}
                             </span>
                           )}
                         </span>
@@ -955,14 +963,14 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                 {msg.role === 'assistant' && msg.responseSections && (
                   <div className="mt-2 rounded-xl border border-slate-200 bg-white/80 p-3 space-y-2.5">
                     <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                      <Scale className="w-3 h-3 text-blue-600" /> Structured analysis
+                      <Scale className="w-3 h-3 text-blue-600" /> {t('copilot_structured_analysis', lang)}
                     </div>
                     {msg.responseSections.direct_answer && (
                       <p className="text-[11px] text-slate-600 leading-relaxed">{msg.responseSections.direct_answer}</p>
                     )}
                     {msg.responseSections.key_requirements && msg.responseSections.key_requirements.length > 0 && (
                       <div>
-                        <div className="text-[10px] font-bold text-slate-500 mb-1">Key requirements</div>
+                        <div className="text-[10px] font-bold text-slate-500 mb-1">{t('copilot_key_requirements', lang)}</div>
                         <ul className="space-y-0.5">
                           {msg.responseSections.key_requirements.map((req, j) => (
                             <li key={j} className="flex items-start gap-1.5 text-[10px] text-slate-600">
@@ -978,14 +986,14 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                     )}
                     {msg.responseSections.official_sources_used && msg.responseSections.official_sources_used.length > 0 && (
                       <div>
-                        <div className="text-[10px] font-bold text-slate-500 mb-1">Official sources used</div>
+                        <div className="text-[10px] font-bold text-slate-500 mb-1">{t('copilot_official_sources_used', lang)}</div>
                         <ul className="space-y-1">
                           {msg.responseSections.official_sources_used.map((src, j) => (
                             <li key={j} className="rounded-lg border border-slate-100 bg-emerald-50/60 px-2 py-1.5">
                               <div className="flex items-center gap-1.5 text-[10px] text-slate-700">
                                 <Library className="w-3 h-3 text-violet-500" />
                                 <span className="font-semibold">{src.source}</span>
-                                {src.vote && <span className="text-blue-600 font-bold ml-auto">vote {src.vote}</span>}
+                                {src.vote && <span className="text-blue-600 font-bold ml-auto">{t('copilot_vote', lang)} {src.vote}</span>}
                               </div>
                               {src.quote && <p className="text-[9px] text-slate-500 mt-0.5 leading-relaxed">&quot;{src.quote}&quot;</p>}
                             </li>
@@ -1012,7 +1020,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                     {msg.images.map((src, j) => (
                       <div key={j} className="rounded-xl overflow-hidden border border-emerald-200 bg-emerald-50">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={src} alt={`Reference ${j + 1}`} className="w-full h-20 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        <img src={src} alt={`${t('copilot_reference', lang)} ${j + 1}`} className="w-full h-20 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                       </div>
                     ))}
                   </div>
@@ -1045,30 +1053,30 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                 {msg.role === 'assistant' && (
                   <div className="mt-2 flex items-center gap-2 flex-wrap">
                     {msg.confidence !== undefined && (
-                      <Badge variant={confidenceTone(msg.confidence)} dot>Confidence {Math.round(msg.confidence * 100)}%</Badge>
+                      <Badge variant={confidenceTone(msg.confidence)} dot>{t('copilot_confidence', lang)} {Math.round(msg.confidence * 100)}%</Badge>
                     )}
                     {msg.metrics && typeof msg.metrics.rag_type === 'string' && (
                       <span className="inline-flex items-center gap-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200">
                         <Gauge className="w-2.5 h-2.5" /> Unified RAG
                         {typeof msg.metrics.latency_ms === 'number' && ` · ${Math.round(msg.metrics.latency_ms)}ms`}
                         {typeof msg.metrics.count === 'number' && ` · ${msg.metrics.count} src`}
-                        {msg.metrics.cache_hit === true && ' · cached'}
+                        {msg.metrics.cache_hit === true && ` · ${t('copilot_cached', lang)}`}
                       </span>
                     )}
                     <button onClick={() => copyText(i, msg.content)} className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-blue-600 transition">
                       {copiedId === i ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
-                      {copiedId === i ? 'Copied' : 'Copy'}
+                      {copiedId === i ? t('copilot_copied', lang) : t('copilot_copy', lang)}
                     </button>
                     {voice.synthSupported && (
-                      <button onClick={() => readAloud(msg, i)} className={`flex items-center gap-1 text-[10px] transition ${speakingMsgId === i ? 'text-blue-600' : 'text-slate-500 hover:text-blue-600'}`} title="Read aloud">
+                      <button onClick={() => readAloud(msg, i)} className={`flex items-center gap-1 text-[10px] transition ${speakingMsgId === i ? 'text-blue-600' : 'text-slate-500 hover:text-blue-600'}`} title={t('copilot_read_aloud', lang)}>
                         {speakingMsgId === i ? <AudioLines className="w-3.5 h-3.5 animate-pulse" /> : <Volume2 className="w-3.5 h-3.5" />}
-                        {speakingMsgId === i ? 'Speaking' : 'Listen'}
+                        {speakingMsgId === i ? t('copilot_speaking', lang) : t('copilot_listen', lang)}
                       </button>
                     )}
                     {msg.sources && msg.sources.length > 0 && (
                       <button onClick={() => setShowSources((p) => ({ ...p, [i]: !p[i] }))} className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-blue-600 transition">
                         <ChevronDown className={`w-3 h-3 transition-transform ${showSources[i] ? 'rotate-180' : ''}`} />
-                        {msg.sources.length} sources used
+                        {msg.sources.length} {t('copilot_sources_used', lang)}
                       </button>
                     )}
                   </div>
@@ -1100,7 +1108,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                 <Bot className="w-4 h-4 text-white" />
               </div>
               <div className="px-4 py-3 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-2 text-sm text-slate-500">
-                <Loader2 className="w-4 h-4 animate-spin text-blue-600" /> Retrieving sources & reasoning...
+                <Loader2 className="w-4 h-4 animate-spin text-blue-600" /> {t('copilot_retrieving', lang)}
               </div>
             </div>
           )}
@@ -1112,7 +1120,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
           {voice.isListening && (
             <div className="mb-3 px-4 py-2.5 rounded-xl bg-red-500/[0.08] border border-red-500/30 flex items-center gap-3 text-xs">
               <span className="flex items-center gap-1.5 text-red-600 font-semibold">
-                <Mic className="w-3.5 h-3.5 animate-pulse" /> Listening
+                <Mic className="w-3.5 h-3.5 animate-pulse" /> {t('copilot_listen', lang)}
                 {voice.interim && <span className="text-red-700/80 font-normal max-w-[240px] truncate">— {voice.interim}</span>}
               </span>
               <span className="flex gap-1 ml-auto">
@@ -1120,7 +1128,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                   <span key={b} className="w-0.5 h-4 rounded-full bg-red-400 animate-pulse" style={{ animationDelay: `${b * 0.15}s` }} />
                 ))}
               </span>
-              <button onClick={voice.stopListening} className="text-[10px] px-2 py-1 rounded-md bg-red-100 hover:bg-red-200 text-red-700 transition">Stop</button>
+              <button onClick={voice.stopListening} className="text-[10px] px-2 py-1 rounded-md bg-red-100 hover:bg-red-200 text-red-700 transition">{t('copilot_stop', lang)}</button>
             </div>
           )}
           {voice.error && !voice.isListening && (
@@ -1132,14 +1140,14 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
           <div className="mb-2.5 flex items-center gap-1.5 flex-wrap text-[10px] text-slate-400">
             <Sparkles className="w-3 h-3 text-violet-500" />
             <span className="font-semibold text-slate-600">Unified RAG</span>
-            <span>— all retrieval engines combined into one answer</span>
+            <span>{t('copilot_all_engines_note', lang)}</span>
           </div>
           <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
             <button
               type="button"
               onClick={handleMicToggle}
               disabled={!voice.supported}
-              title={voice.supported ? (voice.isListening ? 'Stop listening' : 'Ask with your voice') : 'Voice input not supported in this browser'}
+              title={voice.supported ? (voice.isListening ? t('copilot_stop_listening', lang) : t('copilot_ask_with_voice', lang)) : t('copilot_voice_unsupported', lang)}
               className={`w-11 h-11 rounded-xl flex items-center justify-center border shrink-0 transition ${
                 voice.isListening
                   ? 'bg-red-100 border-red-300 text-red-600 animate-pulse'
@@ -1153,7 +1161,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Type or speak — ask about patentability, compliance, evidence..."
+              placeholder={t('copilot_input_placeholder', lang)}
               className="flex-1 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:border-blue-400"
             />
             <Button type="submit" variant="primary" disabled={isLoading || !input.trim()} className="!px-4">
@@ -1168,9 +1176,9 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
         <GlassCard padding="lg">
           <div className="flex items-center gap-2 mb-4">
             <Library className="w-4 h-4 text-violet-600" />
-            <h3 className="text-sm font-bold text-slate-900">Sources Used</h3>
+            <h3 className="text-sm font-bold text-slate-900">{t('copilot_sources_used_title', lang)}</h3>
           </div>
-          <p className="text-[11px] text-slate-500 mb-3">Every answer cites verified authoritative sources from the knowledge base.</p>
+          <p className="text-[11px] text-slate-500 mb-3">{t('copilot_sources_used_desc', lang)}</p>
           <div className="space-y-2">
             {panelSources.map((src) => (
               <button key={src.name} className="w-full text-left px-3.5 py-3 rounded-xl bg-emerald-50 border border-emerald-200 hover:border-violet-400 transition group">
@@ -1191,7 +1199,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
         <GlassCard padding="md" className="border-blue-500/20">
           <div className="flex items-start gap-2 text-[11px] text-slate-500">
             <Sparkles className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-            <p>AI Copilot provides informational guidance. Always consult a qualified patent agent for final decisions.</p>
+            <p>{t('copilot_disclaimer', lang)}</p>
           </div>
         </GlassCard>
       </div>

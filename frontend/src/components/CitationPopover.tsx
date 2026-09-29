@@ -3,6 +3,8 @@
 import React from 'react';
 import { StatutoryCitation } from '../types';
 import { BookOpen, ExternalLink, ShieldCheck, X } from 'lucide-react';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface CitationPopoverProps {
   citation: StatutoryCitation | null;
@@ -10,6 +12,7 @@ interface CitationPopoverProps {
 }
 
 export default function CitationPopover({ citation, onClose }: CitationPopoverProps) {
+  const { lang } = useLang();
   if (!citation) return null;
 
   return (
@@ -23,7 +26,7 @@ export default function CitationPopover({ citation, onClose }: CitationPopoverPr
             </div>
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">
-                Primary Statutory Reference (Rank #{citation.authority_rank} Authority)
+                {t('citation_primary_ref', lang)} ({t('citation_rank', lang)} #{citation.authority_rank} {t('citation_authority_word', lang)})
               </span>
               <h3 className="text-lg font-bold text-slate-900 leading-snug">{citation.act_title}</h3>
             </div>
@@ -40,17 +43,17 @@ export default function CitationPopover({ citation, onClose }: CitationPopoverPr
         <div className="space-y-4 my-5">
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200">
-              <span className="text-slate-500 block mb-1">Section / Rule Reference</span>
+              <span className="text-slate-500 block mb-1">{t('citation_section_ref', lang)}</span>
               <span className="font-semibold text-slate-900">{citation.section_reference}</span>
             </div>
             <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200">
-              <span className="text-slate-500 block mb-1">Effective Gazette Date</span>
+              <span className="text-slate-500 block mb-1">{t('citation_effective_date', lang)}</span>
               <span className="font-semibold text-emerald-600">{citation.effective_date}</span>
             </div>
           </div>
 
           <div>
-            <span className="text-xs text-slate-500 block mb-1.5 font-medium">Authoritative Statutory Text:</span>
+            <span className="text-xs text-slate-500 block mb-1.5 font-medium">{t('citation_statutory_text', lang)}</span>
             <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-300 text-xs text-slate-700 leading-relaxed font-mono">
               &quot;{citation.exact_passage}&quot;
             </div>
@@ -58,13 +61,13 @@ export default function CitationPopover({ citation, onClose }: CitationPopoverPr
 
           <div className="p-3 rounded-xl bg-emerald-100 border border-emerald-300 text-[11px] text-emerald-800 flex items-center space-x-2">
             <ShieldCheck className="w-4 h-4 flex-shrink-0" />
-            <span>Citation verified against official gazette notification database (100% grounded, zero hallucination).</span>
+            <span>{t('citation_verified', lang)}</span>
           </div>
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-4 border-t border-emerald-200 text-xs">
-          <span className="text-slate-500">Authority: {citation.authority}</span>
+          <span className="text-slate-500">{t('citation_authority_label', lang)} {citation.authority}</span>
           {citation.source_url && (
             <a
               href={citation.source_url}
@@ -72,7 +75,7 @@ export default function CitationPopover({ citation, onClose }: CitationPopoverPr
               rel="noopener noreferrer"
               className="inline-flex items-center space-x-1.5 text-emerald-600 hover:text-emerald-500 font-medium underline"
             >
-              <span>View Official Gazette</span>
+              <span>{t('citation_view_gazette', lang)}</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           )}

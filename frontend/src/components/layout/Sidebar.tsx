@@ -7,28 +7,29 @@ import {
 } from 'lucide-react';
 import { InnolabAgent } from '../../lib/innolabApi';
 import { NavItem } from '../ui/NavItem';
+import { t } from '../../lib/i18n';
 
 interface SidebarNav {
   id: string;
-  label: string;
+  labelKey: string;
   icon: React.ReactNode;
 }
 
 const MAIN_NAV: SidebarNav[] = [
-  { id: 'overview', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
-  { id: 'copilot', label: 'AI Assistant', icon: <Bot className="w-5 h-5" /> },
-  { id: 'innolab', label: 'Innovation Lab', icon: <FlaskConical className="w-5 h-5" /> },
+  { id: 'overview', labelKey: 'sidebar_dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
+  { id: 'copilot', labelKey: 'sidebar_ai_assistant', icon: <Bot className="w-5 h-5" /> },
+  { id: 'innolab', labelKey: 'sidebar_innovation_lab', icon: <FlaskConical className="w-5 h-5" /> },
 ];
 
 const KNOWLEDGE_NAV: SidebarNav[] = [
-  { id: 'passport', label: 'Innovation Passport', icon: <FileText className="w-5 h-5" /> },
-  { id: 'ipreg', label: 'IP & Regulatory Base', icon: <Search className="w-5 h-5" /> },
-  { id: 'evidence', label: 'Evidence & Compliance', icon: <ClipboardList className="w-5 h-5" /> },
-  { id: 'biores', label: 'Bio-Resource Intelligence', icon: <Sprout className="w-5 h-5" /> },
-  { id: 'classify', label: 'Product Classifier', icon: <Layers className="w-5 h-5" /> },
-  { id: 'market', label: 'Market Readiness', icon: <FileBadge className="w-5 h-5" /> },
-  { id: 'whatif', label: 'What-If Simulator', icon: <RefreshCw className="w-5 h-5" /> },
-  { id: 'dossier', label: 'Dossier Export', icon: <FileDown className="w-5 h-5" /> },
+  { id: 'passport', labelKey: 'sidebar_innovation_passport', icon: <FileText className="w-5 h-5" /> },
+  { id: 'ipreg', labelKey: 'sidebar_ip_regulatory', icon: <Search className="w-5 h-5" /> },
+  { id: 'evidence', labelKey: 'sidebar_evidence_compliance', icon: <ClipboardList className="w-5 h-5" /> },
+  { id: 'biores', labelKey: 'sidebar_bio_resource', icon: <Sprout className="w-5 h-5" /> },
+  { id: 'classify', labelKey: 'sidebar_product_classifier', icon: <Layers className="w-5 h-5" /> },
+  { id: 'market', labelKey: 'sidebar_market_readiness', icon: <FileBadge className="w-5 h-5" /> },
+  { id: 'whatif', labelKey: 'sidebar_whatif', icon: <RefreshCw className="w-5 h-5" /> },
+  { id: 'dossier', labelKey: 'sidebar_dossier', icon: <FileDown className="w-5 h-5" /> },
 ];
 
 interface SidebarProps {
@@ -51,17 +52,18 @@ interface SidebarProps {
 }
 
 function NavLink({
-  item, active, collapsed, onClick,
+  item, active, collapsed, onClick, lang,
 }: {
   item: SidebarNav;
   active: boolean;
   collapsed: boolean;
   onClick: () => void;
+  lang: string;
 }) {
   return (
     <NavItem
       icon={item.icon}
-      label={item.label}
+      label={t(item.labelKey, lang)}
       active={active}
       collapsed={collapsed}
       onClick={onClick}
@@ -80,16 +82,16 @@ export function Sidebar({
       {/* Main */}
       <div>
         {!collapsedMode && (
-          <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">Main</p>
+          <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">{t('sidebar_main', lang)}</p>
         )}
         <div className="space-y-0.5">
           <button
             onClick={onHome}
-            title={collapsedMode ? 'Home' : undefined}
+            title={collapsedMode ? t('home', lang) : undefined}
             className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors group text-gray-700 hover:bg-gov-wash hover:text-gov-navy"
           >
             <span className="flex-shrink-0 text-gray-500 group-hover:text-gov-blue"><Home className="w-5 h-5" /></span>
-            {!collapsedMode && <span className="text-[13px] font-medium">{'Home'}</span>}
+            {!collapsedMode && <span className="text-[13px] font-medium">{t('home', lang)}</span>}
           </button>
           {MAIN_NAV.map((item) => (
             <NavLink
@@ -98,6 +100,7 @@ export function Sidebar({
               active={activeTab === item.id}
               collapsed={collapsedMode}
               onClick={() => onNavigate(item.id)}
+              lang={lang}
             />
           ))}
         </div>
@@ -106,7 +109,7 @@ export function Sidebar({
       {/* Knowledge */}
       <div>
         {!collapsedMode && (
-          <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">Knowledge &amp; Analysis</p>
+          <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">{t('sidebar_knowledge', lang)}</p>
         )}
         <div className="space-y-0.5">
           {KNOWLEDGE_NAV.map((item) => (
@@ -116,6 +119,7 @@ export function Sidebar({
               active={activeTab === item.id}
               collapsed={collapsedMode}
               onClick={() => onNavigate(item.id)}
+              lang={lang}
             />
           ))}
         </div>
@@ -124,7 +128,7 @@ export function Sidebar({
       {/* Lab agents quick links */}
       {!collapsedMode && labAgentsLoaded && labAgents.length > 0 && (
         <div>
-          <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gov-blue">Lab Agents</p>
+          <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gov-blue">{t('sidebar_lab_agents', lang)}</p>
           <div className="space-y-0.5">
             {labAgents.slice(0, 6).map((a) => (
               <button
@@ -141,7 +145,7 @@ export function Sidebar({
                 onClick={() => onNavigate('innolab')}
                 className="w-full text-left px-3 py-1 text-[11px] text-gov-blue hover:text-gov-navy"
               >
-                + {labAgents.length - 6} more in the lab
+                {t('sidebar_more_in_lab', lang).replace('{n}', String(labAgents.length - 6))}
               </button>
             )}
           </div>
@@ -151,18 +155,19 @@ export function Sidebar({
       {/* User */}
       <div className="pt-1 border-t border-gray-100">
         <NavLink
-          item={{ id: 'settings', label: 'Profile & Settings', icon: <Settings className="w-5 h-5" /> }}
+          item={{ id: 'settings', labelKey: 'sidebar_profile_settings', icon: <Settings className="w-5 h-5" /> }}
           active={activeTab === 'settings'}
           collapsed={collapsedMode}
           onClick={() => onNavigate('settings')}
+          lang={lang}
         />
         <a
           href="mailto:support@ipsakti.gov.in"
-          title={collapsedMode ? 'Help & Support' : undefined}
+          title={collapsedMode ? t('sidebar_help_support', lang) : undefined}
           className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors group text-gray-700 hover:bg-gov-wash hover:text-gov-navy"
         >
           <span className="flex-shrink-0 text-gray-500 group-hover:text-gov-blue"><HelpCircle className="w-5 h-5" /></span>
-          {!collapsedMode && <span className="text-[13px] font-medium whitespace-nowrap overflow-hidden text-ellipsis">Help &amp; Support</span>}
+          {!collapsedMode && <span className="text-[13px] font-medium whitespace-nowrap overflow-hidden text-ellipsis">{t('sidebar_help_support', lang)}</span>}
         </a>
       </div>
     </nav>
@@ -173,7 +178,7 @@ export function Sidebar({
       {!collapsedMode && (
         <div className={`flex items-center gap-2 px-2 py-1 text-[11px] ${isOnline ? 'text-gov-green' : 'text-amber-600'}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-gov-green' : 'bg-amber-500'}`} />
-          {isOnline ? 'Online' : `Offline (${offlineDraftCount} drafts)`}
+          {isOnline ? t('online', lang) : t('sidebar_offline_drafts', lang).replace('{n}', String(offlineDraftCount))}
         </div>
       )}
       <div className="flex items-center gap-2.5 px-2">
@@ -192,7 +197,7 @@ export function Sidebar({
         className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-red-600 hover:bg-red-50 hover:text-red-700 transition"
       >
         <LogOut className="w-4 h-4 flex-shrink-0" />
-        {!collapsedMode && <span>Sign Out</span>}
+        {!collapsedMode && <span>{t('sign_out', lang)}</span>}
       </button>
     </div>
   );
@@ -208,13 +213,13 @@ export function Sidebar({
       `}>
         <div className="flex items-center justify-between h-12 px-3 border-b border-gray-100">
           {!collapsed && (
-            <span className="text-[13px] font-semibold text-gov-navy font-display px-1">Navigation</span>
+            <span className="text-[13px] font-semibold text-gov-navy font-display px-1">{t('sidebar_navigation', lang)}</span>
           )}
           <button
             onClick={onToggleCollapsed}
             className="p-1.5 rounded-lg text-gray-500 hover:bg-gov-wash hover:text-gov-blue transition mx-auto"
-            title={collapsed ? 'Expand' : 'Collapse'}
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={collapsed ? t('sidebar_expand', lang) : t('sidebar_collapse', lang)}
+            aria-label={collapsed ? t('sidebar_expand', lang) : t('sidebar_collapse', lang)}
           >
             {collapsed ? <ChevronsRight className="w-4 h-4" /> : <ChevronsLeft className="w-4 h-4" />}
           </button>

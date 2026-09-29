@@ -72,11 +72,12 @@ export function IPRegulatoryPanel({
   initialTab?: string;
 }) {
   const [tab, setTab] = useState(initialTab);
+  const { lang } = useLang();
   const tabs = [
-    { id: 'ip', label: 'IP Analysis', icon: <Search className="w-3.5 h-3.5" /> },
-    { id: 'matrix', label: 'India / International Matrix', icon: <Globe className="w-3.5 h-3.5" /> },
-    { id: 'roadmap', label: 'Regulatory Roadmap', icon: <Route className="w-3.5 h-3.5" /> },
-    { id: 'whitespace', label: 'White Space', icon: <Compass className="w-3.5 h-3.5" /> },
+    { id: 'ip', label: t('panel_ip_analysis', lang), icon: <Search className="w-3.5 h-3.5" /> },
+    { id: 'matrix', label: t('matrix_tab_title', lang), icon: <Globe className="w-3.5 h-3.5" /> },
+    { id: 'roadmap', label: t('panel_reg_roadmap', lang), icon: <Route className="w-3.5 h-3.5" /> },
+    { id: 'whitespace', label: t('panel_tab_whitespace', lang), icon: <Compass className="w-3.5 h-3.5" /> },
   ];
   return (
     <div className="space-y-4">
@@ -86,7 +87,7 @@ export function IPRegulatoryPanel({
           <div className="rounded-xl border border-slate-200 bg-white/70 px-4 py-3 flex items-center gap-3">
             <Compass className="w-4 h-4 text-blue-600 flex-shrink-0" />
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              Cross-referenced against India (Patent Act, 1970 & Section 3(p)) and international routes (PCT, WIPO). Switch the AI Copilot to International scope for cross-border answers.
+              {t('panel_ip_banner', lang)}
             </p>
           </div>
           <PatentAnalysis passportId={passportId || ''} />
@@ -118,11 +119,12 @@ export function EvidenceCompliancePanel({
   onApplyToPassport: (rawText: string, title?: string) => void;
 }) {
   const [tab, setTab] = useState('matrix');
+  const { lang } = useLang();
   const tabs = [
-    { id: 'matrix', label: 'Evidence Matrix', icon: <ClipboardList className="w-3.5 h-3.5" /> },
-    { id: 'claim', label: 'Claim & Safety', icon: <ShieldCheck className="w-3.5 h-3.5" /> },
-    { id: 'quality', label: 'Evidence & Quality', icon: <FlaskConical className="w-3.5 h-3.5" /> },
-    { id: 'ocr', label: 'Document OCR & Safety', icon: <Lock className="w-3.5 h-3.5" /> },
+    { id: 'matrix', label: t('evidence_matrix', lang), icon: <ClipboardList className="w-3.5 h-3.5" /> },
+    { id: 'claim', label: t('claim_safety_intelligence', lang), icon: <ShieldCheck className="w-3.5 h-3.5" /> },
+    { id: 'quality', label: t('evidence_quality_intelligence', lang), icon: <FlaskConical className="w-3.5 h-3.5" /> },
+    { id: 'ocr', label: t('doc_ocr', lang), icon: <Lock className="w-3.5 h-3.5" /> },
   ];
   return (
     <div className="space-y-4">
@@ -146,6 +148,7 @@ export function EvidenceCompliancePanel({
 
 // ─── Bio-Resource Intelligence Graph (Bio-Resource Graph + Provenance Graph) ───
 export function BioResourcePanel({ passportId }: { passportId?: string }) {
+  const { lang } = useLang();
   const [jurisdiction, setJurisdiction] = useState<'India' | 'International'>('India');
   const [provenanceData, setProvenanceData] = useState<ProvenanceGraphData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -173,8 +176,8 @@ export function BioResourcePanel({ passportId }: { passportId?: string }) {
         <div className="flex items-center gap-2.5">
           <Database className="w-4 h-4 text-emerald-700 flex-shrink-0" />
           <div>
-            <div className="text-xs font-bold text-slate-800">Provenance & Decision Trace</div>
-            <div className="text-[10px] text-slate-500">Trace regulatory reasoning with citations</div>
+            <div className="text-xs font-bold text-slate-800">{t('panel_provenance_trace_title', lang)}</div>
+            <div className="text-[10px] text-slate-500">{t('panel_provenance_trace_sub', lang)}</div>
           </div>
         </div>
         <div className="flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 p-1">
@@ -241,7 +244,7 @@ export function LanguageSettingsPanel({
             <Languages className="w-4 h-4 text-blue-600" />
             <h3 className="text-sm font-bold text-slate-900">{t('language_settings', lang)}</h3>
           </div>
-          <p className="text-[11px] text-slate-500 mb-3">Choose the working language for the entire platform — answers render with the same source evidence in every language.</p>
+          <p className="text-[11px] text-slate-500 mb-3">{t('panel_language_help', lang)}</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {SUPPORTED_LANGUAGES.map((opt) => (
               <button
@@ -279,7 +282,7 @@ export function LanguageSettingsPanel({
                   />
                 </div>
               ))}
-              <Button variant="primary" className="w-full" onClick={() => { setToast('Profile saved'); setTimeout(() => setToast(''), 2000); }}>{t('save_changes', lang)}</Button>
+              <Button variant="primary" className="w-full" onClick={() => { setToast(t('panel_profile_saved', lang)); setTimeout(() => setToast(''), 2000); }}>{t('save_changes', lang)}</Button>
               {toast && <div className="text-xs text-emerald-600 text-center">{toast}</div>}
             </div>
           )}
@@ -289,22 +292,26 @@ export function LanguageSettingsPanel({
       <GlassCard padding="lg">
         <div className="flex items-center gap-2 mb-2">
           <BookMarked className="w-4 h-4 text-amber-600" />
-          <h3 className="text-sm font-bold text-slate-900">Ayurvedic Terminology Mapper</h3>
+          <h3 className="text-sm font-bold text-slate-900">{t('panel_terminology_mapper_title', lang)}</h3>
           <button
             type="button"
             onClick={() => setTermTab((v) => !v)}
             className="ml-auto text-[10px] font-bold text-blue-600 hover:text-blue-800 transition inline-flex items-center gap-1"
           >
             {termTab ? <RefreshCw className="w-3 h-3" /> : <Search className="w-3 h-3" />}
-            {termTab ? 'Show preferences' : 'Resolve botanical names'}
+            {termTab ? t('panel_show_preferences', lang) : t('panel_resolve_botanical', lang)}
           </button>
         </div>
-        <p className="text-[11px] text-slate-500 mb-3">Resolve all names of a botanical to one canonical RAG entity.</p>
+        <p className="text-[11px] text-slate-500 mb-3">{t('panel_resolve_entity_sub', lang)}</p>
         {termTab ? (
           <TerminologyMapper passportIngredients={passportIngredients} />
         ) : (
           <div className="space-y-3">
-            {[['emailNotifications', 'Email Notifications'], ['evidenceReminders', 'Evidence Reminders'], ['autoLanguage', 'Auto Language-Detection']].map(([key, label]) => {
+            {[
+                ['emailNotifications', t('pref_email_notifications', lang)],
+                ['evidenceReminders', t('pref_evidence_reminders', lang)],
+                ['autoLanguage', t('pref_auto_language', lang)],
+              ].map(([key, label]) => {
               const on = !!prefs[key];
               return (
                 <div key={key} className="flex items-center justify-between px-4 py-3 rounded-xl bg-emerald-50/50 border border-emerald-200">
@@ -328,38 +335,40 @@ export function LanguageSettingsPanel({
 }
 
 // ─── IP Route Advisor (Innovation Passport → recommended IP route) ───
-const ROUTE_META: Record<string, { icon: React.ReactNode; title: string; desc: string; authority: string; note: string }> = {
+const ROUTE_META: Record<string, { icon: React.ReactNode; titleKey: string; descKey: string; authorityKey?: string; authority: string; noteKey: string }> = {
   trademark: {
     icon: <Landmark className="w-4 h-4" />,
-    title: 'Trademark',
-    desc: 'Protect your brand name, word-mark or product label identity.',
+    titleKey: 'route_title_trademark',
+    descKey: 'route_desc_trademark',
     authority: 'Controller General of Patents, Designs & Trademarks (CGPDTM)',
-    note: 'Multi-class filing; Madrid Protocol allows international extension from India.',
+    noteKey: 'route_note_trademark',
   },
   gi: {
     icon: <Globe className="w-4 h-4" />,
-    title: 'Geographical Indication (GI)',
-    desc: 'Protect formulation identity tied to a geographic origin or community practice.',
+    titleKey: 'route_title_gi',
+    descKey: 'route_desc_gi',
     authority: 'Geographical Indications Registry, Chennai',
-    note: 'Requires the product’s qualities to be attributable to its place of origin.',
+    noteKey: 'route_note_gi',
   },
   trade_secret: {
     icon: <EyeOff className="w-4 h-4" />,
-    title: 'Trade Secret',
-    desc: 'Keep the process, ratios or sourcing data confidential — no public disclosure.',
-    authority: 'No registration — protected by confidentiality agreements',
-    note: 'Section 3(p) risk avoided, but reverse-engineering is a real threat.',
+    titleKey: 'route_title_trade_secret',
+    descKey: 'route_desc_trade_secret',
+    authorityKey: 'route_authority_trade_secret',
+    authority: '',
+    noteKey: 'route_note_trade_secret',
   },
   patent: {
     icon: <Search className="w-4 h-4" />,
-    title: 'Patent',
-    desc: 'Protect the novel process, composition or method of manufacture.',
+    titleKey: 'route_title_patent',
+    descKey: 'route_desc_patent',
     authority: 'IP India (Patent Office) / PCT via WIPO',
-    note: 'Filing = full disclosure. Run a prior-art search + Section 3(p) check first.',
+    noteKey: 'route_note_patent',
   },
 };
 
 export function IPRouteAdvisor({ passport }: { passport: InnovationPassport | null }) {
+  const { lang } = useLang();
   const [intent, setIntent] = useState<Record<string, boolean>>({ brand: true, region: false, secret: false, process: true });
 
   if (!passport) {
@@ -367,9 +376,9 @@ export function IPRouteAdvisor({ passport }: { passport: InnovationPassport | nu
       <GlassCard padding="lg" className="border-blue-500/20">
         <div className="flex items-center gap-2 mb-2">
           <Lightbulb className="w-4 h-4 text-amber-500" />
-          <h3 className="text-sm font-bold text-slate-900">IP Route Advisor</h3>
+          <h3 className="text-sm font-bold text-slate-900">{t('route_declare_title', lang)}</h3>
         </div>
-        <p className="text-[11px] text-slate-500">Create an Innovation Passport to see which IP route best protects your asset.</p>
+        <p className="text-[11px] text-slate-500">{t('route_no_passport', lang)}</p>
       </GlassCard>
     );
   }
@@ -390,10 +399,10 @@ export function IPRouteAdvisor({ passport }: { passport: InnovationPassport | nu
   const toggle = (key: string) => setIntent((p) => ({ ...p, [key]: !p[key] }));
 
   const intentOptions = [
-    { key: 'brand', label: 'Brand / product name', hint: '→ Trademark' },
-    { key: 'region', label: 'Region-linked origin / community practice', hint: '→ GI' },
-    { key: 'secret', label: 'Keep formulation or process confidential', hint: '→ Trade Secret' },
-    { key: 'process', label: 'Novel process / synergy in formulation', hint: '→ Patent' },
+    { key: 'brand', label: t('route_intent_brand', lang), hint: '→ Trademark' },
+    { key: 'region', label: t('route_intent_region', lang), hint: '→ GI' },
+    { key: 'secret', label: t('route_intent_secret', lang), hint: '→ Trade Secret' },
+    { key: 'process', label: t('route_intent_process', lang), hint: '→ Patent' },
   ];
 
   return (
@@ -401,10 +410,10 @@ export function IPRouteAdvisor({ passport }: { passport: InnovationPassport | nu
       <GlassCard padding="lg" className="border-blue-500/20">
         <div className="flex items-center gap-2 mb-3">
           <Lightbulb className="w-4 h-4 text-amber-500" />
-          <h3 className="text-sm font-bold text-slate-900">IP Route Advisor</h3>
-          <Badge variant="info" dot>Recommendation Engine</Badge>
+          <h3 className="text-sm font-bold text-slate-900">{t('route_declare_title', lang)}</h3>
+          <Badge variant="info" dot>{t('route_recommendation_engine', lang)}</Badge>
         </div>
-        <p className="text-[11px] text-slate-500 mb-4">Declare what you want to protect, and the advisor routes it to the right IP protection for {brandName}:</p>
+        <p className="text-[11px] text-slate-500 mb-4">{t('route_declare_intro', lang).replace('{name}', brandName)}</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
           {intentOptions.map((opt) => (
@@ -436,12 +445,12 @@ export function IPRouteAdvisor({ passport }: { passport: InnovationPassport | nu
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-900">{meta.title}</span>
-                      {isTop && <Badge variant="success" dot>Recommended</Badge>}
+                      <span className="text-xs font-bold text-slate-900">{t(meta.titleKey, lang)}</span>
+                      {isTop && <Badge variant="success" dot>{t('route_recommended', lang)}</Badge>}
                     </div>
-                    <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">{meta.desc}</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">{t(meta.descKey, lang)}</p>
                     <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-slate-400">
-                      <ArrowRight className="w-3 h-3" /> {meta.authority}
+                      <ArrowRight className="w-3 h-3" /> {meta.authority ? meta.authority : t(meta.authorityKey as string, lang)}
                     </div>
                   </div>
                 </div>
@@ -450,16 +459,16 @@ export function IPRouteAdvisor({ passport }: { passport: InnovationPassport | nu
             <div className="rounded-xl bg-[#0D1425] px-4 py-3 flex items-start gap-2.5">
               <TrendingUp className="w-4 h-4 text-emerald-300 mt-0.5 flex-shrink-0" />
               <p className="text-[10px] text-slate-300 leading-relaxed">
-                {topPick === 'patent' && 'A novel process with a synergistic composition is your strongest protectable asset — but filing means full disclosure, so pair it with a Section 3(p) + prior-art run before filing.'}
-                {topPick === 'trademark' && 'Brand identity can be secured quickly and inexpensively — file the trademark first to lock the name, then decide on deeper process protection later.'}
-                {topPick === 'gi' && `Origin-linked identity (${passport.manufacturing_location || 'your region'}) can be claimed as a GI — community coordination is required.`}
-                {topPick === 'trade_secret' && 'Keeping the process confidential avoids Section 3(p) disclosure risk entirely, but you must document trade-secret controls (NDAs, access logs).'}
+                {topPick === 'patent' && t('route_insight_patent', lang)}
+                {topPick === 'trademark' && t('route_insight_trademark', lang)}
+                {topPick === 'gi' && t('route_insight_gi', lang).replace('{region}', passport.manufacturing_location || t('route_your_region', lang))}
+                {topPick === 'trade_secret' && t('route_insight_trade_secret', lang)}
               </p>
             </div>
           </div>
         ) : (
           <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 px-4 py-6 text-center text-[11px] text-slate-500">
-            Select at least one protection intent above to see your route options.
+            {t('route_select_intent', lang)}
           </div>
         )}
       </GlassCard>

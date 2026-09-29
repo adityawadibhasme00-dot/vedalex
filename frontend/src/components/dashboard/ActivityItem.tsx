@@ -1,6 +1,8 @@
 'use client';
 import React from 'react';
 import clsx from 'clsx';
+import { useLang } from '../../lib/LangContext';
+import { t } from '../../lib/i18n';
 
 interface ActivityItemProps {
   icon: React.ReactNode;
@@ -10,13 +12,14 @@ interface ActivityItemProps {
   status: 'completed' | 'in_progress' | 'failed';
 }
 
-const statusStyles: Record<ActivityItemProps['status'], { badge: string; label: string }> = {
-  completed: { badge: 'bg-green-50 text-gov-green', label: 'Completed' },
-  in_progress: { badge: 'bg-blue-50 text-gov-blue', label: 'In Progress' },
-  failed: { badge: 'bg-red-50 text-red-700', label: 'Failed' },
+const statusStyles: Record<ActivityItemProps['status'], { badge: string; labelKey: string }> = {
+  completed: { badge: 'bg-green-50 text-gov-green', labelKey: 'rd_status_completed' },
+  in_progress: { badge: 'bg-blue-50 text-gov-blue', labelKey: 'rd_status_in_progress' },
+  failed: { badge: 'bg-red-50 text-red-700', labelKey: 'common_failed' },
 };
 
 export function ActivityItem({ icon, title, description, time, status }: ActivityItemProps) {
+  const { lang } = useLang();
   const s = statusStyles[status];
   return (
     <div className="flex items-start gap-4 p-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
@@ -28,7 +31,7 @@ export function ActivityItem({ icon, title, description, time, status }: Activit
         <p className="text-sm text-gray-600 mt-0.5 leading-snug">{description}</p>
       </div>
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 flex-shrink-0 sm:text-right">
-        <span className={clsx('px-2 py-1 rounded-full text-xs font-medium', s.badge)}>{s.label}</span>
+        <span className={clsx('px-2 py-1 rounded-full text-xs font-medium', s.badge)}>{t(s.labelKey, lang)}</span>
         <span className="text-sm text-gray-500">{time}</span>
       </div>
     </div>

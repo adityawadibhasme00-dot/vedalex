@@ -8,6 +8,8 @@ import { GlassCard } from './ui/GlassCard';
 import { Badge } from './ui/Badge';
 import { getBioResourceIntelligence } from '../lib/api';
 import { BioResourceGraphResponse, BioResourcePlant } from '../types';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 const geoBadge: Record<string, 'success' | 'warning' | 'danger'> = {
   verified: 'success',
@@ -34,19 +36,20 @@ function NamesSection({ plant }: { plant: BioResourcePlant }) {
 }
 
 function PlantCard({ plant }: { plant: BioResourcePlant }) {
+  const { lang } = useLang();
   return (
     <GlassCard padding="md">
       <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
         <div>
           <div className="text-sm font-bold text-slate-900 font-display italic">{plant.botanical_name}</div>
-          <div className="text-[11px] text-slate-500">{plant.family} · Monograph <code className="font-mono">{plant.api_monograph_id}</code></div>
+          <div className="text-[11px] text-slate-500">{plant.family} · {t('bi_monograph', lang)} <code className="font-mono">{plant.api_monograph_id}</code></div>
         </div>
-        <Badge variant={plant.evidence_support_pct >= 60 ? 'success' : 'warning'}>Evidence bridge {plant.evidence_support_pct}%</Badge>
+        <Badge variant={plant.evidence_support_pct >= 60 ? 'success' : 'warning'}>{t('bi_evidence_bridge', lang)} {plant.evidence_support_pct}%</Badge>
       </div>
 
       <NamesSection plant={plant} />
 
-      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-emerald-600" /> Provenance &amp; geography</h4>
+      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-emerald-600" /> {t('bi_provenance', lang)}</h4>
       <div className="space-y-1.5 mb-4">
         {plant.geography.map((g, i) => (
           <div key={i} className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-100">
@@ -67,20 +70,20 @@ function PlantCard({ plant }: { plant: BioResourcePlant }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
         <div className="px-3 py-2.5 rounded-xl bg-amber-50/60 border border-amber-200">
-          <div className="flex items-center gap-1.5 mb-1"><TrendingUp className="w-3.5 h-3.5 text-amber-600" /><span className="text-[11px] font-bold text-slate-800">Trade demand</span></div>
+          <div className="flex items-center gap-1.5 mb-1"><TrendingUp className="w-3.5 h-3.5 text-amber-600" /><span className="text-[11px] font-bold text-slate-800">{t('bi_trade_demand', lang)}</span></div>
           <p className="text-[11px] text-slate-600">{plant.trade_demand_class}</p>
           <p className="text-[10px] text-slate-500 mt-1 leading-relaxed">{plant.price_trend_note}</p>
         </div>
         <div className="px-3 py-2.5 rounded-xl bg-emerald-50/60 border border-emerald-200">
-          <div className="flex items-center gap-1.5 mb-1"><Recycle className="w-3.5 h-3.5 text-emerald-700" /><span className="text-[11px] font-bold text-slate-800">Conservation</span></div>
+          <div className="flex items-center gap-1.5 mb-1"><Recycle className="w-3.5 h-3.5 text-emerald-700" /><span className="text-[11px] font-bold text-slate-800">{t('bi_conservation', lang)}</span></div>
           <p className="text-[11px] text-slate-600">{plant.conservation_status}</p>
         </div>
       </div>
 
       {[
-        { icon: <Scale className="w-3.5 h-3.5 text-violet-600 mt-0.5" />, title: 'ABS considerations', items: plant.abs_considerations, tone: 'bg-violet-50 border-violet-200 text-violet-900' },
-        { icon: <BookOpenText className="w-3.5 h-3.5 text-blue-600 mt-0.5" />, title: 'Traditional knowledge (TKDL)', items: plant.tk_considerations, tone: 'bg-blue-50 border-blue-200 text-blue-900' },
-        { icon: <Lightbulb className="w-3.5 h-3.5 text-amber-600 mt-0.5" />, title: 'IP considerations', items: plant.ip_considerations, tone: 'bg-amber-50 border-amber-200 text-amber-900' },
+        { icon: <Scale className="w-3.5 h-3.5 text-violet-600 mt-0.5" />, title: t('bi_abs', lang), items: plant.abs_considerations, tone: 'bg-violet-50 border-violet-200 text-violet-900' },
+        { icon: <BookOpenText className="w-3.5 h-3.5 text-blue-600 mt-0.5" />, title: t('bi_tk', lang), items: plant.tk_considerations, tone: 'bg-blue-50 border-blue-200 text-blue-900' },
+        { icon: <Lightbulb className="w-3.5 h-3.5 text-amber-600 mt-0.5" />, title: t('bi_ip', lang), items: plant.ip_considerations, tone: 'bg-amber-50 border-amber-200 text-amber-900' },
       ].map((s, i) => (
         <div key={i} className={`px-3 py-2.5 rounded-xl border mb-2 ${s.tone}`}>
           <div className="flex items-center gap-1.5 mb-1 relative">
@@ -99,6 +102,7 @@ function PlantCard({ plant }: { plant: BioResourcePlant }) {
 }
 
 export function BioResourceIntelligence({ passportId }: { passportId?: string }) {
+  const { lang } = useLang();
   const [data, setData] = useState<BioResourceGraphResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -111,7 +115,7 @@ export function BioResourceIntelligence({ passportId }: { passportId?: string })
       const res = await getBioResourceIntelligence(passportId);
       setData(res);
     } catch (e: any) {
-      setError(e.message || 'Failed to load bio-resource graph');
+      setError(e.message || t('bi_load_failed', lang));
       setData(null);
     } finally {
       setLoading(false);
@@ -125,7 +129,7 @@ export function BioResourceIntelligence({ passportId }: { passportId?: string })
       <GlassCard padding="lg">
         <div className="flex items-center gap-3 text-sm text-slate-600">
           <Leaf className="w-5 h-5 text-emerald-600" />
-          Create an Innovation Passport first to build the Bio-Resource Intelligence Graph.
+          {t('bi_no_passport', lang)}
         </div>
       </GlassCard>
     );
@@ -136,10 +140,10 @@ export function BioResourceIntelligence({ passportId }: { passportId?: string })
       <GlassCard padding="md">
         <div className="flex items-center gap-2 mb-1">
           <Sprout className="w-5 h-5 text-emerald-600" />
-          <h3 className="text-sm font-bold text-slate-900 font-display">Bio-Resource Intelligence Graph</h3>
-          <Badge variant="info" className="ml-auto">NMPB · NBA · TKDL aware</Badge>
+          <h3 className="text-sm font-bold text-slate-900 font-display">{t('bi_title', lang)}</h3>
+          <Badge variant="info" className="ml-auto">{t('bi_aware', lang)}</Badge>
         </div>
-        <p className="text-xs text-slate-500">Per-plant graph: identity &amp; names, provenance, conservation, ABS, TK and IP posture — bridged to the evidence ladder.</p>
+        <p className="text-xs text-slate-500">{t('bi_subtitle', lang)}</p>
         {error && <p className="mt-2 text-xs text-red-600 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> {error}</p>}
       </GlassCard>
 
@@ -154,7 +158,7 @@ export function BioResourceIntelligence({ passportId }: { passportId?: string })
           </div>
 
           <GlassCard padding="md" className="border-emerald-300">
-            <h3 className="text-sm font-bold text-slate-900 font-display mb-2 flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-emerald-600" /> Sourcing recommendations</h3>
+            <h3 className="text-sm font-bold text-slate-900 font-display mb-2 flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-emerald-600" /> {t('bi_sourcing', lang)}</h3>
             <ul className="space-y-1.5">
               {data.recommendations.map((r, i) => (
                 <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
@@ -173,8 +177,8 @@ export function BioResourceIntelligence({ passportId }: { passportId?: string })
           <div className="flex items-start gap-2 text-xs text-slate-600">
             <Leaf className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
             <div>
-              <div className="font-semibold text-slate-800 mb-1">No resolved botanicals found</div>
-              {(data.recommendations[0]) || 'Add ingredients to the passport to map their bio-resources.'}
+              <div className="font-semibold text-slate-800 mb-1">{t('bi_no_botanicals', lang)}</div>
+              {(data.recommendations[0]) || t('bi_add_ingredients', lang)}
             </div>
           </div>
         </GlassCard>

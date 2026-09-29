@@ -5,6 +5,8 @@ import { uploadDisclosureCheck, getEvidenceGaps } from '../lib/api';import { Gla
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
 import { InnovationPassport } from '../types';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface EvidenceRow {
   id: string;
@@ -12,6 +14,8 @@ interface EvidenceRow {
   evidenceType: string;
   status: 'GREEN' | 'YELLOW' | 'RED';
   sourceReference?: string;
+  claimKey?: string;
+  typeKey?: string;
 }
 
 interface EvidenceMatrixProps {
@@ -22,22 +26,27 @@ interface EvidenceMatrixProps {
 }
 
 const DEFAULT_ROWS: EvidenceRow[] = [
-  { id: 'ev-1', claim: 'Supports healthy sleep', evidenceType: 'Stability study', status: 'YELLOW' },
-  { id: 'ev-2', claim: 'Promotes mental relaxation', evidenceType: 'Clinical trial data', status: 'RED' },
-  { id: 'ev-3', claim: 'Standardized botanical ratio', evidenceType: 'Standardization data', status: 'GREEN' },
-  { id: 'ev-4', claim: 'Safety profile', evidenceType: 'Toxicology report', status: 'YELLOW' },
-  { id: 'ev-5', claim: 'Batch consistency', evidenceType: 'GMP certificate', status: 'GREEN' },
+  { id: 'ev-1', claim: '', claimKey: 'ev_demo_claim_1', evidenceType: '', typeKey: 'ev_demo_type_1', status: 'YELLOW' },
+  { id: 'ev-2', claim: '', claimKey: 'ev_demo_claim_2', evidenceType: '', typeKey: 'ev_demo_type_2', status: 'RED' },
+  { id: 'ev-3', claim: '', claimKey: 'ev_demo_claim_3', evidenceType: '', typeKey: 'ev_demo_type_3', status: 'GREEN' },
+  { id: 'ev-4', claim: '', claimKey: 'ev_demo_claim_4', evidenceType: '', typeKey: 'ev_demo_type_4', status: 'YELLOW' },
+  { id: 'ev-5', claim: '', claimKey: 'ev_demo_claim_5', evidenceType: '', typeKey: 'ev_demo_type_5', status: 'GREEN' },
 ];
 
 const STATUS_UI: Record<string, { label: string; filter: string; bg: string; border: string; dot: string; text: string; icon: React.ReactNode }> = {
-  GREEN: { label: 'Verified', filter: 'Strong', bg: 'bg-emerald-100', border: 'border-emerald-300', dot: 'bg-emerald-500', text: 'text-emerald-700', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
-  YELLOW: { label: 'In Progress', filter: 'Moderate', bg: 'bg-amber-100', border: 'border-amber-300', dot: 'bg-amber-500', text: 'text-amber-700', icon: <Clock className="w-3.5 h-3.5" /> },
-  RED: { label: 'Missing', filter: 'Missing', bg: 'bg-red-100', border: 'border-red-300', dot: 'bg-red-500', text: 'text-red-700', icon: <XCircle className="w-3.5 h-3.5" /> },
+  GREEN: { label: 'ev_status_verified', filter: 'ev_filter_strong', bg: 'bg-emerald-100', border: 'border-emerald-300', dot: 'bg-emerald-500', text: 'text-emerald-700', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
+  YELLOW: { label: 'ev_status_in_progress', filter: 'ev_filter_moderate', bg: 'bg-amber-100', border: 'border-amber-300', dot: 'bg-amber-500', text: 'text-amber-700', icon: <Clock className="w-3.5 h-3.5" /> },
+  RED: { label: 'ev_status_missing', filter: 'ev_status_missing', bg: 'bg-red-100', border: 'border-red-300', dot: 'bg-red-500', text: 'text-red-700', icon: <XCircle className="w-3.5 h-3.5" /> },
 };
 
 type FilterKey = 'ALL' | 'GREEN' | 'YELLOW' | 'RED';
 
 export default function EvidenceMatrix({ initialRows, onStatusUpdate, passportId, passport }: EvidenceMatrixProps) {
+  const { lang } = useLang();
+  const rowText = (r: EvidenceRow) => ({
+    claim: r.claimKey ? t(r.claimKey, lang) : r.claim,
+    type: r.typeKey ? t(r.typeKey, lang) : r.evidenceType,
+  });
   const [rows, setRows] = useState<EvidenceRow[]>(initialRows || DEFAULT_ROWS);
   const [filter, setFilter] = useState<FilterKey>('ALL');
   const [search, setSearch] = useState('');
@@ -71,12 +80,14 @@ export default function EvidenceMatrix({ initialRows, onStatusUpdate, passportId
         const claimRows: EvidenceRow[] = (passport.proposed_claims || []).map((c, i) => ({
           id: `claim-${i + 1}`,
           claim: c,
-          evidenceType: 'Passport claim',
+          evidenceType: '',
+          typeKey: 'ev_type_passport_claim',
           status: 'YELLOW',
         }));
         const gapRows: EvidenceRow[] = (gapSummary.items || []).map((item) => ({
           id: item.id,
-          claim: item.requirement_name || 'Regulatory requirement',
+          claim: item.requirement_name || '',
+          claimKey: item.requirement_name ? undefined : 'ev_type_regulatory_req',
           evidenceType: [item.expected_evidence_type, item.jurisdiction].filter(Boolean).join(' · '),
           status: statusFromEvidence(item.status),
         }));
@@ -84,7 +95,7 @@ export default function EvidenceMatrix({ initialRows, onStatusUpdate, passportId
         setRows(merged.length > 0 ? merged : DEFAULT_ROWS);
       } catch (e: any) {
         if (active) {
-          setLinkedError(e.message || 'Failed to sync passport evidence');
+          setLinkedError(e.message || t('ev_sync_failed', lang));
           setRows(DEFAULT_ROWS);
         }
       } finally {
@@ -103,7 +114,11 @@ export default function EvidenceMatrix({ initialRows, onStatusUpdate, passportId
 
   const filteredRows = rows.filter((row) => {
     if (filter !== 'ALL' && row.status !== filter) return false;
-    if (search && !row.claim.toLowerCase().includes(search.toLowerCase()) && !row.evidenceType.toLowerCase().includes(search.toLowerCase())) return false;
+    if (search) {
+      const txt = rowText(row);
+      const hay = `${txt.claim} ${txt.type}`.toLowerCase();
+      if (!hay.includes(search.toLowerCase())) return false;
+    }
     return true;
   });
 
@@ -123,9 +138,9 @@ export default function EvidenceMatrix({ initialRows, onStatusUpdate, passportId
       const res = await uploadDisclosureCheck(file);
       setRows((prev) => prev.map((r) => (r.id === rowId ? { ...r, status: 'YELLOW', sourceReference: file.name } : r)));
       onStatusUpdate?.(rowId, 'Uploaded');
-      setUploadResult({ type: 'success', text: `Uploaded & analyzed ${file.name} — ${res.extracted_text?.slice(0, 60) || 'documents scanned'}...` });
+      setUploadResult({ type: 'success', text: t('ev_upload_success', lang).replace('{file}', file.name).replace('{text}', res.extracted_text?.slice(0, 60) || t('ev_docs_scanned', lang)) });
     } catch {
-      setUploadResult({ type: 'error', text: 'Upload failed. Backend may be offline.' });
+      setUploadResult({ type: 'error', text: t('ev_upload_failed', lang) });
     } finally {
       setUploadingId(null);
       pendingUploadId.current = null;
@@ -145,10 +160,10 @@ export default function EvidenceMatrix({ initialRows, onStatusUpdate, passportId
   };
 
   const filters: { key: FilterKey; label: string; color: string }[] = [
-    { key: 'ALL', label: 'All', color: 'text-slate-600' },
-    { key: 'GREEN', label: 'Strong', color: 'text-emerald-600' },
-    { key: 'YELLOW', label: 'Moderate', color: 'text-amber-600' },
-    { key: 'RED', label: 'Missing', color: 'text-red-600' },
+    { key: 'ALL', label: t('ev_filter_all', lang), color: 'text-slate-600' },
+    { key: 'GREEN', label: t('ev_filter_strong', lang), color: 'text-emerald-600' },
+    { key: 'YELLOW', label: t('ev_filter_moderate', lang), color: 'text-amber-600' },
+    { key: 'RED', label: t('ev_status_missing', lang), color: 'text-red-600' },
   ];
 
   return (
@@ -158,16 +173,16 @@ export default function EvidenceMatrix({ initialRows, onStatusUpdate, passportId
         <div className="flex flex-wrap items-center gap-2 px-4 py-3 rounded-2xl bg-emerald-50/70 border border-emerald-200">
           <Link2 className="w-4 h-4 text-emerald-600" />
           <span className="text-xs text-slate-700">
-            <span className="font-semibold text-slate-900">Linked to passport:</span> {passport.case_title}
+            <span className="font-semibold text-slate-900">{t('ev_linked_to_passport', lang)}</span> {passport.case_title}
             <code className="ml-1.5 font-mono text-[10px] text-emerald-700">{passportId.slice(0, 8)}</code>
           </span>
           {passportRowsLoading && <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600 ml-auto" />}
-          {!passportRowsLoading && <Badge variant="success" dot className="ml-auto">Auto-synced</Badge>}
+          {!passportRowsLoading && <Badge variant="success" dot className="ml-auto">{t('ev_auto_synced', lang)}</Badge>}
         </div>
       )}
       {linkedError && (
         <div className="px-4 py-2.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-2">
-          <XCircle className="w-4 h-4 flex-shrink-0" /> {linkedError} — showing demo rows.
+          <XCircle className="w-4 h-4 flex-shrink-0" /> {linkedError} {t('ev_showing_demo_rows', lang)}
         </div>
       )}
 
@@ -196,11 +211,11 @@ export default function EvidenceMatrix({ initialRows, onStatusUpdate, passportId
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search claims or evidence..."
+            placeholder={t('ev_search_placeholder', lang)}
             className="w-full pl-10 pr-4 py-2.5 bg-emerald-50/70 border border-emerald-200 rounded-xl text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:border-blue-500/40"
           />
         </div>
-        <Button variant="secondary" size="sm" icon={<Upload className="w-4 h-4" />}>Upload Evidence</Button>
+        <Button variant="secondary" size="sm" icon={<Upload className="w-4 h-4" />}>{t('ev_upload_evidence', lang)}</Button>
       </div>
 
       {/* Table */}
@@ -209,22 +224,23 @@ export default function EvidenceMatrix({ initialRows, onStatusUpdate, passportId
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-[10px] uppercase tracking-widest text-slate-500 border-b border-emerald-200">
-                <th className="px-5 py-3.5 font-semibold">Claim</th>
-                <th className="px-5 py-3.5 font-semibold">Evidence Type</th>
-                <th className="px-5 py-3.5 font-semibold">Status</th>
-                <th className="px-5 py-3.5 font-semibold">Action</th>
+                <th className="px-5 py-3.5 font-semibold">{t('ev_col_claim', lang)}</th>
+                <th className="px-5 py-3.5 font-semibold">{t('ev_col_evidence_type', lang)}</th>
+                <th className="px-5 py-3.5 font-semibold">{t('ev_col_status', lang)}</th>
+                <th className="px-5 py-3.5 font-semibold">{t('ev_col_action', lang)}</th>
               </tr>
             </thead>
             <tbody>
               {filteredRows.map((row) => {
                 const ui = STATUS_UI[row.status];
+                const txt = rowText(row);
                 return (
                   <tr key={row.id} className="border-b border-emerald-100 hover:bg-emerald-50/50 transition">
-                    <td className="px-5 py-3.5 text-slate-700 font-medium">{row.claim}</td>
-                    <td className="px-5 py-3.5 text-slate-500">{row.evidenceType}</td>
+                    <td className="px-5 py-3.5 text-slate-700 font-medium">{txt.claim}</td>
+                    <td className="px-5 py-3.5 text-slate-500">{txt.type}</td>
                     <td className="px-5 py-3.5">
                       <button onClick={() => cycleStatus(row.id)} className={`px-3 py-1.5 rounded-full border text-xs font-semibold inline-flex items-center gap-1.5 ${ui.bg} ${ui.border} ${ui.text} hover:opacity-80 transition`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${ui.dot}`} /> {ui.label}
+                        <span className={`w-1.5 h-1.5 rounded-full ${ui.dot}`} /> {t(ui.label, lang)}
                       </button>
                     </td>
                     <td className="px-5 py-3.5">
@@ -232,7 +248,7 @@ export default function EvidenceMatrix({ initialRows, onStatusUpdate, passportId
                         <Badge variant="success" dot className="truncate max-w-[160px] overflow-hidden"><FileText className="w-3 h-3" /> {row.sourceReference}</Badge>
                       ) : (
                         <button onClick={() => handleUpload(row.id)} disabled={uploadingId === row.id} className="px-3 py-1.5 rounded-lg bg-emerald-50/70 hover:bg-blue-100 border border-emerald-200 hover:border-blue-500/40 text-xs text-slate-600 hover:text-blue-600 inline-flex items-center gap-1.5 transition disabled:opacity-50">
-                          {uploadingId === row.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />} Upload
+                          {uploadingId === row.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />} {t('ev_upload', lang)}
                         </button>
                       )}
                     </td>
@@ -243,7 +259,7 @@ export default function EvidenceMatrix({ initialRows, onStatusUpdate, passportId
                 <tr>
                   <td colSpan={4} className="px-5 py-10 text-center text-slate-500 text-sm">
                     <Search className="w-6 h-6 mx-auto mb-2 text-slate-500" />
-                    No evidence matches your filter.
+                    {t('ev_no_matches', lang)}
                   </td>
                 </tr>
               )}

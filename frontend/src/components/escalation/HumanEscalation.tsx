@@ -3,6 +3,8 @@
 import React from 'react';
 import clsx from 'clsx';
 import { Download, Mail, Phone, UserRound } from 'lucide-react';
+import { useLang } from '../../lib/LangContext';
+import { t } from '../../lib/i18n';
 
 interface HumanEscalationProps {
   /** The query that triggered escalation — included in the export + email. */
@@ -35,6 +37,7 @@ export function HumanEscalation({
   onExport,
   className,
 }: HumanEscalationProps) {
+  const { lang } = useLang();
   const handleExport = () => {
     const payload = {
       query,
@@ -61,12 +64,12 @@ export function HumanEscalation({
   };
 
   const mailto = `mailto:${email}?subject=${encodeURIComponent(
-    'IP-SAKTI — IP facilitator request'
+    t('escalate_subject', lang)
   )}&body=${encodeURIComponent(query ? `Query: ${query}` : '')}`;
 
   return (
     <section
-      aria-label="Human IP facilitator escalation"
+      aria-label={t('escalate_aria', lang)}
       className={clsx(
         'rounded-2xl border border-amber-200 bg-amber-50/70 p-4',
         className
@@ -75,25 +78,25 @@ export function HumanEscalation({
       <header className="flex items-center gap-2 mb-3">
         <UserRound className="w-4 h-4 text-amber-700" aria-hidden="true" />
         <h3 className="text-sm font-bold text-slate-800">
-          Human IP Facilitator
+          {t('escalate_heading', lang)}
         </h3>
         <span className="ml-auto text-[10px] font-semibold uppercase tracking-wider text-amber-700 bg-amber-100 rounded-full px-2 py-0.5">
-          Escalation path
+          {t('escalate_badge', lang)}
         </span>
       </header>
 
       <dl className="space-y-1.5 text-xs text-slate-700 mb-4">
         <div className="flex gap-2">
-          <dt className="font-semibold text-slate-500 w-16">Name</dt>
+          <dt className="font-semibold text-slate-500 w-16">{t('escalate_name', lang)}</dt>
           <dd>{name}</dd>
         </div>
         <div className="flex gap-2">
-          <dt className="font-semibold text-slate-500 w-16">Email</dt>
+          <dt className="font-semibold text-slate-500 w-16">{t('escalate_email', lang)}</dt>
           <dd className="break-all">{email}</dd>
         </div>
         {phone && (
           <div className="flex gap-2">
-            <dt className="font-semibold text-slate-500 w-16">Phone</dt>
+            <dt className="font-semibold text-slate-500 w-16">{t('escalate_phone', lang)}</dt>
             <dd>{phone}</dd>
           </div>
         )}
@@ -105,7 +108,7 @@ export function HumanEscalation({
           className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-2 transition"
         >
           <Mail className="w-3.5 h-3.5" aria-hidden="true" />
-          Email facilitator
+          {t('escalate_email_facilitator', lang)}
         </a>
         {phone && (
           <a
@@ -113,7 +116,7 @@ export function HumanEscalation({
             className="inline-flex items-center gap-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold px-3 py-2 transition"
           >
             <Phone className="w-3.5 h-3.5" aria-hidden="true" />
-            Call
+            {t('escalate_call', lang)}
           </a>
         )}
         <button
@@ -122,13 +125,13 @@ export function HumanEscalation({
           className="inline-flex items-center gap-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold px-3 py-2 transition"
         >
           <Download className="w-3.5 h-3.5" aria-hidden="true" />
-          Export query log
+          {t('escalate_export', lang)}
         </button>
       </div>
 
       {query && (
         <p className="mt-3 text-[11px] text-slate-500 border-t border-amber-200 pt-2">
-          Escalated query: <span className="text-slate-700">“{query}”</span>
+          {t('escalate_query_prefix', lang)} <span className="text-slate-700">“{query}”</span>
         </p>
       )}
     </section>

@@ -1,5 +1,7 @@
 'use client';
 import React from 'react';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface ReadinessGaugeProps {
   value: number;
@@ -7,13 +9,15 @@ interface ReadinessGaugeProps {
   size?: number;
 }
 
-function scoreColor(v: number): { color: string; text: string } {
-  if (v <= 40) return { color: '#EF4444', text: 'Needs Attention' };
-  if (v <= 70) return { color: '#F59E0B', text: 'Improving' };
-  return { color: '#10B981', text: 'Patent Ready' };
+function scoreColor(v: number): { color: string; key: string } {
+  if (v <= 40) return { color: '#EF4444', key: 'gauge_needs_attention' };
+  if (v <= 70) return { color: '#F59E0B', key: 'gauge_improving' };
+  return { color: '#10B981', key: 'gauge_patent_ready' };
 }
 
-export function ReadinessGauge({ value, label = 'Patent Readiness Score', size = 300 }: ReadinessGaugeProps) {
+export function ReadinessGauge({ value, label, size = 300 }: ReadinessGaugeProps) {
+  const { lang } = useLang();
+  const displayLabel = label ?? t('gauge_default_label', lang);
   const stroke = 20;
   const radius = (size - stroke) / 2 - 10;
   const cx = size / 2;
@@ -36,7 +40,7 @@ export function ReadinessGauge({ value, label = 'Patent Readiness Score', size =
   };
 
   const frac = Math.max(0, Math.min(1, value / 100));
-  const { color, text } = scoreColor(value);
+  const { color, key } = scoreColor(value);
 
   const bands: Array<[number, number, string]> = [
     [0, 0.4, '#EF4444'],
@@ -84,8 +88,8 @@ export function ReadinessGauge({ value, label = 'Patent Readiness Score', size =
             <div className="text-6xl font-black font-display text-slate-900 leading-none">
               {Math.round(value)}<span className="text-3xl text-slate-400">%</span>
             </div>
-            <div className="mt-1 text-sm font-bold" style={{ color }}>{text}</div>
-            <div className="mt-0.5 text-[11px] text-slate-500">{label}</div>
+            <div className="mt-1 text-sm font-bold" style={{ color }}>{t(key as any, lang)}</div>
+            <div className="mt-0.5 text-[11px] text-slate-500">{displayLabel}</div>
           </div>
         </div>
       </div>

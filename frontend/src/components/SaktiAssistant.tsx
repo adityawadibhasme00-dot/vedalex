@@ -3,6 +3,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Bot, Send, X, Sparkles, ChevronDown, Radar, FileDown, RefreshCw, MessageSquare } from 'lucide-react';
 import { AyurvedaSeal } from './BotanicalDecor';
+import { t } from '../lib/i18n';
 
 interface SaktiAssistantProps {
   lang?: string;
@@ -34,87 +35,79 @@ const TAB_ALIASES: Array<{ tab: string; keys: string[] }> = [
   { tab: 'settings', keys: ['settings', 'profile', 'preference', 'सेटिंग्स'] },
 ];
 
-const HELP_TEXT =
-  'Main aapki madad ke liye hoon. Ye kar sakta hoon:\n\n' +
-  '• "open copilot" / "copilot kholo" — AI Copilot kholo\n' +
-  '• "how to export" / "dossier banao" — Dossier PDF export\n' +
-  '• "run assessment" / "evaluate karo" — Assessment dobara chalao\n' +
-  '• "open what-if" — What-If Simulator kholo\n' +
-  '• "abs kya hai" / "section 3(p)" — Regulatory concepts samjhao\n' +
-  '• "status batao" — Aapke passport ki current halat\n\n' +
-  'Ya koi bhi tab handle me likh kar open karwa sakte ho.';
+const HELP_KEY = 'sa_help_body';
 
 const DEFAULT_KB_STATUS: Array<{ keys: string[]; text?: string; tab?: string }> = [
   {
     keys: ['3(p)', '3 p', 'section 3', 'section3', 'sec 3', 'patentable'],
     text:
       'Section 3(p) — Indian Patents Act, 1970:\n\n' +
-      'Section 3(p) extras scientific principles jagah of "mere admixture" ya known properties. Agar Ayurveda formulation do known chizon ka bina naya synergistic effect ke combination hai, toh patentable nahi.\n\n' +
-      'Round about: patentability ke liye synergistic/additive effect prove karna zaroori. Ye jeet patent tab me Patent Analysis + Section 3(p) flag me dikhta hai.',
+      'Section 3(p) excludes scientific principles, "mere admixture", and known properties. An Ayurvedic formulation that only combines known ingredients without producing a new synergistic effect is not patentable.\n\n' +
+      'What to do: patentability depends on proving a synergistic or additive effect. IP-SAKTI flags this in the Patent tab under Patent Analysis + Section 3(p).',
     tab: 'patent',
   },
   {
     keys: ['abs', 'bio resource', 'bio-resource', 'biological resource', 'nba', 'access benefit'],
     text:
       'ABS (Access & Benefit Sharing):\n\n' +
-      'Biological Diversity Act ke under, jarah ka ye har ingredient (e.g. Ashwagandha, Brahmi) Bharat ke kis state se aaya, supplier kaun, aur NBA/State Biodiversity Board ko benefit sharing clear hai ya nahi — ye track hota hai.\n\n' +
-      'Ye jeet kaap passport ke provenance tab me milta hai. "Bio-Resource Ledger" Feature Hub card me bhi hai. Recommendation: Supplier + ABS status pahle set karo.',
+      'Under the Biological Diversity Act, for every ingredient (e.g. Ashwagandha, Brahmi) the system tracks which state in India it came from, who the supplier is, and whether benefit sharing with the NBA / State Biodiversity Board has been recorded.\n\n' +
+      'You will find this in your passport\'s Provenance tab and in the "Bio-Resource Ledger" Feature Hub card. Recommendation: set the supplier and ABS status first.',
     tab: 'provenance',
   },
   {
     keys: ['tkdl', 'traditional knowledge', 'prior art', 'neem', 'haldi', 'turmeric', 'charaka'],
     text:
       'TKDL (Traditional Knowledge Digital Library):\n\n' +
-      'TKDL me classical granths (Charaka Samhita, Sushruta, neem-haldi cases vaghre) ke formulations prior art ke roop me recorded hain. Agar aapka claim koi classical text se match karta hai, toh foreign patents (EPO/USPTO) already TKDL ki wajah se reject/short-circuit ho sakte hain.\n\n' +
-      'Iska full picture Patent Analysis + TKDL screening me aata hai.',
+      'Formulations from classical granths (Charaka Samhita, Sushruta Samhita, neem–haldi cases and similar) are recorded in TKDL as prior art. If your claim matches a classical text, foreign offices (EPO / USPTO) can reject or short-circuit the application on TKDL grounds.\n\n' +
+      'The full picture appears under Patent Analysis + TKDL screening.',
     tab: 'patent',
   },
   {
     keys: ['schedule t', 'gmp', 'ayush', 'ayurveda manufacture', 'manufacturing'],
     text:
       'Schedule T (Drugs & Cosmetics Rules):\n\n' +
-      'Ayurveda medicine banane ke liye Schedule T ki GMP (Good Manufacturing Practices) zaroori — premises, equipment, Sanitization, QA records sab defined hain. Labelling ke liye Schedule T container-requirements (ingredient list Vahti) bhi lagte hain.\n\n' +
-      'India compliance Jurisdiction Matrix tab me reflect hota hai.',
+      'Manufacturing Ayurvedic medicine requires Schedule T GMP (Good Manufacturing Practices) — premises, equipment, sanitisation and QA records are all defined. Schedule T container and labelling requirements (the ingredient list on the pack) apply as well.\n\n' +
+      'This is reflected in the India compliance column of the Jurisdiction Matrix.',
     tab: 'matrix',
   },
   {
     keys: ['schedule e', 'toxic', 'poison', 'restrict', 'banned'],
     text:
       'Schedule E:\n\n' +
-      'Schedule E(1) me aise ayurvedic substances hain jinpe control/restrictions hain (toxic/purificatory processes). Agar aapke formula me koi Schedule E ingredient hai, purification SOP + dosage guidance zaroori.\n\n' +
-      'Apne formulation ke ingredients claim list me check karo — Evidence Matrix me kaap safety flags dikhta hai.',
+      'Schedule E(1) lists Ayurvedic substances that are subject to control or restrictions (toxic or purificatory processes). If your formula contains a Schedule E ingredient, you need a purification SOP plus dosage guidance.\n\n' +
+      'Check every ingredient in your formulation against the claim list — the Evidence Matrix shows CAP safety flags.',
     tab: 'evidence',
   },
   {
     keys: ['fssai', 'food', 'aahara', 'nutraceutical', 'supplement india', 'ayurveda food'],
     text:
-      'FSSAI (Ayurveda Aahara / Nutraceuticals):\n\n' +
-      'Agar product food-like hai (Aahara/health supplement), FSSAI ke under Schedule IV (Ayurvedic Aahara claims) ya Nutraceutical regulations lagte hain — not drugs. Health claims (e.g. "acchi neend ke liye") strict phrases ke under he allowed.\n\n' +
-      'India matrix me ye alag column ke roop me covered hai.',
+      'FSSAI (Ayurvedic Aahara / Nutraceuticals):\n\n' +
+      'If the product is food-like (Aahara or a health supplement), FSSAI Schedule IV (claims for Ayurvedic Aahara) or the Nutraceutical regulations apply — it is not a drug. Health claims (e.g. "for better sleep") are only allowed within the prescribed wording.\n\n' +
+      'In the India matrix this is covered as a separate column.',
     tab: 'matrix',
   },
   {
     keys: ['dshea', 'usa', 'united states', 'fda usa', 'american market', 'us market', 'america'],
     text:
       'United States (DSHEA / FDA):\n\n' +
-      'US me product dietary supplement ho toh DSHEA structure marketing (seller regulated, no pre-approval takin) + cGMP (21 CFR 111). Koi bhi disease-preventive ya cure ka claim = "drug" claim, jisse NDI/food additive requirements trigger ho jaate hain.\n\n' +
-      'Label par safety + disclaimer (FDA evaluation statement) zaroori. US ke liye Jurisdiction Matrix yo bata deta hai.',
+      'If the product is a dietary supplement in the US, the DSHEA structure applies to marketing (seller-regulated, no pre-market approval) along with cGMP (21 CFR 111). Any claim that prevents or cures a disease is treated as a drug claim, which triggers New Drug Investigation (NDI) and food additive requirements.\n\n' +
+      'The label needs a safety statement and the FDA disclaimer. The Jurisdiction Matrix shows the US requirements.',
     tab: 'matrix',
   },
   {
     keys: ['canada', 'nhp', 'npn', 'health canada', 'licensed natural'],
     text:
       'Canada (NHP / NPN):\n\n' +
-      'Canada me Natural Health Products Directorate se Site Licence + Product Licence chahiye. Har NHP ko NPN number milta hai, aur claims NHP regulations ke specified "risk-based" categories me hi allowed.\n\n' +
-      'Canada ke requirements matrix me visible hain.',
+      'In Canada you need a Site Licence and a Product Licence from the Natural Health Products Directorate. Every NHP is assigned an NPN number, and claims are permitted only within the prescribed risk-based categories.\n\n' +
+      'Canada requirements are visible in the matrix.',
     tab: 'matrix',
   },
   {
     keys: ['who', 'monograph', 'gmp who', 'icmr', 'clinical', 'evidence study'],
     text:
       'Evidence & WHO Monographs:\n\n' +
-      'Claim ko stronger karne ke liye: WHO COVID/quality monographs, classical granths, jako key clinical studies (ICMR/TKI marked). Strong evidence = reproducible study + peer review. Missing evidence ko Evidence Matrix me red flag dikhata hai.\n\n' +
-      'Har claim ke against evidence status Evidence Matrix tab me hai.',
+      'To strengthen a claim, use WHO quality monographs, classical granths, and key clinical studies (ICMR / TKI marked). Strong evidence means a reproducible study plus peer review. The Evidence Matrix shows a red flag wherever evidence is missing.\n\n' +
+      'The evidence status for every claim is in the Evidence Matrix tab.',
     tab: 'evidence',
   },
   {
@@ -125,6 +118,28 @@ const DEFAULT_KB_STATUS: Array<{ keys: string[]; text?: string; tab?: string }> 
 const KB: Array<{ keys: string[]; text: string; tab?: string }> = DEFAULT_KB_STATUS.filter(
   (e): e is { keys: string[]; text: string; tab?: string } => typeof e.text === 'string',
 );
+
+const UNIQUE_SCRIPTS: Array<{ lang: string; re: RegExp }> = [
+  { lang: 'bn', re: /[\u0980-\u09FF]/ },
+  { lang: 'gu', re: /[\u0A80-\u0AFF]/ },
+  { lang: 'ta', re: /[\u0B80-\u0BFF]/ },
+  { lang: 'te', re: /[\u0C00-\u0C7F]/ },
+  { lang: 'kn', re: /[\u0C80-\u0CFF]/ },
+  { lang: 'ml', re: /[\u0D00-\u0D7F]/ },
+];
+
+const DEVANAGARI = /[\u0900-\u097F]/;
+const DEVANAGARI_LANGS = ['hi', 'mr', 'sa'];
+
+function detectLang(text: string, fallback: string): string {
+  for (const entry of UNIQUE_SCRIPTS) {
+    if (entry.re.test(text)) return entry.lang;
+  }
+  if (DEVANAGARI.test(text)) {
+    return DEVANAGARI_LANGS.includes(fallback) ? fallback : 'hi';
+  }
+  return fallback;
+}
 
 function findTab(text: string): { tab: string; keys: string[] } | null {
   const low = text.toLowerCase();
@@ -164,17 +179,15 @@ export default function SaktiAssistant({
   useEffect(() => {
     if (!open) return;
     const statusParts: string[] = [];
-    if (passportTitle) statusParts.push(`Passport: "${passportTitle.slice(0, 44)}${passportTitle.length > 44 ? '…' : ''}"`);
-    if (typeof readiness === 'number') statusParts.push(`Patent Readiness: ${readiness}%`);
-    if (passportId) statusParts.push('Assessment ready: India · USA · Canada');
-    const statusLine = statusParts.length ? `\n\n${statusParts.join('  ·  ')}` : '\n\nAbhi koi passport nahi bana hai — Overview ke "Create a New Innovation Passport" se shuru karo.';
-    const greeting = 'Namaste! Main aapka IP-SAKTI Assistant hoon 😊\n\n' + (lang === 'hi'
-      ? 'Main aapko dashboard navigate karne, dossier export karne, regulatory concepts samjhane, aur assessment chalane me madad karunga.'
-      : 'I can navigate your dashboard, export dossiers, explain regulatory concepts, and run assessments.') + statusLine;
+    if (passportTitle) statusParts.push(`${t('sa_passport_lbl', lang)} "${passportTitle.slice(0, 44)}${passportTitle.length > 44 ? '…' : ''}"`);
+    if (typeof readiness === 'number') statusParts.push(`${t('sa_readiness_lbl', lang)} ${readiness}%`);
+    if (passportId) statusParts.push(t('sa_assess_ready', lang));
+    const statusLine = statusParts.length ? `\n\n${statusParts.join('  ·  ')}` : t('sa_no_passport', lang);
+    const greeting = t('sa_greet', lang) + t('sa_greet_cap', lang) + statusLine;
     if (messages.length === 0) {
       push([
         { id: idRef.current++, role: 'bot', text: greeting },
-        { id: idRef.current++, role: 'bot', text: 'Kya chahoge? Type karo jaise "open copilot", "abs kya hai", "how to export" — ya niche suggestions chuno.' },
+        { id: idRef.current++, role: 'bot', text: t('sa_greet_ask', lang) },
       ]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -195,45 +208,49 @@ export default function SaktiAssistant({
     const runExpr = /\b(?:run|start|do|chal|karo|chalao|evaluate|assessment|analysis)\b/.test(low);
     const exportExpr = /(?:export|dossier|pdf|download|kar|banao)/.test(low) && !/open|khol/.test(low);
 
+    const rlang = detectLang(text, lang);
+    const tr = (key: string) => t(key, rlang);
+    const fill = (s: string, pairs: Array<[string, string]>) => pairs.reduce((acc, [k, v]) => acc.split(k).join(v), s);
+
     setTimeout(() => {
       let reply: ChatMsg[] = [];
 
       const tabHit = findTab(text);
       if (tabHit && /open|khol|khole|kholo|dikha|show|go to|ja|navigate|le jao|open karo|kholke/i.test(low)) {
         onNavigate(tabHit.tab);
-        reply = [{ id: idRef.current++, role: 'bot', text: `Ab "${tabHit.tab}" tab khol raha hoon ⚡` }];
+        reply = [{ id: idRef.current++, role: 'bot', text: fill(tr('sa_reply_open_tab'), [['{tab}', tabHit.tab]]) }];
       } else if (exportExpr && /dossier|export|pdf|download/i.test(low)) {
         onQuickAction('export');
-        reply = [{ id: idRef.current++, role: 'bot', text: 'Dossier export shuru kar raha hoon 📄 — file download aayegi.' }];
+        reply = [{ id: idRef.current++, role: 'bot', text: tr('sa_reply_export') }];
       } else if (runExpr && /\b(?:assessment|evaluate|analysis|readiness)\b/.test(low)) {
         onQuickAction('evaluate');
-        reply = [{ id: idRef.current++, role: 'bot', text: 'Assessment dobara chala raha hoon 🔄 — results update ho jayenge.' }];
+        reply = [{ id: idRef.current++, role: 'bot', text: tr('sa_reply_evaluate') }];
       } else if (/what\s*-?\s*if|simulat/i.test(low)) {
         onNavigate('whatif');
-        reply = [{ id: idRef.current++, role: 'bot', text: 'What-If Simulator khol raha hoon — wahan claim mutate karke compliance diff dekh sakte ho.' }];
+        reply = [{ id: idRef.current++, role: 'bot', text: tr('sa_reply_whatif') }];
       } else if (/help|madad|saksham|kya kar|kya kr|features|can you do|kye kar/i.test(low)) {
-        reply = [{ id: idRef.current++, role: 'bot', text: HELP_TEXT }];
+        reply = [{ id: idRef.current++, role: 'bot', text: tr(HELP_KEY) }];
       } else if (/status|kitna|hal|current|progress|next/i.test(low)) {
         const statusParts: string[] = [];
-        if (passportTitle) statusParts.push(`Passport: "${passportTitle.slice(0, 44)}"`);
-        if (typeof readiness === 'number') statusParts.push(`Patent Readiness: ${readiness}%`);
-        if (passportId) statusParts.push('India · USA · Canada assessment ready');
+        if (passportTitle) statusParts.push(fill(tr('sa_status_passport'), [['{title}', passportTitle.slice(0, 44)]]));
+        if (typeof readiness === 'number') statusParts.push(fill(tr('sa_status_readiness'), [['{n}', String(readiness)]]));
+        if (passportId) statusParts.push(tr('sa_status_ready'));
         reply = [{
           id: idRef.current++,
           role: 'bot',
-          text: 'Aapki current status:\n\n' + (statusParts.length ? statusParts.join('\n') : 'Passport abhi nahi bana. Overview pe first card se banao.') + '\n\nNext step: Evidence Matrix me gaps khol ke document upload karo.',
+          text: tr('sa_reply_status_head') + '\n\n' + (statusParts.length ? statusParts.join('\n') : tr('sa_status_none')) + '\n\n' + tr('sa_status_next'),
         }];
       } else {
         const kbAnswer = findKB(text);
         if (kbAnswer) {
           const tab = TAB_ALIASES.find((t) => kbAnswer && t.keys.some((k) => low.includes(k)));
-          reply = [{ id: idRef.current++, role: 'bot', text: kbAnswer + (tab && tab.tab !== 'overview' ? `\n\nIs topic ke liye "${tab.tab}" tab kholna ho toh "open ${tab.tab}" likho.` : '') }];
+          const note = tab && tab.tab !== 'overview'
+            ? '\n\n' + fill(tr('sa_kb_open_tab'), [['{tab}', tab.tab]])
+            : '';
+          const langNote = rlang === 'en' ? '' : tr('sa_en_note') + '\n\n';
+          reply = [{ id: idRef.current++, role: 'bot', text: langNote + kbAnswer + note }];
         } else {
-          reply = [{
-            id: idRef.current++,
-            role: 'bot',
-            text: 'Maaf kijiye, ye mere training me nahi hai 😅\n\nMain practical actions me help karta hoon: "open copilot", "dossier export", "abs kya hai", "section 3(p)", "status batao", ya "help".\n\nRegulatory deep-dive ke liye AI Copilot tab me exact question poocho — wahan source-cited answers milte hain.',
-          }];
+          reply = [{ id: idRef.current++, role: 'bot', text: tr('sa_fallback') }];
         }
       }
       setThinking(false);
@@ -242,11 +259,11 @@ export default function SaktiAssistant({
   };
 
   const chips = [
-    { label: 'Status', act: () => submit('status batao') },
-    { label: 'Open Copilot', act: () => submit('open copilot') },
-    { label: 'What is ABS?', act: () => submit('abs kya hai') },
-    { label: 'Export Dossier', act: () => submit('dossier export karo') },
-    { label: 'Section 3(p)', act: () => submit('what is section 3(p)') },
+    { label: t('sa_chip_status', lang), act: () => submit('status batao') },
+    { label: t('sa_chip_copilot', lang), act: () => submit('open copilot') },
+    { label: t('sa_chip_abs', lang), act: () => submit('abs kya hai') },
+    { label: t('sa_chip_export', lang), act: () => submit('dossier export karo') },
+    { label: t('sa_chip_3p', lang), act: () => submit('what is section 3(p)') },
   ];
 
   return (
@@ -259,11 +276,11 @@ export default function SaktiAssistant({
               <div>
                 <div className="text-sm font-bold font-display flex items-center gap-1.5">IP-SAKTI Assistant</div>
                 <div className="text-[10px] text-emerald-100 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-lime-300 animate-pulse" /> Online · Aapki help ke liye
+                  <span className="w-1.5 h-1.5 rounded-full bg-lime-300 animate-pulse" /> {t('sa_online', lang)}
                 </div>
               </div>
             </div>
-            <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-white/20 transition" aria-label="Close assistant">
+            <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-white/20 transition" aria-label={t('sa_close', lang)}>
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -311,10 +328,10 @@ export default function SaktiAssistant({
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder='Type kar... "open copilot" / "abs kya hai"'
+              placeholder={t('sa_input_ph', lang)}
               className="flex-1 min-w-0 text-xs px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 focus:border-emerald-500 focus:outline-none text-slate-700"
             />
-            <button type="submit" className="shrink-0 w-8 h-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition" aria-label="Send">
+            <button type="submit" className="shrink-0 w-8 h-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition" aria-label={t('sa_send', lang)}>
               <Send className="w-3.5 h-3.5" />
             </button>
           </form>
@@ -324,7 +341,7 @@ export default function SaktiAssistant({
       <button
         onClick={() => setOpen((o) => !o)}
         className="pointer-events-auto w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-xl shadow-emerald-900/30 flex items-center justify-center transition-transform hover:scale-105 relative"
-        aria-label="Open IP-SAKTI Assistant"
+        aria-label={t('sa_open_aria', lang)}
       >
         {open ? <X className="w-6 h-6" /> : <Bot className="w-6 h-6" />}
         {!open && <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-amber-400 border-2 border-white animate-pulse" />}

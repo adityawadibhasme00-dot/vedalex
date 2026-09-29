@@ -12,6 +12,8 @@ import { GlassCard } from './ui/GlassCard';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 import { SelectOrOther } from './ui/SelectOrOther';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface PassportFormProps {
   onSubmit: (data: any) => void;
@@ -19,11 +21,11 @@ interface PassportFormProps {
 }
 
 const STEPS = [
-  { label: 'Basic Info', icon: User },
-  { label: 'Formulation', icon: Languages },
-  { label: 'Process', icon: FlaskConical },
-  { label: 'Claims', icon: ShieldCheck },
-  { label: 'Review', icon: ClipboardList },
+  { id: 'basic', icon: User },
+  { id: 'formulation', icon: Languages },
+  { id: 'process', icon: FlaskConical },
+  { id: 'claims', icon: ShieldCheck },
+  { id: 'review', icon: ClipboardList },
 ];
 
 const CLAIM_OPTIONS = [
@@ -38,6 +40,7 @@ const LANGUAGES = ['English', 'हिन्दी', 'मराठी', 'தம�
 const inputCls = "w-full px-4 py-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition";
 
 export default function InnovationPassportForm({ onSubmit, isLoading }: PassportFormProps) {
+  const { lang } = useLang();
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
     innovationName: '',
@@ -78,7 +81,7 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
       const res = await parseFormulation(formData.formulationInput, formData.formulationLang);
       setParsedFormulation(res);
     } catch (err) {
-      setParseError('Failed to parse formulation. Backend must be running.');
+      setParseError('passportform_parse_error');
     } finally {
       setIsParsing(false);
     }
@@ -90,8 +93,8 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
     const hasDrugClaim = therapeutic.some((tt) => labelText.includes(tt));
     setFirewallResult(
       hasDrugClaim
-        ? { status: 'High Risk — drug claim detected', color: 'red' }
-        : { status: 'Safe — claims appear compliant', color: 'green' }
+        ? { status: 'passportform_firewall_high', color: 'red' }
+        : { status: 'passportform_firewall_safe', color: 'green' }
     );
   };
 
@@ -135,7 +138,7 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
           const done = i < step;
           return (
             <button
-              key={s.label}
+              key={s.id}
               onClick={() => i < step && setStep(i)}
               className="flex-1 group"
             >
@@ -151,7 +154,7 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
                 </div>
                 <div className="hidden sm:block">
                   <div className={`text-[10px] font-semibold ${active ? 'text-blue-600' : done ? 'text-emerald-600' : 'text-slate-500'}`}>
-                    {s.label}
+                    {t(`passportform_step_${s.id}` as any, lang)}
                   </div>
                 </div>
               </div>
@@ -167,46 +170,46 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
       {step === 0 && (
         <GlassCard padding="lg" className="animate-fadeInUp">
           <h3 className="text-sm font-bold text-slate-900 mb-5 flex items-center gap-2">
-            <User className="w-4 h-4 text-blue-600" /> Basic Information
+            <User className="w-4 h-4 text-blue-600" /> {t('passportform_basic_info', lang)}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="text-xs text-slate-500 mb-1.5 block">Innovation Name</label>
-              <input value={formData.innovationName} onChange={(e) => handleInput('innovationName', e.target.value)} placeholder="e.g. TriHerb Restful Sleep Vati" className={inputCls} />
+              <label className="text-xs text-slate-500 mb-1.5 block">{t('passportform_innovation_name', lang)}</label>
+              <input value={formData.innovationName} onChange={(e) => handleInput('innovationName', e.target.value)} placeholder={t('passportform_innovation_name_ph', lang)} className={inputCls} />
             </div>
             <div>
-              <label className="text-xs text-slate-500 mb-1.5 block">Applicant</label>
-              <input value={formData.applicant} onChange={(e) => handleInput('applicant', e.target.value)} placeholder="Full name or organization" className={inputCls} />
+              <label className="text-xs text-slate-500 mb-1.5 block">{t('passportform_applicant', lang)}</label>
+              <input value={formData.applicant} onChange={(e) => handleInput('applicant', e.target.value)} placeholder={t('passportform_applicant_ph', lang)} className={inputCls} />
             </div>
             <div>
-              <label className="text-xs text-slate-500 mb-1.5 block">Institution</label>
-              <input value={formData.institution} onChange={(e) => handleInput('institution', e.target.value)} placeholder="e.g. NIPER, Startup, MSME" className={inputCls} />
+              <label className="text-xs text-slate-500 mb-1.5 block">{t('passportform_institution', lang)}</label>
+              <input value={formData.institution} onChange={(e) => handleInput('institution', e.target.value)} placeholder={t('passportform_institution_ph', lang)} className={inputCls} />
             </div>
             <div>
               <SelectOrOther
-                label="Product Type"
+                label={t('passportform_product_type', lang)}
                 options={['Nutraceutical', 'Ayurvedic Medicine', 'Cosmetic', 'Food Supplement', 'Herbal Supplement']}
                 value={formData.productType}
                 onChange={(v) => handleInput('productType', v)}
-                inputPlaceholder="Type the product type — e.g. Medicated Oil, or paste an official description/link"
+                inputPlaceholder={t('passportform_product_type_ph', lang)}
               />
             </div>
             <div>
               <SelectOrOther
-                label="Category"
+                label={t('passportform_category', lang)}
                 options={['Herbal Supplement', 'Traditional Medicine', 'Cosmeceutical', 'Functional Food']}
                 value={formData.category}
                 onChange={(v) => handleInput('category', v)}
-                inputPlaceholder="Type the category — or paste an official reference/link"
+                inputPlaceholder={t('passportform_category_ph', lang)}
               />
             </div>
             <div className="md:col-span-2">
               <SelectOrOther
-                label="Target Market"
+                label={t('passportform_target_market', lang)}
                 options={['India', 'United States', 'Canada', 'European Union', 'All (Global)']}
                 value={formData.targetMarket}
                 onChange={(v) => handleInput('targetMarket', v)}
-                inputPlaceholder="Type your target market(s) — e.g. India + UAE, or paste the official market authority link"
+                inputPlaceholder={t('passportform_target_market_ph', lang)}
               />
             </div>
           </div>
@@ -217,42 +220,42 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
       {step === 1 && (
         <GlassCard padding="lg" className="animate-fadeInUp">
           <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <Languages className="w-4 h-4 text-blue-600" /> Multilingual Formulation
+            <Languages className="w-4 h-4 text-blue-600" /> {t('passportform_multilingual_formulation', lang)}
           </h3>
           <div className="flex gap-2 mb-3 overflow-x-auto pb-1">
-            {LANGUAGES.map((lang) => (
-              <span key={lang} className="px-2.5 py-1 rounded-full text-[10px] bg-emerald-50/70 text-slate-500 border border-emerald-200 whitespace-nowrap">{lang}</span>
+            {LANGUAGES.map((l) => (
+              <span key={l} className="px-2.5 py-1 rounded-full text-[10px] bg-emerald-50/70 text-slate-500 border border-emerald-200 whitespace-nowrap">{l}</span>
             ))}
           </div>
           <textarea
             value={formData.formulationInput}
             onChange={(e) => handleInput('formulationInput', e.target.value)}
             rows={3}
-            placeholder="हळद, नीम, तुळस / Turmeric, Neem, Tulsi..."
+            placeholder={t('passportform_formulation_ph', lang)}
             className={`${inputCls} resize-none`}
           />
           <div className="flex items-center gap-3 mt-3">
             <Button variant="primary" size="sm" icon={isParsing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} onClick={handleParseFormulation} disabled={isParsing}>
-              {isParsing ? 'Parsing...' : 'Parse & Canonicalize'}
+              {isParsing ? t('passportform_parsing', lang) : t('passportform_parse_canonicalize', lang)}
             </Button>
             {parsedFormulation && (
-              <Badge variant="success" dot>Detected: {parsedFormulation.detected_language} · {parsedFormulation.ingredients.length} botanicals</Badge>
+              <Badge variant="success" dot>{t('passportform_detected', lang)} {parsedFormulation.detected_language} · {parsedFormulation.ingredients.length} {t('passportform_botanicals', lang)}</Badge>
             )}
           </div>
 
-          {parseError && <div className="mt-3 px-3 py-2 rounded-lg bg-red-100 border border-red-500/20 text-xs text-red-600">{parseError}</div>}
+          {parseError && <div className="mt-3 px-3 py-2 rounded-lg bg-red-100 border border-red-500/20 text-xs text-red-600">{t(parseError as any, lang)}</div>}
 
           {parsedFormulation && (
             <div className="mt-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 overflow-hidden">
               <div className="px-4 py-3 border-b border-emerald-200 flex items-center gap-2 text-xs font-bold text-slate-900">
-                <Leaf className="w-4 h-4 text-emerald-600" /> Botanical Mapping Preview
+                <Leaf className="w-4 h-4 text-emerald-600" /> {t('passportform_botanical_preview', lang)}
               </div>
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-emerald-200">
-                    <th className="px-4 py-2.5 text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Common / Input</th>
-                    <th className="px-4 py-2.5 text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Scientific (Canonical)</th>
-                    <th className="px-4 py-2.5 text-[10px] uppercase tracking-wider text-slate-500 font-semibold">API Monograph</th>
+                    <th className="px-4 py-2.5 text-[10px] uppercase tracking-wider text-slate-500 font-semibold">{t('passportform_common_input', lang)}</th>
+                    <th className="px-4 py-2.5 text-[10px] uppercase tracking-wider text-slate-500 font-semibold">{t('passportform_scientific_canonical', lang)}</th>
+                    <th className="px-4 py-2.5 text-[10px] uppercase tracking-wider text-slate-500 font-semibold">{t('passport_api_monograph', lang)}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-emerald-200">
@@ -262,7 +265,7 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
                         {ing.raw_name}
                         {ing.status === 'unresolved' && (
                           <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 bg-amber-100 rounded-full px-2 py-0.5">
-                            <AlertTriangle className="w-3 h-3" /> Not in glossary
+                            <AlertTriangle className="w-3 h-3" /> {t('passportform_not_in_glossary', lang)}
                           </span>
                         )}
                       </td>
@@ -281,41 +284,41 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
       {step === 2 && (
         <GlassCard padding="lg" className="animate-fadeInUp">
           <h3 className="text-sm font-bold text-slate-900 mb-5 flex items-center gap-2">
-            <FlaskConical className="w-4 h-4 text-blue-600" /> Preparation Process
+            <FlaskConical className="w-4 h-4 text-blue-600" /> {t('passportform_preparation_process', lang)}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <SelectOrOther
-                label="Extraction Method"
+                label={t('passportform_extraction_method', lang)}
                 options={['Decoction (Kwatha)', 'Hydroalcoholic', 'Supercritical CO2', 'Cold Pressed', 'Steam Distillation', 'Soxhlet Extraction']}
                 value={formData.extractionMethod}
                 onChange={(v) => handleInput('extractionMethod', v)}
-                placeholder="Select method"
-                inputPlaceholder="Type the extraction method — e.g. Maceration, or paste an official method/link"
+                placeholder={t('passportform_select_method', lang)}
+                inputPlaceholder={t('passportform_extraction_method_ph', lang)}
               />
             </div>
             <div>
               <SelectOrOther
-                label="Solvent / Ethanol Content"
+                label={t('passportform_solvent', lang)}
                 options={['Water (Aqueous)', 'Ethanol 70%', 'Ethanol 95%', 'Methanol', 'CO2', 'Ghee / Oil']}
                 value={formData.solvent}
                 onChange={(v) => handleInput('solvent', v)}
-                placeholder="Select solvent"
-                hint='Choose Other to type the exact composition — e.g. Ethanol 90% + Water 10%. If you do not have the data, type "official" or paste the official source link.'
-                inputPlaceholder='Type exact content — e.g. Ethanol 90% + Water 10%, "official", or paste the official source link'
+                placeholder={t('passportform_select_solvent', lang)}
+                hint={t('passportform_solvent_hint', lang)}
+                inputPlaceholder={t('passportform_solvent_ph', lang)}
               />
             </div>
             <div>
-              <label className="text-xs text-slate-500 mb-1.5 block">Temperature (°C)</label>
-              <input value={formData.temperature} onChange={(e) => handleInput('temperature', e.target.value)} placeholder="e.g. 80°C" className={inputCls} />
+              <label className="text-xs text-slate-500 mb-1.5 block">{t('passportform_temperature', lang)}</label>
+              <input value={formData.temperature} onChange={(e) => handleInput('temperature', e.target.value)} placeholder={t('passportform_temperature_ph', lang)} className={inputCls} />
             </div>
             <div>
-              <label className="text-xs text-slate-500 mb-1.5 block">Time (hours)</label>
-              <input value={formData.time} onChange={(e) => handleInput('time', e.target.value)} placeholder="e.g. 4 hours" className={inputCls} />
+              <label className="text-xs text-slate-500 mb-1.5 block">{t('passportform_time', lang)}</label>
+              <input value={formData.time} onChange={(e) => handleInput('time', e.target.value)} placeholder={t('passportform_time_ph', lang)} className={inputCls} />
             </div>
             <div className="md:col-span-2">
-              <label className="text-xs text-slate-500 mb-1.5 block">Processing Steps</label>
-              <textarea value={formData.processingSteps} onChange={(e) => handleInput('processingSteps', e.target.value)} rows={3} placeholder="Describe the step-by-step manufacturing process..." className={`${inputCls} resize-none`} />
+              <label className="text-xs text-slate-500 mb-1.5 block">{t('passportform_processing_steps', lang)}</label>
+              <textarea value={formData.processingSteps} onChange={(e) => handleInput('processingSteps', e.target.value)} rows={3} placeholder={t('passportform_processing_steps_ph', lang)} className={`${inputCls} resize-none`} />
             </div>
           </div>
         </GlassCard>
@@ -325,7 +328,7 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
       {step === 3 && (
         <GlassCard padding="lg" className="animate-fadeInUp">
           <h3 className="text-sm font-bold text-slate-900 mb-5 flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-blue-600" /> Health Claims
+            <ShieldCheck className="w-4 h-4 text-blue-600" /> {t('passportform_health_claims', lang)}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {CLAIM_OPTIONS.map((claim) => {
@@ -352,16 +355,16 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
 
           <div className="mt-6 pt-6 border-t border-emerald-200">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-slate-900 flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-amber-600" /> Claim Firewall</span>
-              <Button variant="secondary" size="sm" onClick={runClaimFirewall}>Run Claim Firewall Check</Button>
+              <span className="text-xs font-bold text-slate-900 flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-amber-600" /> {t('passportform_claim_firewall', lang)}</span>
+              <Button variant="secondary" size="sm" onClick={runClaimFirewall}>{t('passportform_run_firewall', lang)}</Button>
             </div>
             {firewallResult ? (
               <div className={`px-4 py-3 rounded-xl border text-sm ${firewallResult.color === 'green' ? 'bg-emerald-100 border-emerald-500/30 text-emerald-700' : 'bg-red-100 border-red-500/30 text-red-700'}`}>
-                {firewallResult.status}
+                {t(firewallResult.status as any, lang)}
               </div>
             ) : (
               <div className="px-4 py-3 rounded-xl bg-emerald-50/70 border border-emerald-200 text-xs text-slate-500">
-                Run a check to validate these claims against regulatory requirements
+                {t('passportform_firewall_hint', lang)}
               </div>
             )}
           </div>
@@ -372,17 +375,17 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
       {step === 4 && (
         <GlassCard padding="lg" className="animate-fadeInUp">
           <h3 className="text-sm font-bold text-slate-900 mb-5 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-blue-600" /> Review & Generate Passport
+            <FileText className="w-4 h-4 text-blue-600" /> {t('passportform_review_generate', lang)}
           </h3>
           <div className="space-y-3 rounded-2xl bg-emerald-50/70 border border-emerald-200 p-5">
             {[
-              { k: 'Innovation Name', v: formData.innovationName || 'Untitled Innovation' },
-              { k: 'Applicant', v: formData.applicant || '—' },
-              { k: 'Product Type', v: formData.productType },
-              { k: 'Target Market', v: formData.targetMarket },
-              { k: 'Extraction', v: `${formData.extractionMethod || '—'} · ${formData.solvent || '—'}` },
-              { k: 'Ingredients', v: parsedFormulation?.ingredients.map((i) => i.raw_name).join(', ') || formData.formulationInput },
-              { k: 'Claims', v: formData.claims.length ? formData.claims.map((c) => CLAIM_OPTIONS.find((o) => o.id === c)!.label).join(', ') : 'None selected' },
+              { k: t('passportform_innovation_name', lang), v: formData.innovationName || t('passportform_untitled', lang) },
+              { k: t('passportform_applicant', lang), v: formData.applicant || '—' },
+              { k: t('passportform_product_type', lang), v: formData.productType },
+              { k: t('passportform_rv_target_market', lang), v: formData.targetMarket },
+              { k: t('passportform_rv_extraction', lang), v: `${formData.extractionMethod || '—'} · ${formData.solvent || '—'}` },
+              { k: t('passportform_rv_ingredients', lang), v: parsedFormulation?.ingredients.map((i) => i.raw_name).join(', ') || formData.formulationInput },
+              { k: t('passportform_rv_claims', lang), v: formData.claims.length ? formData.claims.map((c) => CLAIM_OPTIONS.find((o) => o.id === c)!.label).join(', ') : t('passportform_none_selected', lang) },
             ].map((r) => (
               <div key={r.k} className="flex items-start justify-between gap-4 py-1.5 border-b border-emerald-200 last:border-0">
                 <span className="text-xs text-slate-500 flex-shrink-0">{r.k}</span>
@@ -391,9 +394,9 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
             ))}
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Badge variant="success" dot>Passport Ready</Badge>
-            <Badge variant="info" dot>QR Included</Badge>
-            <Badge variant="neutral" dot>Version 1.0</Badge>
+            <Badge variant="success" dot>{t('passportform_badge_ready', lang)}</Badge>
+            <Badge variant="info" dot>{t('passportform_badge_qr', lang)}</Badge>
+            <Badge variant="neutral" dot>{t('passport_version', lang)} 1.0</Badge>
           </div>
         </GlassCard>
       )}
@@ -401,7 +404,7 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
       {/* Navigation */}
       <div className="flex items-center justify-between mt-6">
         <Button variant="ghost" size="md" icon={<ChevronLeft className="w-4 h-4" />} onClick={prevStep} disabled={step === 0}>
-          Back
+          {t('passportform_back', lang)}
         </Button>
         <Button
           variant={step === totalSteps - 1 ? 'primary' : 'secondary'}
@@ -410,7 +413,7 @@ export default function InnovationPassportForm({ onSubmit, isLoading }: Passport
           onClick={nextStep}
           disabled={isLoading}
         >
-          {isLoading ? 'Generating...' : step === totalSteps - 1 ? 'Generate Innovation Passport' : 'Continue'}
+          {isLoading ? t('passportform_generating', lang) : step === totalSteps - 1 ? t('passportform_generate_passport', lang) : t('passportform_continue', lang)}
           {step < totalSteps - 1 && <ChevronRight className="w-4 h-4" />}
         </Button>
       </div>

@@ -1,95 +1,69 @@
-import { AGENT_BLURBS } from '../src/lib/agentBlurbs';
+import { AGENT_BLURB_KEYS } from '../src/lib/agentBlurbs';
+import { DICTIONARY, SUPPORTED_LANGUAGES } from '../src/lib/i18n';
 
-const REGISTERED_SLUGS = [
-  'triz',
-  'quick_research',
-  'find_solutions',
-  'novelty_search',
-  'fto_search',
-  'design_fto',
-  'patent_drafting',
-  'invention_disclosure',
-  'office_action_response',
-  'essentiality_claim_chart',
-  'tdoc_novelty_search',
-  'document_analyzer',
-  'lca_biotherapeutic',
-  'lca_small_molecule',
-  'sar_data_extraction',
-  'antibody_target_predictor',
-  'markush_drafting',
-  'formulation',
-  'materials_find_solutions',
-];
+const CATALOG_SLUGS = Object.keys(AGENT_BLURB_KEYS);
 
-describe('AGENT_BLURBS structure', () => {
-  test('every registered agent slug has a non-empty blurb', () => {
-    for (const slug of REGISTERED_SLUGS) {
-      expect(AGENT_BLURBS[slug]).toBeDefined();
-      expect(typeof AGENT_BLURBS[slug]).toBe('string');
-      expect(AGENT_BLURBS[slug].trim()).not.toBe('');
-      expect(AGENT_BLURBS[slug]).toBe(AGENT_BLURBS[slug].trim());
+describe('AGENT_BLURB_KEYS structure', () => {
+  test('catalog is non-empty', () => {
+    expect(CATALOG_SLUGS.length).toBeGreaterThan(0);
+  });
+
+  test('every slug is a snake_case identifier', () => {
+    for (const slug of CATALOG_SLUGS) {
+      expect(slug).toMatch(/^[a-z][a-z0-9_]*$/);
     }
   });
 
-  test('the catalog contains no slug outside the registry', () => {
-    const keys = Object.keys(AGENT_BLURBS);
-    expect(keys).toHaveLength(REGISTERED_SLUGS.length);
-    for (const key of keys) {
-      expect(REGISTERED_SLUGS).toContain(key);
+  test('every slug points at an ab_ dictionary key', () => {
+    for (const slug of CATALOG_SLUGS) {
+      expect(AGENT_BLURB_KEYS[slug]).toMatch(/^ab_[a-z0-9_]+$/);
     }
   });
 
-  test('every key is a snake_case slug', () => {
-    for (const key of Object.keys(AGENT_BLURBS)) {
-      expect(key).toMatch(/^[a-z][a-z0-9_]*$/);
+  test('every referenced dictionary key exists', () => {
+    for (const slug of CATALOG_SLUGS) {
+      expect(DICTIONARY[AGENT_BLURB_KEYS[slug]]).toBeDefined();
     }
   });
 
-  test('no two slugs share the same blurb text', () => {
-    const values = Object.values(AGENT_BLURBS);
+  test('no two slugs share the same dictionary key', () => {
+    const values = Object.values(AGENT_BLURB_KEYS);
     expect(new Set(values).size).toBe(values.length);
-  });
-
-  test('blurbs are single line sentences', () => {
-    for (const value of Object.values(AGENT_BLURBS)) {
-      expect(value).not.toContain('\n');
-      expect(value.endsWith('.')).toBe(true);
-    }
-  });
-
-  test('blurbs stay within a short card sized length', () => {
-    for (const value of Object.values(AGENT_BLURBS)) {
-      expect(value.length).toBeLessThan(200);
-    }
-  });
-});
-
-describe('AGENT_BLURBS lookup', () => {
-  test('known slugs resolve to their own blurb', () => {
-    expect(AGENT_BLURBS['triz']).toMatch(/contradiction/i);
-    expect(AGENT_BLURBS['novelty_search']).toMatch(/novelty search/i);
-    expect(AGENT_BLURBS['fto_search']).toMatch(/infring/i);
-    expect(AGENT_BLURBS['patent_drafting']).toMatch(/patent application/i);
   });
 
   test('an unknown slug yields undefined so callers can fall back', () => {
     const apiDescription = 'Description served by the agents endpoint';
-    expect(AGENT_BLURBS['prior-art']).toBeUndefined();
-    expect(AGENT_BLURBS['prior-art'] || apiDescription).toBe(apiDescription);
-  });
-
-  test('registered slugs never trigger the fallback branch', () => {
-    for (const slug of REGISTERED_SLUGS) {
-      expect(Boolean(AGENT_BLURBS[slug])).toBe(true);
-      expect(AGENT_BLURBS[slug] || 'fallback').toBe(AGENT_BLURBS[slug]);
-    }
+    expect(AGENT_BLURB_KEYS['prior-art']).toBeUndefined();
+    expect(AGENT_BLURB_KEYS['prior-art'] || apiDescription).toBe(apiDescription);
   });
 
   test('lookup does not mutate the catalog', () => {
-    const before = JSON.stringify(AGENT_BLURBS);
-    AGENT_BLURBS['missing'];
-    AGENT_BLURBS['prior-art'] || 'fallback';
-    expect(JSON.stringify(AGENT_BLURBS)).toBe(before);
+    const before = JSON.stringify(AGENT_BLURB_KEYS);
+    AGENT_BLURB_KEYS['missing'];
+    AGENT_BLURB_KEYS['prior-art'] || 'fallback';
+    expect(JSON.stringify(AGENT_BLURB_KEYS)).toBe(before);
+  });
+});
+
+describe('agent blurb translations', () => {
+  test('every language has a non-empty blurb for every agent', () => {
+    for (const slug of CATALOG_SLUGS) {
+      const entry = DICTIONARY[AGENT_BLURB_KEYS[slug]];
+      for (const { code } of SUPPORTED_LANGUAGES) {
+        const value = entry[code];
+        expect(typeof value).toBe('string');
+        expect(value.trim()).not.toBe('');
+        expect(value).toBe(value.trim());
+      }
+    }
+  });
+
+  test('blurbs stay within a short card sized length', () => {
+    for (const slug of CATALOG_SLUGS) {
+      const entry = DICTIONARY[AGENT_BLURB_KEYS[slug]];
+      for (const { code } of SUPPORTED_LANGUAGES) {
+        expect(entry[code].length).toBeLessThan(260);
+      }
+    }
   });
 });

@@ -4,8 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { RegulatoryDiffRecord } from '../types';
 import { getRegulatoryDiffs } from '../lib/api';
 import { BellRing, ChevronRight, X, Sparkles } from 'lucide-react';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 export default function RegulatoryDiffBanner() {
+  const { lang } = useLang();
   const [updates, setUpdates] = useState<RegulatoryDiffRecord[]>([]);
   const [isDismissed, setIsDismissed] = useState(false);
 
@@ -27,14 +30,14 @@ export default function RegulatoryDiffBanner() {
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
               <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                Section 7.3.1 Living Regulatory-Diff Alert
+                {t('regdiff_alert', lang)}
               </span>
               <span className="text-slate-400 text-[11px]">{currentUpdate.new_version_date}</span>
             </div>
             <h4 className="font-semibold text-white">{currentUpdate.act_title}</h4>
             <p className="text-slate-300 leading-relaxed max-w-4xl">{currentUpdate.summary_of_change}</p>
             <div className="flex items-center space-x-2 pt-1 text-[11px] text-blue-300">
-              <strong className="text-slate-400">Affected Provisions:</strong>
+              <strong className="text-slate-400">{t('regdiff_affected', lang)}</strong>
               <span>{currentUpdate.affected_provisions.join(' • ')}</span>
             </div>
           </div>

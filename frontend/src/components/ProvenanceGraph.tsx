@@ -3,6 +3,8 @@
 import React from 'react';
 import { ProvenanceGraphData, StatutoryCitation } from '../types';
 import { ArrowRight, BookOpen, CheckCircle, Database, HelpCircle, ShieldAlert, Sparkles } from 'lucide-react';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface ProvenanceGraphProps {
   graphData: ProvenanceGraphData | null;
@@ -13,10 +15,11 @@ export default function ProvenanceGraph({
   graphData,
   onSelectCitation
 }: ProvenanceGraphProps) {
+  const { lang } = useLang();
   if (!graphData) {
     return (
       <div className="glass-panel rounded-2xl p-8 text-center border border-emerald-200">
-        <p className="text-slate-500 text-sm">Select a decision finding to inspect its full provenance verification chain.</p>
+        <p className="text-slate-500 text-sm">{t('pv_empty', lang)}</p>
       </div>
     );
   }
@@ -32,11 +35,11 @@ export default function ProvenanceGraph({
         <div className="flex items-center space-x-2.5 mb-1">
           <Sparkles className="w-5 h-5 text-emerald-600" />
           <h3 className="text-base font-bold text-slate-900 font-display">
-            Traceable Decision Workspace (&quot;Why?&quot; Provenance Chain)
+            {t('pv_title', lang)}
           </h3>
         </div>
         <p className="text-xs text-slate-500">
-          Every decision on screen is fully inspectable back to the exact primary statutory passage. The reasoning DAG shows how innovator facts triggered verified legal predicates.
+          {t('pv_subtitle', lang)}
         </p>
       </div>
 
@@ -47,14 +50,14 @@ export default function ProvenanceGraph({
           <div className="flex-1 space-y-3">
             <div className="text-xs font-bold uppercase tracking-wider text-emerald-600 flex items-center space-x-1.5 pb-2 border-b border-emerald-200">
               <Database className="w-3.5 h-3.5" />
-              <span>1. Innovator Facts</span>
+              <span>{t('pv_facts', lang)}</span>
             </div>
             {factNodes.map((node) => (
               <div key={node.id} className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-500/30 text-xs space-y-1">
                 <span className="font-semibold text-slate-900 block">{node.label}</span>
                 {node.details && <span className="text-[11px] text-slate-500 block">{node.details}</span>}
                 <span className="inline-block mt-1 px-2 py-0.5 text-[9px] font-bold rounded bg-emerald-100 text-emerald-700">
-                  {node.status || 'Confirmed'}
+                  {node.status || t('pv_confirmed', lang)}
                 </span>
               </div>
             ))}
@@ -68,14 +71,14 @@ export default function ProvenanceGraph({
           <div className="flex-1 space-y-3">
             <div className="text-xs font-bold uppercase tracking-wider text-amber-600 flex items-center space-x-1.5 pb-2 border-b border-emerald-200">
               <CheckCircle className="w-3.5 h-3.5" />
-              <span>2. Deterministic Rule</span>
+              <span>{t('pv_rule', lang)}</span>
             </div>
             {ruleNodes.map((node) => (
               <div key={node.id} className="p-3.5 rounded-xl bg-emerald-50/70 border border-amber-500/30 text-xs space-y-2">
                 <span className="font-semibold text-slate-900 block">{node.label}</span>
-                <span className="text-[11px] text-amber-700/90 block">Jurisdiction: {node.jurisdiction}</span>
+                <span className="text-[11px] text-amber-700/90 block">{t('pv_jurisdiction', lang)} {node.jurisdiction}</span>
                 <span className="inline-block px-2 py-0.5 text-[9px] font-bold rounded bg-amber-100 text-amber-700">
-                  Condition: {node.condition_state}
+                  {t('pv_condition', lang)} {node.condition_state}
                 </span>
               </div>
             ))}
@@ -89,7 +92,7 @@ export default function ProvenanceGraph({
           <div className="flex-1 space-y-3">
             <div className="text-xs font-bold uppercase tracking-wider text-blue-600 flex items-center space-x-1.5 pb-2 border-b border-emerald-200">
               <BookOpen className="w-3.5 h-3.5" />
-              <span>3. Primary Gazette</span>
+              <span>{t('pv_gazette', lang)}</span>
             </div>
             {citationNodes.map((node) => (
               <div key={node.id} className="p-3.5 rounded-xl bg-emerald-50/70 border border-blue-500/30 text-xs space-y-2">
@@ -113,15 +116,15 @@ export default function ProvenanceGraph({
           <div className="flex-1 space-y-3">
             <div className="text-xs font-bold uppercase tracking-wider text-violet-600 flex items-center space-x-1.5 pb-2 border-b border-emerald-200">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>4. Final Finding</span>
+              <span>{t('pv_finding', lang)}</span>
             </div>
             {findingNodes.map((node) => (
               <div key={node.id} className="p-3.5 rounded-xl bg-violet-100/70 border border-purple-500/40 text-xs space-y-2">
                 <span className="font-semibold text-slate-900 block">{node.label}</span>
                 <span className="inline-block px-2 py-0.5 text-[9px] font-bold rounded bg-violet-100 text-violet-700">
-                  Confidence: {node.confidence}
+                  {t('pv_confidence', lang)} {node.confidence}
                 </span>
-                <span className="block text-[10px] text-slate-600">Paper Trail Verified 100%</span>
+                <span className="block text-[10px] text-slate-600">{t('pv_trail', lang)}</span>
               </div>
             ))}
           </div>

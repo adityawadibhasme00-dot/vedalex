@@ -77,7 +77,7 @@ export default function Navbar({ isOnline, offlineDraftCount }: NavbarProps) {
           <button
             onClick={() => setLangOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white border border-gray-300 text-slate-700 hover:bg-gov-wash transition"
-            aria-label="Select Language"
+            aria-label={t('navbar_select_language', lang)}
             title={t('app_title', lang)}
           >
             <Globe className="w-4 h-4 text-gov-blue" />
@@ -90,7 +90,7 @@ export default function Navbar({ isOnline, offlineDraftCount }: NavbarProps) {
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gov-blue text-white border border-gov-blueDk hover:bg-gov-navy transition text-xs font-medium"
             >
               <FlaskConical className="w-4 h-4" />
-              Innovation AI Lab
+              {t('innovation_lab', lang)}
             </Link>
           </span>
         </div>

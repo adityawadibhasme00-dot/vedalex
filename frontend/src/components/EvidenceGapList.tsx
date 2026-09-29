@@ -3,6 +3,8 @@
 import React from 'react';
 import { EvidenceGapSummary, EvidenceItem } from '../types';
 import { CheckCircle2, Clock, Upload, AlertCircle, FileCheck, ArrowRight } from 'lucide-react';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface EvidenceGapListProps {
   evidenceSummary: EvidenceGapSummary | null;
@@ -15,10 +17,11 @@ export default function EvidenceGapList({
   onUpdateStatus,
   isLoading
 }: EvidenceGapListProps) {
+  const { lang } = useLang();
   if (!evidenceSummary) {
     return (
       <div className="glass-panel rounded-2xl p-8 text-center border border-emerald-200">
-        <p className="text-slate-500 text-sm">No evidence checklist loaded. Generate an assessment to view requirements.</p>
+        <p className="text-slate-500 text-sm">{t('gl_empty', lang)}</p>
       </div>
     );
   }
@@ -26,13 +29,13 @@ export default function EvidenceGapList({
   const renderStatusPill = (status: string) => {
     switch (status) {
       case 'Accepted for this assessment':
-        return <span className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full bg-emerald-100 text-emerald-700 border border-emerald-300">Accepted</span>;
+        return <span className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full bg-emerald-100 text-emerald-700 border border-emerald-300">{t('gl_accepted', lang)}</span>;
       case 'Needs review':
-        return <span className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full bg-blue-100 text-blue-700 border border-blue-300">Needs Review</span>;
+        return <span className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full bg-blue-100 text-blue-700 border border-blue-300">{t('gl_needs_review', lang)}</span>;
       case 'Uploaded':
-        return <span className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full bg-violet-100 text-violet-700 border border-violet-300">Uploaded</span>;
+        return <span className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full bg-violet-100 text-violet-700 border border-violet-300">{t('gl_uploaded', lang)}</span>;
       default:
-        return <span className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full bg-red-100 text-red-700 border border-red-300">Missing Evidence</span>;
+        return <span className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full bg-red-100 text-red-700 border border-red-300">{t('gl_missing_evidence', lang)}</span>;
     }
   };
 
@@ -42,19 +45,19 @@ export default function EvidenceGapList({
       <div className="glass-panel rounded-2xl p-5 border border-emerald-200 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h3 className="text-base font-bold text-slate-900 font-display">
-            Section 6.5 Evidence-Gap Analysis & Action Plan
+            {t('gl_title', lang)}
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Requirements follow a strict lifecycle (Missing ➔ Uploaded ➔ Needs review ➔ Accepted).
+            {t('gl_lifecycle_note', lang)}
           </p>
         </div>
 
         {/* Coverage Meter Card */}
         <div className="flex items-center space-x-3 bg-emerald-50/70 border border-emerald-500/30 rounded-2xl p-3.5 px-4 shadow-lg">
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-500 block">Case Coverage Meter</span>
+            <span className="text-[10px] uppercase font-bold text-slate-500 block">{t('jm_coverage_meter', lang)}</span>
             <span className="text-xs text-emerald-600 font-medium">
-              {evidenceSummary.evaluated_checks} of {evidenceSummary.total_checks} requirements evaluated
+              {t('gl_evaluated', lang).replace('{done}', String(evidenceSummary.evaluated_checks)).replace('{total}', String(evidenceSummary.total_checks))}
             </span>
           </div>
           <div className="text-xl font-extrabold text-emerald-600 font-display">
@@ -86,28 +89,28 @@ export default function EvidenceGapList({
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              <strong className="text-slate-500 font-medium">Why it applies: </strong>
+              <strong className="text-slate-500 font-medium">{t('gl_why_applies', lang)} </strong>
               {item.why_it_applies}
             </p>
 
             <div className="flex flex-wrap items-center justify-between pt-2 border-t border-emerald-200 gap-2 text-xs">
               <div className="flex items-center space-x-1.5 text-amber-700/90 font-medium">
                 <ArrowRight className="w-3.5 h-3.5 text-amber-600" />
-                <span>Next Action: {item.next_action}</span>
+                <span>{t('gl_next_action', lang)} {item.next_action}</span>
               </div>
 
               {/* Status transition dropdown */}
               <div className="flex items-center space-x-2">
-                <span className="text-[11px] text-slate-500">Update Lifecycle:</span>
+                <span className="text-[11px] text-slate-500">{t('gl_update_lifecycle', lang)}</span>
                 <select
                   value={item.status}
                   onChange={(e) => onUpdateStatus(item.id, e.target.value)}
                   className="bg-emerald-50/70 border border-emerald-200 rounded-lg text-xs text-slate-700 px-2 py-1 focus:outline-none focus:border-emerald-500"
                 >
-                  <option value="Missing">Missing</option>
-                  <option value="Uploaded">Uploaded</option>
-                  <option value="Needs review">Needs review</option>
-                  <option value="Accepted for this assessment">Accepted for assessment</option>
+        <option value="Missing">{t('gl_opt_missing', lang)}</option>
+        <option value="Uploaded">{t('gl_uploaded', lang)}</option>
+        <option value="Needs review">{t('gl_opt_needs_review', lang)}</option>
+                  <option value="Accepted for this assessment">{t('gl_opt_accepted', lang)}</option>
                 </select>
               </div>
             </div>

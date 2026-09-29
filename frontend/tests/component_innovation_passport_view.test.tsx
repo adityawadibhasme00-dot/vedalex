@@ -2,10 +2,6 @@ import { renderWithProviders, screen, userEvent } from './test-utils';
 import InnovationPassportView from '../src/components/InnovationPassportView';
 import type { InnovationPassport } from '../src/types';
 
-jest.mock('qrcode', () => ({
-  toCanvas: (_canvas: unknown, _payload: unknown, _opts: unknown, cb: (e: null) => void) => cb(null),
-}));
-
 const passport: InnovationPassport = {
   id: 'pass-12345678',
   version: 3,
@@ -130,11 +126,12 @@ describe('InnovationPassportView passport rendering', () => {
     expect(screen.getByText(/root \(40%\)/)).toBeInTheDocument();
   });
 
-  test('renders key facts and QR download panel', () => {
+  test('renders key facts without the removed scan-to-download panel', () => {
     renderView({ passport });
     expect(screen.getByText(/Tablet \(500 mg\)/)).toBeInTheDocument();
     expect(screen.getByText('Supports restful sleep')).toBeInTheDocument();
     expect(screen.getByText('Cultivated')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Download \.JSON/ })).toBeInTheDocument();
+    expect(screen.queryByText('Scan to download passport')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Download \.JSON/ })).not.toBeInTheDocument();
   });
 });

@@ -8,9 +8,9 @@ import { t } from '../../lib/i18n';
 import { Globe, ArrowLeft, Leaf } from 'lucide-react';
 
 const DEMO_ACCOUNTS = [
-  { email: 'founder@ayurstartup.in', role: 'Startup / MSME Founder' },
-  { email: 'agent@ipoffice.in', role: 'Patent Agent' },
-  { email: 'admin@incubator.in', role: 'Incubator Admin' },
+  { email: 'founder@ayurstartup.in', roleKey: 'login_role_startup' },
+  { email: 'agent@ipoffice.in', roleKey: 'login_role_patent_agent' },
+  { email: 'admin@incubator.in', roleKey: 'login_role_incubator_admin' },
 ];
 
 export default function LoginPage() {
@@ -43,7 +43,7 @@ export default function LoginPage() {
       if (res.success) {
         router.push('/dashboard');
       } else {
-        setError(res.error || 'Signup failed');
+        setError(res.error || t('login_signup_failed', lang));
       }
     }
   };
@@ -70,7 +70,7 @@ export default function LoginPage() {
               className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold transition-colors border border-gov-rule text-gov-blue hover:border-gov-blue hover:text-gov-navy bg-white"
             >
               <ArrowLeft className="w-4 h-4" />
-              Home
+              {t('home', lang)}
             </button>
             <button
               onClick={() => setLangOpen(true)}
@@ -133,7 +133,7 @@ export default function LoginPage() {
                         value={institution}
                         onChange={e => setInstitution(e.target.value)}
                         className="w-full bg-white border border-gov-rule rounded-md px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-gov-blue focus:ring-1 focus:ring-gov-blue transition"
-                        placeholder="NIPER / Startup / University"
+                        placeholder={t('institution_placeholder', lang)}
                       />
                     </div>
                   </>
@@ -152,7 +152,7 @@ export default function LoginPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gov-ink mb-1.5">{t('password', lang)}</label>
+                  <label className="block text-xs font-semibold text-gov-ink mb-1.5">{t('login_password', lang)}</label>
                   <div className="relative">
                     <input
                       type={showPass ? 'text' : 'password'}
@@ -197,7 +197,7 @@ export default function LoginPage() {
                   <div className="text-center">
                     <button
                       type="button"
-                      onClick={() => alert('Password reset instructions would be sent to your email')}
+                      onClick={() => alert(t('login_reset_alert', lang))}
                       className="text-xs text-gov-mute hover:text-gov-blue transition"
                     >
                       {t('forgot_password', lang)}
@@ -219,21 +219,21 @@ export default function LoginPage() {
                       className="w-full flex items-center justify-between px-4 py-2.5 rounded-md border border-gov-rule bg-gov-wash hover:bg-white hover:border-gov-blue transition group"
                     >
                       <div className="text-left">
-                        <div className="text-xs font-semibold text-gov-ink group-hover:text-gov-navy">{acc.role}</div>
+                        <div className="text-xs font-semibold text-gov-ink group-hover:text-gov-navy">{t(acc.roleKey, lang)}</div>
                         <div className="text-[10px] text-gov-mute">{acc.email}</div>
                       </div>
-                      <span className="text-[10px] text-gov-blue font-semibold opacity-0 group-hover:opacity-100 transition">Use →</span>
+                      <span className="text-[10px] text-gov-blue font-semibold opacity-0 group-hover:opacity-100 transition">{t('login_use', lang)} →</span>
                     </button>
                   ))}
                 </div>
-                <p className="text-center text-[10px] text-gov-mute mt-3">Password for all demo accounts: <code className="text-gov-blue font-bold">demo123</code></p>
+                <p className="text-center text-[10px] text-gov-mute mt-3">{t('login_demo_password', lang)} <code className="text-gov-blue font-bold">demo123</code></p>
               </div>
             </div>
           </div>
 
           {/* Footer */}
           <p className="text-center text-[11px] text-gov-mute mt-6">
-            IP-SAKTI v1.0 · DPDP Act 2023 Compliant · Data Residency: ap-south-1
+            IP-SAKTI v1.0 · {t('login_footer_dpdp', lang)} · {t('login_footer_residency', lang)}
           </p>
         </div>
       </div>

@@ -12,7 +12,9 @@ import {
   innolabApi, InnolabAgentWorkflow, InnolabAgentQuestion, InnolabAgentRunResult,
   AgentUnderstanding, ExtractedFeature,
 } from '../../../../lib/innolabApi';
-import { AGENT_BLURBS } from '../../../../lib/agentBlurbs';
+import { AGENT_BLURB_KEYS } from '../../../../lib/agentBlurbs';
+import { useLang } from '../../../../lib/LangContext';
+import { t } from '../../../../lib/i18n';
 
 const PHASE_COLORS: Record<string, string> = {
   engineering: 'bg-cyan-500/10 text-cyan-700 border-cyan-200',
@@ -34,6 +36,7 @@ function phaseKey(phase: string) {
 function AnswerBox({ kind, label, value, onChange, options }: {
   kind: string; label: string; value: string | string[]; onChange: (v: string | string[]) => void; options: string[];
 }) {
+  const { lang } = useLang();
   const [tagInput, setTagInput] = useState('');
   const arr = Array.isArray(value) ? value : value ? [value] : [];
 
@@ -53,7 +56,7 @@ function AnswerBox({ kind, label, value, onChange, options }: {
         onChange={(e) => onChange(e.target.value)}
         rows={5}
         autoFocus
-        placeholder="Type your answer…"
+        placeholder={t('ag_answer_placeholder', lang)}
         className="w-full rounded-xl border border-emerald-200 bg-white/90 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
       />
     );
@@ -93,7 +96,7 @@ function AnswerBox({ kind, label, value, onChange, options }: {
                 active ? 'border-emerald-500 bg-emerald-600 text-white shadow-sm' : 'border-emerald-200 bg-white/90 text-slate-700 hover:border-emerald-300'
               }`}
             >
-              {opt}
+              {opt === 'Yes' ? t('ag_yes', lang) : t('ag_no', lang)}
             </button>
           );
         })}
@@ -127,14 +130,14 @@ function AnswerBox({ kind, label, value, onChange, options }: {
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(tagInput); } }}
-            placeholder="Add value and press Enter (comma separated ok)"
+            placeholder={t('ag_add_value_placeholder', lang)}
             className="flex-1 rounded-xl border border-emerald-200 bg-white/90 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
           />
           <button
             onClick={() => addTag(tagInput)}
             className="rounded-xl border border-emerald-300 px-4 py-2.5 text-sm text-emerald-700 hover:bg-emerald-50"
           >
-            Add
+            {t('ag_add', lang)}
           </button>
         </div>
         {arr.length > 0 && (
@@ -157,7 +160,7 @@ function AnswerBox({ kind, label, value, onChange, options }: {
       value={typeof value === 'string' ? value : ''}
       onChange={(e) => onChange(e.target.value)}
       autoFocus
-      placeholder="Type your answer…"
+      placeholder={t('ag_answer_placeholder', lang)}
       className="w-full rounded-xl border border-emerald-200 bg-white/90 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
     />
   );
@@ -174,6 +177,9 @@ export default function AgentDetailPage() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
   const slug = decodeURIComponent(params.slug);
+  const { lang } = useLang();
+  const langRef = React.useRef(lang);
+  langRef.current = lang;
 
   const [agent, setAgent] = useState<InnolabAgentWorkflow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -222,7 +228,7 @@ export default function AgentDetailPage() {
       setFeatureItems([]);
       setFeatureDraft('');
     } catch (e) {
-      setLoadingError(e instanceof Error ? e.message : 'Agent not found');
+      setLoadingError(e instanceof Error ? e.message : t('ag_not_found', langRef.current));
     } finally {
       setLoading(false);
     }
@@ -266,7 +272,7 @@ export default function AgentDetailPage() {
       const res = await innolabApi.uploadAgentDocument(agent.slug, file);
       setDoc({ name: res.filename, text: res.extracted_text });
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not read that document');
+      setError(e instanceof Error ? e.message : t('ag_doc_read_failed', lang));
     } finally {
       setUploadingDoc(false);
     }
@@ -338,7 +344,7 @@ export default function AgentDetailPage() {
       });
       setResult(r);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not run agent');
+      setError(e instanceof Error ? e.message : t('ag_run_failed', lang));
     } finally {
       setRunning(false);
     }
@@ -354,7 +360,7 @@ export default function AgentDetailPage() {
       });
       setResult(r);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not run the agent on this document');
+      setError(e instanceof Error ? e.message : t('ag_run_doc_failed', lang));
     } finally {
       setRunning(false);
     }
@@ -375,7 +381,7 @@ export default function AgentDetailPage() {
       a.remove();
       URL.revokeObjectURL(url);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not export the Word report');
+      setError(e instanceof Error ? e.message : t('ag_export_failed', lang));
     } finally {
       setExporting(false);
     }
@@ -396,7 +402,7 @@ export default function AgentDetailPage() {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center text-slate-500">
-        <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading agent…
+        <Loader2 className="w-5 h-5 animate-spin mr-2" /> {t('ag_loading', lang)}
       </div>
     );
   }
@@ -404,9 +410,9 @@ export default function AgentDetailPage() {
   if (!agent) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
-        <p className="text-slate-600">{loadingError || 'Agent not found'}</p>
+        <p className="text-slate-600">{loadingError || t('ag_not_found', lang)}</p>
         <button onClick={() => router.push('/innovation-lab')} className="inline-flex items-center gap-2 rounded-xl border border-emerald-300 px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50">
-          <ArrowLeft className="w-4 h-4" /> Back to Agent Hub
+          <ArrowLeft className="w-4 h-4" /> {t('ag_back_to_hub', lang)}
         </button>
       </div>
     );
@@ -419,7 +425,7 @@ export default function AgentDetailPage() {
         onClick={() => router.push('/innovation-lab')}
         className="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-emerald-700"
       >
-        <ArrowLeft className="w-4 h-4" /> Agent Hub
+        <ArrowLeft className="w-4 h-4" /> {t('ag_hub', lang)}
       </button>
 
       {/* Header */}
@@ -438,16 +444,21 @@ export default function AgentDetailPage() {
         </span>
       </div>
 
-      <p className="mt-3 text-sm text-slate-600 leading-relaxed">{AGENT_BLURBS[slug] || agent.description}</p>
+      <p className="mt-3 text-sm text-slate-600 leading-relaxed">
+        {(() => {
+          const blurbKey = AGENT_BLURB_KEYS[slug];
+          return blurbKey ? t(blurbKey, lang) : agent.description;
+        })()}
+      </p>
 
       <div className="mt-8 grid lg:grid-cols-[1fr_1.35fr] gap-6 items-start">
         {/* Internal workflow plan (visible, controllable) */}
         <div className="rounded-2xl border border-emerald-200 bg-white/80 backdrop-blur p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
             <GitBranch className="w-4 h-4 text-emerald-600" />
-            <h2 className="text-sm font-semibold text-slate-900">Internal workflow</h2>
+            <h2 className="text-sm font-semibold text-slate-900">{t('ag_internal_workflow', lang)}</h2>
           </div>
-          <p className="text-[11px] text-slate-400 mb-4">What this agent will execute — every step is reviewable after the run.</p>
+          <p className="text-[11px] text-slate-400 mb-4">{t('ag_workflow_sub', lang)}</p>
           <ol className="space-y-2.5">
             {agent.steps.map((s, i) => {
               const done = result !== null || i < step && step < reviewStep;
@@ -474,7 +485,7 @@ export default function AgentDetailPage() {
           {error && (
             <div className="rounded-2xl border border-red-200 bg-red-50 p-4 flex items-start justify-between gap-3">
               <p className="text-sm text-red-700">{error}</p>
-              <button onClick={() => setError(null)} className="text-sm text-red-600 hover:underline">Dismiss</button>
+              <button onClick={() => setError(null)} className="text-sm text-red-600 hover:underline">{t('ag_dismiss', lang)}</button>
             </div>
           )}
 
@@ -485,7 +496,7 @@ export default function AgentDetailPage() {
                   <div className="flex items-start gap-2.5 min-w-0">
                     <GitBranch className="w-4 h-4 text-teal-600 mt-0.5 shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-teal-900">Prefilled from your Orchestrator brief</p>
+                      <p className="text-xs font-semibold text-teal-900">{t('ag_prefilled_brief', lang)}</p>
                       <p className="text-[11px] text-teal-700 mt-0.5 line-clamp-2">{presetBrief}</p>
                     </div>
                   </div>
@@ -493,7 +504,7 @@ export default function AgentDetailPage() {
                     onClick={() => { setAnswers({}); setPresetBrief(''); }}
                     className="text-[11px] text-teal-700 hover:text-teal-900 underline shrink-0"
                   >
-                    Clear & re-enter
+                    {t('ag_clear_reenter', lang)}
                   </button>
                 </div>
               )}
@@ -503,8 +514,8 @@ export default function AgentDetailPage() {
                   <div className="flex items-center gap-2">
                     <UploadCloud className="w-4 h-4 text-teal-600" />
                     <div>
-                      <p className="text-xs font-semibold text-slate-800">Upload a document for the agent to read</p>
-                      <p className="text-[11px] text-slate-500">PDF · DOCX · TXT · MD · CSV · image (OCR) — Send it straight to the agent, or answer the guided questions below (your choice).</p>
+                      <p className="text-xs font-semibold text-slate-800">{t('ag_upload_doc', lang)}</p>
+                      <p className="text-[11px] text-slate-500">{t('ag_upload_doc_sub', lang)}</p>
                     </div>
                   </div>
                   <input
@@ -524,7 +535,7 @@ export default function AgentDetailPage() {
                     className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-xs font-medium text-white hover:bg-teal-700 disabled:opacity-40"
                   >
                     {uploadingDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileUp className="w-3.5 h-3.5" />}
-                    {uploadingDoc ? 'Reading…' : doc ? 'Replace' : 'Upload'}
+                    {uploadingDoc ? t('ag_reading', lang) : doc ? t('ag_replace', lang) : t('ag_upload', lang)}
                   </button>
                 </div>
                 {doc && (
@@ -532,7 +543,7 @@ export default function AgentDetailPage() {
                     <div className="flex items-center gap-2 min-w-0">
                       <FileText className="w-4 h-4 text-teal-600 shrink-0" />
                       <span className="text-xs text-slate-700 truncate">{doc.name}</span>
-                      <span className="text-[10px] text-slate-400 shrink-0">{doc.text.length.toLocaleString()} chars read</span>
+                      <span className="text-[10px] text-slate-400 shrink-0">{t('ag_chars_read', lang).replace('{n}', doc.text.length.toLocaleString())}</span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <button
@@ -541,9 +552,9 @@ export default function AgentDetailPage() {
                         className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-40"
                       >
                         {running ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                        {running ? 'Running…' : 'Send to agent'}
+                        {running ? t('ag_running', lang) : t('ag_send_to_agent', lang)}
                       </button>
-                      <button onClick={() => setDoc(null)} className="text-slate-400 hover:text-red-500 shrink-0" aria-label="Remove document">
+                      <button onClick={() => setDoc(null)} className="text-slate-400 hover:text-red-500 shrink-0" aria-label={t('ag_remove_doc', lang)}>
                         <X className="w-4 h-4" />
                       </button>
                     </div>
@@ -556,10 +567,10 @@ export default function AgentDetailPage() {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold text-slate-700">
                     {step < questions.length
-                      ? `Question ${step + 1} of ${questions.length}`
+                      ? t('ag_question_of', lang).replace('{n}', String(step + 1)).replace('{m}', String(questions.length))
                       : step === confirmStep
-                        ? 'Confirm the agent\'s understanding'
-                        : 'Review & run'}
+                        ? t('ag_confirm_understanding', lang)
+                        : t('ag_review_run', lang)}
                   </span>
                   <span className="text-[11px] text-slate-400">{progress}%</span>
                 </div>
@@ -578,9 +589,9 @@ export default function AgentDetailPage() {
                     </div>
                   </div>
                   {current.required ? (
-                    <span className="inline-flex mt-1 items-center gap-1 rounded-full bg-red-50 text-red-600 px-2 py-0.5 text-[10px] font-medium">required</span>
+                    <span className="inline-flex mt-1 items-center gap-1 rounded-full bg-red-50 text-red-600 px-2 py-0.5 text-[10px] font-medium">{t('ag_required', lang)}</span>
                   ) : (
-                    <span className="inline-flex mt-1 items-center gap-1 rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 text-[10px] font-medium">optional</span>
+                    <span className="inline-flex mt-1 items-center gap-1 rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 text-[10px] font-medium">{t('ag_optional', lang)}</span>
                   )}
                   {current.help && <p className="mt-2 text-[11px] text-slate-500 italic">{current.help}</p>}
 
@@ -599,12 +610,12 @@ export default function AgentDetailPage() {
                       onClick={() => step > 0 ? setStep(step - 1) : router.push('/innovation-lab')}
                       className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50"
                     >
-                      <ChevronLeft className="w-4 h-4" /> {step > 0 ? 'Back' : 'Agent Hub'}
+                      <ChevronLeft className="w-4 h-4" /> {step > 0 ? t('ag_back', lang) : t('ag_hub', lang)}
                     </button>
                     <div className="flex items-center gap-2">
                       {!current.required && (
                         <button onClick={handleSkip} className="inline-flex items-center gap-1 rounded-xl px-3 py-2 text-xs text-slate-400 hover:text-slate-600">
-                          Skip
+                          {t('ag_skip', lang)}
                         </button>
                       )}
                       <button
@@ -621,24 +632,24 @@ export default function AgentDetailPage() {
                 <div className="rounded-2xl border border-emerald-200 bg-white/90 p-6 shadow-sm">
                   <div className="flex items-center gap-2 mb-1">
                     <Sparkles className="w-5 h-5 text-emerald-600" />
-                    <h3 className="text-lg font-semibold text-slate-900">Confirm the agent&apos;s understanding</h3>
+                    <h3 className="text-lg font-semibold text-slate-900">{t('ag_confirm_understanding', lang)}</h3>
                   </div>
-                  <p className="text-xs text-slate-500">Eureka-style check-in: here is how the agent understood your input. Edit the features below — {autoRun ? 'then the agent autonomously analyzes and searches against the confirmed set.' : 'the search/analysis runs against the confirmed set.'}</p>
+                  <p className="text-xs text-slate-500">{autoRun ? t('ag_confirm_sub_autorun', lang) : t('ag_confirm_sub', lang)}</p>
 
                   {understandingLoading ? (
                     <div className="mt-6 flex items-center gap-2 text-sm text-slate-500">
-                      <Loader2 className="w-4 h-4 animate-spin" /> Analyzing your input and extracting technical features…
+                      <Loader2 className="w-4 h-4 animate-spin" /> {t('ag_analyzing', lang)}
                     </div>
                   ) : understanding ? (
                     <div className="mt-6 space-y-5">
                       <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 mb-1">Agent&apos;s understanding</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 mb-1">{t('ag_understanding', lang)}</p>
                         <p className="text-sm text-slate-700 leading-relaxed">{understanding.summary}</p>
                       </div>
 
                       {understanding.markets?.length > 0 && (
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Jurisdictions in scope</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">{t('ag_jurisdictions_scope', lang)}</p>
                           <div className="flex flex-wrap gap-1.5">
                             {understanding.markets.map((m) => (
                               <span key={m} className="rounded-full bg-slate-100 text-slate-600 border border-slate-200 px-3 py-1 text-xs">{m}</span>
@@ -649,8 +660,8 @@ export default function AgentDetailPage() {
 
                       <div>
                         <div className="flex items-center justify-between mb-1.5">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Extracted technical features — confirm or edit</p>
-                          <span className="text-[10px] text-slate-400">{featureItems.length} confirmed</span>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{t('ag_features_confirm', lang)}</p>
+                          <span className="text-[10px] text-slate-400">{t('ag_confirmed_count', lang).replace('{n}', String(featureItems.length))}</span>
                         </div>
                         <div className="flex flex-wrap gap-1.5 mb-2">
                           {featureItems.map((f, idx) => (
@@ -665,7 +676,7 @@ export default function AgentDetailPage() {
                             </span>
                           ))}
                           {featureItems.length === 0 && (
-                            <span className="text-xs text-slate-400">No features extracted — add them manually below.</span>
+                            <span className="text-xs text-slate-400">{t('ag_no_features', lang)}</span>
                           )}
                         </div>
                         <div className="flex gap-2">
@@ -673,16 +684,16 @@ export default function AgentDetailPage() {
                             value={featureDraft}
                             onChange={(e) => setFeatureDraft(e.target.value)}
                             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addFeature(); } }}
-                            placeholder="Add a technical feature to include in the analysis"
+                            placeholder={t('ag_feature_placeholder', lang)}
                             className="flex-1 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
                           />
-                          <button onClick={addFeature} className="rounded-xl border border-emerald-300 px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50">Add</button>
+                          <button onClick={addFeature} className="rounded-xl border border-emerald-300 px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50">{t('ag_add', lang)}</button>
                         </div>
                       </div>
                     </div>
                   ) : (
                     <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-800">
-                      Could not extract features automatically. Continue to review and run with your answers as-is.
+                      {t('ag_features_failed', lang)}
                     </div>
                   )}
 
@@ -691,14 +702,14 @@ export default function AgentDetailPage() {
                       onClick={() => setStep(Math.max(0, questions.length - 1))}
                       className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50"
                     >
-                      <ChevronLeft className="w-4 h-4" /> Back to questions
+                      <ChevronLeft className="w-4 h-4" /> {t('ag_back_questions', lang)}
                     </button>
                     <button
                       onClick={handleContinue}
                       disabled={understandingLoading || understanding === null}
                       className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-40"
                     >
-                      {autoRun ? 'Start search & analysis' : 'Continue'} <ChevronRight className="w-4 h-4" />
+                      {autoRun ? t('ag_start_search', lang) : t('ag_continue', lang)} <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -706,18 +717,18 @@ export default function AgentDetailPage() {
                 <div className="rounded-2xl border border-emerald-200 bg-white/90 p-6 shadow-sm">
                   <div className="flex items-center gap-2 mb-4">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                    <h3 className="text-lg font-semibold text-slate-900">Ready to run {agent.label}</h3>
+                    <h3 className="text-lg font-semibold text-slate-900">{t('ag_ready_to_run', lang).replace('{name}', agent.label)}</h3>
                   </div>
-                  <p className="text-xs text-slate-500 mb-5">Review your answers below, then run the agent. Every step stays visible after execution.</p>
+                  <p className="text-xs text-slate-500 mb-5">{t('ag_review_sub', lang)}</p>
 
                   <div className="space-y-2.5">
                     {questions.length === 0 && (
-                      <p className="text-xs text-slate-400">No guided questions configured — running with defaults.</p>
+                      <p className="text-xs text-slate-400">{t('ag_no_questions', lang)}</p>
                     )}
                     {doc && (
                       <div className="flex items-start justify-between gap-4 rounded-xl border border-teal-200 bg-teal-50/60 px-3 py-2">
-                        <span className="text-xs font-medium text-teal-800">Uploaded document</span>
-                        <span className="text-xs text-right text-teal-700">{doc.name} · {doc.text.length.toLocaleString()} chars read</span>
+                        <span className="text-xs font-medium text-teal-800">{t('ag_uploaded_doc', lang)}</span>
+                        <span className="text-xs text-right text-teal-700">{doc.name} · {t('ag_chars_read', lang).replace('{n}', doc.text.length.toLocaleString())}</span>
                       </div>
                     )}
                     {questions.map((q) => {
@@ -727,7 +738,7 @@ export default function AgentDetailPage() {
                         <div key={q.key} className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2">
                           <span className="text-xs font-medium text-slate-700">{q.label}</span>
                           <span className={`text-xs text-right ${q.required && (!v || !isAnswered(q, answers)) ? 'text-red-500' : 'text-slate-600'}`}>
-                            {q.required && (!v || !isAnswered(q, answers)) ? 'missing' : display}
+                            {q.required && (!v || !isAnswered(q, answers)) ? t('ag_missing', lang) : display}
                           </span>
                         </div>
                       );
@@ -739,7 +750,7 @@ export default function AgentDetailPage() {
                       onClick={() => setStep(Math.max(0, questions.length - 1))}
                       className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50"
                     >
-                      <ChevronLeft className="w-4 h-4" /> Edit answers
+                      <ChevronLeft className="w-4 h-4" /> {t('ag_edit_answers', lang)}
                     </button>
                     <button
                       onClick={() => void handleRun()}
@@ -747,12 +758,12 @@ export default function AgentDetailPage() {
                       className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
                     >
                       {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                      {running ? 'Running…' : 'Run agent'}
+                      {running ? t('ag_running', lang) : t('ag_run_agent', lang)}
                     </button>
                   </div>
                   {running && (
                     <p className="mt-3 flex items-center gap-2 text-xs text-slate-500">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Agent is walking its workflow, grounding on the local corpus…
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> {t('ag_walking', lang)}
                     </p>
                   )}
                 </div>
@@ -771,12 +782,12 @@ export default function AgentDetailPage() {
                     <p className="text-xs text-slate-500 mt-1">{result.result.note}</p>
                   </div>
                 </div>
-                {result.run_id && <p className="mt-3 text-[11px] text-slate-400">Logged to run {result.run_id.slice(0, 8)}</p>}
+                {result.run_id && <p className="mt-3 text-[11px] text-slate-400">{t('ag_logged_run', lang).replace('{id}', result.run_id.slice(0, 8))}</p>}
               </div>
 
               {result.result.workflow && (
                 <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                  <p className="text-xs font-semibold text-slate-900 mb-2"><GitBranch className="w-3.5 h-3.5 inline mr-1 text-teal-500" /> Execution trace</p>
+                  <p className="text-xs font-semibold text-slate-900 mb-2"><GitBranch className="w-3.5 h-3.5 inline mr-1 text-teal-500" /> {t('ag_execution_trace', lang)}</p>
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {result.result.tools_used?.map((t) => (
                       <span key={t} className="inline-flex items-center gap-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200 px-2.5 py-0.5 text-[10px] font-medium">
@@ -801,7 +812,7 @@ export default function AgentDetailPage() {
 
               {result.result.claims.length > 0 && (
                 <div className="rounded-2xl border border-rose-200 bg-white p-5">
-                  <p className="text-xs font-semibold text-slate-900 mb-2"><FileText className="w-3.5 h-3.5 inline mr-1 text-rose-500" /> Draft claims</p>
+                  <p className="text-xs font-semibold text-slate-900 mb-2"><FileText className="w-3.5 h-3.5 inline mr-1 text-rose-500" /> {t('ag_draft_claims', lang)}</p>
                   <ul className="space-y-1.5">
                     {result.result.claims.map((c, i) => (
                       <li key={i} className="text-xs text-slate-700 bg-rose-50/60 rounded-lg px-3 py-2">{c}</li>
@@ -852,7 +863,7 @@ export default function AgentDetailPage() {
 
               {result.result.findings.length > 0 && (
                 <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                  <p className="text-xs font-semibold text-slate-900 mb-2">Findings ({result.result.findings.length})</p>
+                  <p className="text-xs font-semibold text-slate-900 mb-2">{t('ag_findings', lang).replace('{n}', String(result.result.findings.length))}</p>
                   <ul className="space-y-2">
                     {result.result.findings.map((f) => (
                       <li key={f.id} className={`rounded-xl border px-3 py-2 text-xs ${SEVERITY_COLORS[f.severity] || 'border-slate-200 bg-slate-50 text-slate-700'}`}>
@@ -868,7 +879,7 @@ export default function AgentDetailPage() {
                 <div className="rounded-2xl border border-slate-200 bg-white p-5">
                   <p className="text-xs font-semibold text-slate-900 mb-2">
                     <BookMarked className="w-3.5 h-3.5 inline mr-1 text-blue-500" />
-                    Citations ({result.result.citations.length})
+                    {t('ag_citations', lang).replace('{n}', String(result.result.citations.length))}
                   </p>
                   <ul className="space-y-2">
                     {result.result.citations.map((c, i) => (
@@ -876,10 +887,10 @@ export default function AgentDetailPage() {
                         <div className="flex items-center justify-between gap-2">
                           <span className="font-semibold text-slate-800">{c.act_title}</span>
                           <button onClick={() => setShowFile(showFile === `${i}` ? null : `${i}`)} className="text-teal-600 hover:underline flex-shrink-0">
-                            {showFile === `${i}` ? 'hide' : 'passage'}
+                            {showFile === `${i}` ? t('ag_hide', lang) : t('ag_passage', lang)}
                           </button>
                         </div>
-                        <p className="text-slate-500 mt-0.5">{c.section_reference} · {c.authority} · rank {c.authority_rank}</p>
+                        <p className="text-slate-500 mt-0.5">{c.section_reference} · {c.authority} · {t('ag_rank', lang).replace('{n}', String(c.authority_rank))}</p>
                         {showFile === `${i}` && c.exact_passage && (
                           <p className="mt-1.5 text-slate-600 bg-white rounded-lg border border-emerald-100 p-2">{c.exact_passage}</p>
                         )}
@@ -891,7 +902,7 @@ export default function AgentDetailPage() {
 
               {result.result.suggestions.length > 0 && (
                 <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5">
-                  <p className="text-xs font-semibold text-slate-900 mb-2"><Lightbulb className="w-3.5 h-3.5 inline mr-1 text-amber-500" /> Next steps</p>
+                  <p className="text-xs font-semibold text-slate-900 mb-2"><Lightbulb className="w-3.5 h-3.5 inline mr-1 text-amber-500" /> {t('ag_next_steps', lang)}</p>
                   <ul className="space-y-1.5">
                     {result.result.suggestions.map((s, i) => (
                       <li key={i} className="text-xs text-slate-700 flex gap-2">
@@ -909,22 +920,22 @@ export default function AgentDetailPage() {
                   className="inline-flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-xs font-medium text-white hover:bg-slate-900 disabled:opacity-50"
                 >
                   {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
-                  {exporting ? 'Building Word…' : 'Export Word (.docx)'}
+                  {exporting ? t('ag_building_word', lang) : t('ag_export_word', lang)}
                 </button>
                 <button
                   onClick={() => { setResult(null); setStep(confirmStep); }}
                   className="inline-flex items-center gap-2 rounded-xl border border-emerald-300 px-4 py-2 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
                 >
-                  <Undo2 className="w-3.5 h-3.5" /> Edit answers & re-run
+                  <Undo2 className="w-3.5 h-3.5" /> {t('ag_edit_rerun', lang)}
                 </button>
                 <button onClick={resetFlow} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50">
-                  <PauseCircle className="w-3.5 h-3.5" /> Start over
+                  <PauseCircle className="w-3.5 h-3.5" /> {t('ag_start_over', lang)}
                 </button>
                 <button
                   onClick={() => router.push('/innovation-lab')}
                   className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-medium text-white hover:bg-emerald-700"
                 >
-                  <Wand2 className="w-3.5 h-3.5" /> Back to Agent Hub
+                  <Wand2 className="w-3.5 h-3.5" /> {t('ag_back_to_hub', lang)}
                 </button>
               </div>
             </div>
@@ -933,13 +944,13 @@ export default function AgentDetailPage() {
       </div>
 
       <p className="mt-10 text-center text-xs text-slate-400">
-        AI-assisted research material — must be reviewed by a qualified professional. Not legal, medical, safety, regulatory, or patentability advice.
+        {t('ag_disclaimer', lang)}
       </p>
       </div>
     </main>
   );
 
   function stepsLabel() {
-    return step < confirmStep ? 'Continue' : 'Proceed to review';
+    return step < confirmStep ? t('ag_continue', lang) : t('ag_proceed_review', lang);
   }
 }

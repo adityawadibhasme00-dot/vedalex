@@ -53,7 +53,8 @@ export function TopNav({
             <button
               onClick={onMenuClick}
               className="lg:hidden p-1.5 rounded-lg hover:bg-white/10 text-white"
-              aria-label="Open navigation"
+              aria-label={t('topnav_open_navigation', lang)}
+              title={t('topnav_open_navigation', lang)}
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -76,7 +77,7 @@ export function TopNav({
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search statutes, patents, regulations..."
+                placeholder={t('topnav_search_placeholder', lang)}
                 className="w-full pl-10 pr-4 py-2 border border-gov-navy rounded-md bg-white focus:ring-2 focus:ring-amber-400 focus:border-transparent outline-none text-sm text-gray-800 placeholder:text-gray-400"
               />
             </div>
@@ -110,7 +111,7 @@ export function TopNav({
               onClick={() => setLangOpen(true)}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white/10 border border-white/25 text-white hover:bg-white/20 transition"
               aria-label="Select Language"
-              title="Select Language"
+              title={t('topnav_select_language', lang)}
             >
               <Globe className="w-4 h-4 text-amber-300" />
               <span className="text-sm font-medium hidden sm:inline">{langLabel}</span>
@@ -118,8 +119,8 @@ export function TopNav({
 
             <button
               className="relative p-2 rounded-full hover:bg-white/10 text-white"
-              aria-label="Notifications"
-              title="Notifications"
+              aria-label={t('topnav_notifications', lang)}
+              title={t('topnav_notifications', lang)}
             >
               <Bell className="h-5 w-5" />
               <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-amber-400 rounded-full ring-2 ring-gov-blue" />
@@ -130,7 +131,7 @@ export function TopNav({
               <button
                 onClick={() => setProfileOpen((v) => !v)}
                 className="flex items-center gap-2 pl-1.5 pr-2 py-1.5 rounded-md border border-white/25 hover:bg-white/10 transition"
-                aria-label="Profile"
+                aria-label={t('topnav_profile', lang)}
               >
                 <div className="h-8 w-8 bg-amber-400 rounded-full flex items-center justify-center text-gov-navy text-sm font-semibold">
                   {(userName || 'U')?.[0]?.toUpperCase()}
@@ -151,7 +152,7 @@ export function TopNav({
                     onClick={() => setProfileOpen(false)}
                     className="w-full text-left px-3 py-2 mt-1 rounded-md text-xs text-gray-600 hover:bg-gov-wash hover:text-gov-navy"
                   >
-                    IP-SAKTI Sahayak — Working Dashboard
+                    {t('topnav_working_dashboard', lang)}
                   </button>
                   <div className="mt-1 pt-2 border-t border-gray-200">
                     <button

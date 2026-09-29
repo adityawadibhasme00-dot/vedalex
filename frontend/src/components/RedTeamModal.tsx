@@ -3,6 +3,8 @@
 import React from 'react';
 import { RedTeamResult } from '../types';
 import { ShieldAlert, AlertTriangle, X, CheckSquare, Sparkles } from 'lucide-react';
+import { useLang } from '../lib/LangContext';
+import { t } from '../lib/i18n';
 
 interface RedTeamModalProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ export default function RedTeamModal({
   isLoading,
   onRunChallenge
 }: RedTeamModalProps) {
+  const { lang } = useLang();
   if (!isOpen) return null;
 
   return (
@@ -32,10 +35,10 @@ export default function RedTeamModal({
             </div>
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-red-600">
-                Section 6.7 Pre-Filing Objections Simulator
+                {t('redteam_simulator', lang)}
               </span>
               <h3 className="text-lg font-bold text-slate-900 font-display">
-                &quot;Challenge My Innovation&quot; (Patent Examiner Red-Team)
+                {t('redteam_title', lang)}
               </h3>
             </div>
           </div>
@@ -71,7 +74,7 @@ export default function RedTeamModal({
                   <div className="p-3 rounded-xl bg-emerald-100 border border-emerald-300 text-xs text-emerald-800 flex items-start space-x-2">
                     <CheckSquare className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <strong className="block text-emerald-700">Recommended Investigable Pre-Filing Action:</strong>
+                      <strong className="block text-emerald-700">{t('redteam_recommended_action', lang)}</strong>
                       <span>{obj.investigable_action}</span>
                     </div>
                   </div>
@@ -80,21 +83,21 @@ export default function RedTeamModal({
             </>
           ) : (
             <div className="p-8 text-center text-slate-500 text-xs">
-              Click the button below to simulate examiner objections against your current Innovation Passport.
+              {t('redteam_empty', lang)}
             </div>
           )}
         </div>
 
         {/* Footer */}
         <div className="pt-4 border-t border-emerald-200 flex items-center justify-between flex-shrink-0">
-          <span className="text-xs text-slate-500">Total Objections Simulated: {redTeamResult?.total_objections || 0}</span>
+          <span className="text-xs text-slate-500">{t('redteam_total', lang)} {redTeamResult?.total_objections || 0}</span>
           <button
             onClick={onRunChallenge}
             disabled={isLoading}
             className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-semibold text-xs transition disabled:opacity-50 flex items-center space-x-1.5 shadow-lg shadow-red-900/30"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>{isLoading ? 'Simulating Objections...' : 'Run Red-Team Challenge'}</span>
+            <span>{isLoading ? t('redteam_simulating', lang) : t('redteam_run', lang)}</span>
           </button>
         </div>
       </div>
