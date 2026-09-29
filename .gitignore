@@ -2,6 +2,9 @@
 backend/.env
 frontend/.env.local
 *.env
+# Holds the real GEMINI_API_KEY for the Cloud Run deploy. Only the
+# .example template is versioned.
+backend/cloudrun.env.yaml
 
 # Python
 __pycache__/

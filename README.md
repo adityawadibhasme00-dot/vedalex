@@ -165,26 +165,67 @@ BACKEND_URL = https://vedalex-api.onrender.com
 
 That is all it needs. The app calls the API through the relative path `/api/v1`, which `next.config.js` proxies server-side to `BACKEND_URL`. Because the proxy happens on Vercel's servers, the browser only ever talks to the Vercel origin — there is no CORS to configure and the backend URL is never exposed to the client.
 
-### Backend → Render
+### Backend → Google Cloud Run
 
-`render.yaml` is a Render Blueprint, so the API is one click: <https://render.com> → **New** → **Blueprint** → pick this repo. It reads the blueprint and provisions `vedalex-api` (and `vedalex-web`, which you can ignore if you are serving the frontend from Vercel).
+Cloud Run is the best free backend for this app: the URL is always live, and unlike Render's 15-minute sleep it comes back in **1–2 seconds** instead of 30–60. You need a Google account and a billing profile enabled (a card is required, but the free tier is not charged as long as you stay inside it).
 
-Add the LLM key by hand, because secrets do not belong in a repo: **vedalex-api → Environment → Add**, then
-
+```bash
+gcloud auth login
+gcloud auth application-default login
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com
 ```
-GEMINI_API_KEY    = <your key>
-IPSAKTI_LLM_MODEL = gemini-3.5-flash
+
+Put your secrets in a git-ignored file — never in the repo:
+
+```bash
+cd backend
+cp cloudrun.env.yaml.example cloudrun.env.yaml
+# edit it: the rotated GEMINI_API_KEY, a one-time BACKEND_API_KEY_SECRET, and
+# CORS_ORIGINS set to your Vercel URL
 ```
 
-`GEMINI_API_KEY` is read from the process environment, **not** from a `.env` file, so setting it in `backend/.env` has no effect.
+Then deploy (run from inside `backend/`):
+
+```bash
+gcloud run deploy vedalex-api \
+  --source . \
+  --dockerfile Dockerfile.lite \
+  --region asia-south1 \
+  --allow-unauthenticated \
+  --memory 512Mi --cpu 1 \
+  --concurrency 1 \
+  --timeout 300 \
+  --min-instances 0 \
+  --max-instances 2 \
+  --env-vars-file cloudrun.env.yaml
+```
+
+Print the URL and paste it into Vercel's `BACKEND_URL`:
+
+```bash
+gcloud run services describe vedalex-api --region asia-south1 --format "value(status.url)"
+```
+
+**What each flag is doing.** `Dockerfile.lite` installs `requirements-slim.txt` and runs `scripts/serve.py`. `--min-instances 0` is required to stay on the free tier (a warm instance is billed). `--concurrency 1` matters because the embedded Qdrant client holds a lock on its storage folder: one request per instance keeps that unambiguous and avoids two instances racing to build the same index. `--timeout 300` is safe on the free tier because Cloud Run only bills for time a request is actually being served.
 
 **Why the API runs in "lite" mode.** The full stack needs ~10.7 GB of model weights (`BAAI/bge-m3` plus the reranker) and `torch`, which no free tier can host. So the deploy installs `backend/requirements-slim.txt` — the same dependencies minus that ML stack — and sets `IPSAKTI_USE_BGE_M3=0` / `IPSAKTI_USE_RERANKER=0`, which keeps the app on its local hashing embedder (192-dim) + BM25 path. Everything works; semantic answer quality is a little lower than a local run with the real models.
 
-Measured for this configuration: **183 MB peak RAM** (free tier allows 512 MB), a **4 s** index build, and a **~6 s** cold start.
+Measured for this configuration: **183 MB peak RAM** (the container is given 512 MiB), a **4 s** index build, and a **~6 s** cold start. No compiler is needed — every slim dependency ships a prebuilt `manylinux` wheel, which is why `Dockerfile.lite` skips `build-essential`.
 
-**The index rebuilds itself.** Free-tier disks are wiped on every restart, so `backend/scripts/serve.py` builds the index in-process *before* the server accepts requests, and skips the rebuild when the store already has data. It runs in the same process as the API on purpose: the embedded Qdrant client locks its storage folder, so splitting the build into a separate step makes the API silently fall back to an in-memory store.
+**The index rebuilds itself.** Cloud Run wipes `/tmp` between instances, so `backend/scripts/serve.py` builds the index in-process *before* the server accepts requests, and skips the rebuild when the store already has data. It runs in the same process as the API on purpose: the embedded Qdrant client locks its storage folder, so splitting the build into a separate step makes the API silently fall back to an in-memory store.
 
-**What "free" costs you here.** The Vercel frontend is always live and instant. The Render *backend* sleeps after ~15 minutes idle, so the first API call after a pause takes 30–60 s while it wakes — the page itself still loads instantly from Vercel. Open the site a minute before a demo so the backend is already awake. `BACKEND_API_KEY_SECRET` is generated for you, which is what keeps sessions valid across restarts.
+**What "free" costs you here.** The Vercel frontend is always live and instant. The *backend* scales to zero when idle, so the first API call after a long pause pays a cold start (container start plus the 4 s index build — roughly 10 s the first time, a few seconds once the instance is warm). Open the site a minute before a demo. Nothing you can configure removes this on the free tier; `--min-instances 1` would pin a warm instance but bills for it.
+
+### Backend → Render (simpler alternative)
+
+If you would rather not use `gcloud`, `render.yaml` is a Render Blueprint: <https://render.com> → **New** → **Blueprint** → pick this repo. It provisions `vedalex-api` and, if you serve the frontend from Vercel, you can ignore `vedalex-web`. Add the LLM key by hand under **vedalex-api → Environment → Add**:
+
+```
+GEMINI_API_KEY     = <your key>
+IPSAKTI_LLM_MODEL  = gemini-3.5-flash
+```
+
+`GEMINI_API_KEY` is read from the process environment, **not** from a `.env` file, so setting it in `backend/.env` has no effect. Everything else is handled by the blueprint, including generating `BACKEND_API_KEY_SECRET` for you. The trade-off is sleep: instances idle out after ~15 minutes and the next request waits 30–60 s.
 
 ---
 

@@ -1,0 +1,48 @@
+# Lightweight image for serverless/container hosts (Cloud Run, Fly, Railway).
+#
+# Use this instead of ./Dockerfile when you are deploying to a free or
+# serverless tier: it installs requirements-slim.txt, so the image carries
+# neither torch nor the ~10.7 GB of model weights. The container then runs on
+# the local hashing embedder + BM25 path, which measured 183 MB peak RAM.
+#
+# The full-stack ./Dockerfile is still what you want for the local
+# docker-compose stack, where the modelserver sidecar provides BAAI/bge-m3.
+#
+# Build and run (Cloud Run passes PORT and expects the app to bind it):
+#   docker build -f backend/Dockerfile.lite -t vedalex-api backend/
+#   docker run -e GEMINI_API_KEY=... -p 8080:8080 vedalex-api
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    # Keep the multi-GB ML stack out of the image; embeddings fall back to
+    # the local hashing embedder (192-dim) + BM25.
+    IPSAKTI_USE_BGE_M3=0 \
+    IPSAKTI_USE_RERANKER=0 \
+    # Cloud Run wipes /tmp between instances, so the embedded Qdrant store
+    # lives here and serve.py rebuilds it on every cold start.
+    QDRANT_LOCAL_PATH=/tmp/qdrant
+
+# No build toolchain: every dependency in requirements-slim.txt ships a
+# manylinux wheel, and build-essential would add ~200 MB for nothing.
+COPY requirements-slim.txt ./
+RUN pip install --no-cache-dir -r requirements-slim.txt
+
+COPY . .
+
+# Drop privileges - the container handles no privileged work.
+RUN useradd --create-home --uid 10001 appuser \
+    && mkdir -p /tmp/qdrant \
+    && chown -R appuser:appuser /app /tmp/qdrant
+USER appuser
+
+EXPOSE 8080
+
+# serve.py builds the vector index in-process, then binds $PORT. It must be one
+# process: the embedded Qdrant client locks its storage folder, so a separate
+# build step leaves the lock held and the API falls back to an in-memory store.
+CMD ["python", "scripts/serve.py"]

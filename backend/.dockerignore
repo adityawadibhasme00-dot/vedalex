@@ -1,0 +1,56 @@
+# Keep the image small and free of local state. Everything matched here is
+# either a virtualenv, a cache, generated output, or a local secret - none of
+# it is needed to run the API.
+#
+# NOTE: data/ is deliberately NOT excluded. scripts/serve.py rebuilds the
+# vector index from backend/data/ on every cold start, so shipping the corpus
+# is what makes retrieval work on a fresh clone and on a cloud host.
+
+# virtualenvs and installed packages
+venv/
+.venv/
+env/
+ENV/
+*.egg-info/
+
+# caches
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.benchmarks/
+htmlcov/
+.coverage
+coverage.xml
+
+# local databases - recreated on first run
+*.db
+*.sqlite
+*.sqlite3
+
+# uploaded and generated artefacts
+uploads/
+exports/
+*.log
+*_out.log
+*_err.log
+
+# local secrets - never bake these into an image
+.env
+.env.local
+.env.*.local
+
+# tests and evaluation harnesses are not needed at runtime
+tests/
+evals/
+
+# the local development databases and helper scripts that assume them
+.e2e.db
+_fullsuite*.log
+_g9_*
+
+# editor noise
+.vscode/
+.idea/
