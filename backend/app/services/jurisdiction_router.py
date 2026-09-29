@@ -98,6 +98,56 @@ _INTERNATIONAL_CUES: list[str] = (
 
 _INTERNATIONAL_CUES = sorted(set(c.lower() for c in _INTERNATIONAL_CUES))
 
+# Raw jurisdiction value -> governing framework mode. Country-level values
+# (US / Canada) belong to the International framework, which is exactly what
+# that scope covers (WIPO · TRIPS · US FDA · Health Canada).
+_FRAMEWORK_ALIASES: dict[str, str] = {
+    "india": "India", "ind": "India", "in": "India",
+    "international": "International", "global": "International",
+    "intl": "International", "world": "International",
+    "united states": "International", "united states of america": "International",
+    "us": "International", "usa": "International", "u.s.": "International",
+    "u.s.a.": "International",
+    "canada": "International", "ca": "International",
+}
+
+# Values that name the whole International scope rather than one country.
+# They must never be used as a hard metadata filter: that would hide
+# country-level evidence (US DSHEA, Canada NHPR) that legitimately belongs
+# to the International framework. ``filter_sources_by_jurisdiction`` does the
+# real gating afterwards.
+_FRAMEWORK_SCOPE_VALUES: frozenset[str] = frozenset(
+    {"international", "global", "intl", "world"}
+)
+
+
+def framework_mode_for(value: Any) -> str | None:
+    """Map a raw jurisdiction value to its governing framework mode.
+
+    Returns "India", "International" or ``None`` when the value carries no
+    framework signal (unknown / empty).
+    """
+    if value is None:
+        return None
+    return _FRAMEWORK_ALIASES.get(str(value).strip().lower())
+
+
+def retrieval_filter_for(value: Any) -> str | None:
+    """Jurisdiction value to hand to the retriever as a metadata filter.
+
+    Single-country scopes are filtered as-is; whole-scope values (International)
+    retrieve unfiltered and are gated later by
+    ``filter_sources_by_jurisdiction`` — mirroring ``detect_jurisdiction``.
+    """
+    if value is None:
+        return None
+    raw = str(value).strip()
+    if not raw:
+        return None
+    if raw.lower() in _FRAMEWORK_SCOPE_VALUES:
+        return None
+    return raw
+
 
 def _cue_matcher(cues: Iterable[str]) -> re.Pattern[str] | None:
     """Compile jurisdiction cues into a word-boundary matcher.
@@ -136,14 +186,7 @@ def is_official_explicit(context: dict[str, Any] | None) -> str | None:
     """Read the jurisdiction toggle sent by the UI, if any."""
     if not context:
         return None
-    val = str(context.get("jurisdiction") or "").strip()
-    if val in FRAMEWORKS:
-        return val
-    if val.lower() in ("india", "ind"):
-        return "India"
-    if val.lower() in ("international", "global", "intl", "world"):
-        return "International"
-    return None
+    return framework_mode_for(context.get("jurisdiction"))
 
 
 def _keyword_hint(question: str) -> str | None:

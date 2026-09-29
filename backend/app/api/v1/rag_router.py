@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 from app.auth.jwt_auth import get_optional_user
 from app.core.async_bridge import run_sync
 from app.models.db_models import User
+from app.services.jurisdiction_router import framework_mode_for, retrieval_filter_for
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +150,7 @@ async def ask_query(
         query=query,
         top_k=req.top_k,
         filters=req.filters,
-        jurisdiction=req.jurisdiction,
+        jurisdiction=retrieval_filter_for(req.jurisdiction),
         category=req.category,
         domains=domain_intent["collections"],
     )
@@ -174,10 +175,14 @@ async def ask_query(
     # The sources retrieved above are passed in so the orchestrator does NOT
     # re-run the (embedding + rerank) hybrid pipeline a second time.
     from app.services.multi_layer_orchestrator import MultiLayerOrchestrator
+    framework_context = (
+        {"jurisdiction": mode} if (mode := framework_mode_for(req.jurisdiction)) else None
+    )
     orchestrator_result = await run_sync(
         MultiLayerOrchestrator.run,
         query,
         req.passport_id,
+        framework_context,
         retrieved_sources=sources,
     )
 
@@ -590,12 +595,16 @@ async def unified_rag_search(
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
 
+    # "International" is a framework scope, not a country: it retrieves
+    # unfiltered and is gated by the no-mixing rule after the merge.
+    retrieval_jurisdiction = retrieval_filter_for(req.jurisdiction)
+
     try:
         result: RagResult = await run_sync(
             rag.search,
             query=req.query,
             filters=req.filters,
-            jurisdiction=req.jurisdiction,
+            jurisdiction=retrieval_jurisdiction,
             category=req.category,
             top_k=req.top_k,
             user_key=identifier,
@@ -612,7 +621,7 @@ async def unified_rag_search(
                 get_rag("hybrid").search,
                 query=req.query,
                 filters=req.filters,
-                jurisdiction=req.jurisdiction,
+                jurisdiction=retrieval_jurisdiction,
                 category=req.category,
                 top_k=req.top_k,
                 user_key=identifier,
@@ -626,10 +635,18 @@ async def unified_rag_search(
         try:
             from app.services.multi_layer_orchestrator import MultiLayerOrchestrator
 
+            # The UI toggle is forwarded as orchestrator context so the legal
+            # framework is decided BEFORE generation — without it the router
+            # has no signal and falls back to asking the user to pick.
+            framework_context = (
+                {"jurisdiction": mode} if (mode := framework_mode_for(req.jurisdiction))
+                else None
+            )
             orchestrator_result = await run_sync(
                 MultiLayerOrchestrator.run,
                 req.query,
                 None,
+                framework_context,
                 retrieved_sources=result.sources,
             )
             answer = orchestrator_result.get("answer") or ""
