@@ -50,8 +50,8 @@ class _FakeGeminiClient:
     def __exit__(self, *exc):
         return False
 
-    def post(self, url, json=None):
-        self.posts.append((url, json))
+    def post(self, url, json=None, headers=None):
+        self.posts.append((url, json, headers))
         return self.response
 
 
@@ -123,7 +123,7 @@ def test_resolve_provider_unknown_value_disables_generation(monkeypatch):
 
 
 def test_pick_model_defaults(monkeypatch):
-    assert la._pick_model("gemini") == la.DEFAULT_MODELS["gemini"] == "gemini-2.0-flash"
+    assert la._pick_model("gemini") == la.DEFAULT_MODELS["gemini"] == "gemini-3.5-flash"
     assert la._pick_model("openai") == "gpt-4o-mini"
     assert la._pick_model("mock") is None
     assert la._pick_model("off") is None
@@ -220,9 +220,12 @@ def test_call_gemini_success(monkeypatch):
     assert response.checked is True
     client = created["client"]
     assert client.kwargs["timeout"] == la.LLM_TIMEOUT_SEC
-    url, payload = client.posts[0]
+    url, payload, headers = client.posts[0]
     assert url.startswith("https://generativelanguage.googleapis.com/v1beta/models/")
-    assert url.endswith("?key=key-123")
+    assert url.endswith("gemini-2.0-flash:generateContent")
+    # The key travels as a header so it never lands in an access log.
+    assert "key-123" not in url
+    assert headers["x-goog-api-key"] == "key-123"
     assert payload["system_instruction"]["parts"][0]["text"] == "SYSTEM PROMPT"
     assert payload["contents"][0]["role"] == "user"
     assert payload["contents"][0]["parts"][0]["text"] == "USER PROMPT"
@@ -295,11 +298,11 @@ def test_generate_draft_gemini_happy_path(monkeypatch):
         "generated": True,
         "text": "grounded draft",
         "provider": "gemini",
-        "model": "gemini-2.0-flash",
+        "model": la.DEFAULT_MODELS["gemini"],
         "reason": "",
     }
     assert captured["api_key"] == "gem-key"
-    assert captured["model"] == "gemini-2.0-flash"
+    assert captured["model"] == la.DEFAULT_MODELS["gemini"]
     assert "what is section 3(p)?" in captured["user"]
     assert "UNIQUEMARK1" in captured["user"]
     assert "SIXTHMARKER" not in captured["user"]
@@ -335,7 +338,7 @@ def test_generate_draft_gemini_without_api_key(monkeypatch):
     out = la.generate_draft("query", SOURCES)
     assert out["generated"] is False
     assert out["text"] is None
-    assert out["model"] == "gemini-2.0-flash"
+    assert out["model"] == la.DEFAULT_MODELS["gemini"]
     assert out["reason"] == "GEMINI_API_KEY is not set"
 
 
@@ -360,7 +363,7 @@ def test_generate_draft_provider_exception_becomes_clean_failure(monkeypatch):
     assert out["generated"] is False
     assert out["text"] is None
     assert out["provider"] == "gemini"
-    assert out["model"] == "gemini-2.0-flash"
+    assert out["model"] == la.DEFAULT_MODELS["gemini"]
     assert out["reason"] == "provider exploded"
 
 
@@ -448,7 +451,7 @@ def test_generate_draft_openai_uses_openai_key(monkeypatch):
 def test_call_gemini_keeps_api_key_out_of_url(monkeypatch):
     created = _install_fake_httpx(monkeypatch, _FakeGeminiResponse({"candidates": []}))
     la._call_gemini("s", "u", "TOP-SECRET-KEY", "gemini-2.0-flash")
-    url, _payload = created["client"].posts[0]
+    url, _payload, _headers = created["client"].posts[0]
     assert "TOP-SECRET-KEY" not in url
 
 
@@ -460,7 +463,7 @@ def test_call_gemini_keeps_api_key_out_of_url(monkeypatch):
 def test_call_gemini_substitutes_model_into_url(monkeypatch):
     created = _install_fake_httpx(monkeypatch, _FakeGeminiResponse({"candidates": []}))
     la._call_gemini("s", "u", "key-123", "gemini-2.0-flash")
-    url, _payload = created["client"].posts[0]
+    url, _payload, _headers = created["client"].posts[0]
     assert "gemini-2.0-flash:generateContent" in url
 
 

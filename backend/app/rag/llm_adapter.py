@@ -29,7 +29,9 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 DEFAULT_MODELS = {
-    "gemini": "gemini-2.0-flash",
+    # gemini-2.0-flash was retired and now 404s; 3.5-flash is the current
+    # stable flash model. Override per deployment with IPSAKTI_LLM_MODEL.
+    "gemini": "gemini-3.5-flash",
     "openai": "gpt-4o-mini",
 }
 
@@ -70,7 +72,10 @@ def _call_gemini(
     model: str,
 ) -> dict[str, Any]:
     import httpx
-    url = f"{GEMINI_REST_URL}?key={api_key}"
+    # The template holds a real {model} placeholder, so it needs str.format().
+    # An f-string here substituted only the API key and sent a literal
+    # "{model}" to Google, which 404'd on every single request.
+    url = GEMINI_REST_URL.format(model=model)
     payload = {
         "system_instruction": {"parts": [{"text": system_prompt}]},
         "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
@@ -80,7 +85,9 @@ def _call_gemini(
         },
     }
     with httpx.Client(timeout=LLM_TIMEOUT_SEC) as client:
-        resp = client.post(url, json=payload)
+        # Key travels in a header, not the query string, so it stays out of
+        # access logs and traces.
+        resp = client.post(url, json=payload, headers={"x-goog-api-key": api_key})
         resp.raise_for_status()
         data = resp.json()
 
