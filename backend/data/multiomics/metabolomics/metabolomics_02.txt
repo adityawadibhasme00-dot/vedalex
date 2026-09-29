@@ -1,0 +1,18 @@
+DOC_ID: OMICS-METABOLOMICS-02
+TITLE: Curcumin - diarylheptanoid biomarker of turmeric
+OMICS_TYPE: metabolomics
+ORGANISM: Curcuma longa
+COMPOUND: Curcumin
+GENE: 
+PROTEIN: 
+UNIPROT: 
+NCBI_GENE_ID: 
+PUBCHEM_CID: 969516
+PATHWAY: Phenylpropanoid biosynthesis
+ASSAY_TYPE: HPLC-DAD / LC-MS/MS
+PMID: 
+SOURCE_URL: https://pubchem.ncbi.nlm.nih.gov/compound/969516
+AUTHORITY: PubChem (NCBI) / HMDB / MetaboLights (EMBL-EBI)
+JURISDICTION: International
+
+Curcumin (diferuloylmethane) is the principal bioactive diarylheptanoid of Curcuma longa (turmeric) rhizomes and is registered in PubChem (CID 969516). Metabolomic fingerprinting of turmeric grades curcumin alongside demethoxycurcumin and bisdemethoxycurcumin as the three main curcuminoids used for standardisation (typically '95% curcuminoids').

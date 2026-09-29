@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PROTEOMICS-10
+TITLE: CYP3A4 - cytochrome P450 3A4 (drug metabolism)
+OMICS_TYPE: proteomics
+ORGANISM: Homo sapiens
+COMPOUND: Piperine (Piper nigrum)
+GENE: CYP3A4
+PROTEIN: Cytochrome P450 3A4
+UNIPROT: P08684
+NCBI_GENE_ID: 1576
+PUBCHEM_CID: 
+PATHWAY: Xenobiotic metabolism; Phase I
+ASSAY_TYPE: Microsomal activity assay
+PMID: 
+SOURCE_URL: https://www.uniprot.org/uniprotkb/P08684
+AUTHORITY: UniProt Consortium (EMBL-EBI / SIB / PIR)
+JURISDICTION: International
+
+CYP3A4 is the principal drug-metabolizing cytochrome P450 in human liver, responsible for metabolizing roughly half of all marketed drugs. Piperine from Piper nigrum (black pepper) is documented to inhibit CYP3A4-mediated metabolism, a mechanistic basis for the clinically reported increase in bioavailability of co-administered compounds such as curcumin and rifampicin (herbal-drug interaction).

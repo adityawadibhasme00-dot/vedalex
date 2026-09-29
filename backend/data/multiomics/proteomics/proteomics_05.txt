@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PROTEOMICS-05
+TITLE: STAT3 - signal transducer and activator of transcription 3
+OMICS_TYPE: proteomics
+ORGANISM: Homo sapiens
+COMPOUND: Withaferin A (Withania somnifera)
+GENE: STAT3
+PROTEIN: Signal transducer and activator of transcription 3
+UNIPROT: P40763
+NCBI_GENE_ID: 6774
+PUBCHEM_CID: 
+PATHWAY: JAK-STAT signalling
+ASSAY_TYPE: Western blot (p-STAT3/STAT3)
+PMID: 
+SOURCE_URL: https://www.uniprot.org/uniprotkb/P40763
+AUTHORITY: UniProt Consortium (EMBL-EBI / SIB / PIR)
+JURISDICTION: International
+
+STAT3 is a transcription factor that mediates inflammation, proliferation and survival signals. Withaferin A is reported to inhibit constitutive and inducible STAT3 activation (Tyr705 phosphorylation) and to down-regulate STAT3 target genes. The protein-level inhibition of STAT3 provides mechanistic evidence for anti-inflammatory and anti-proliferative effects of Ashwagandha-derived withanolides.

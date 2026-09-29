@@ -1,0 +1,25 @@
+Drugs and Cosmetics Act, 1940 & Rules, 1945 - AYUSH Drug Licensing (Rule 158-B, Schedule T)
+
+Regulatory foundation for Ayurveda, Siddha and Unani (ASU) drug licensing in India.
+
+Enforcement: Quality control and issuance of drug licences for ASU drugs is vested with State Drug Controllers / State Licensing Authorities of the respective State or Union Territory. (Source: PIB PRID 1847448, "Quality Control of Ayush Drugs", 02 Aug 2022.)
+
+Rule 158-B (Drugs and Cosmetics Rules, 1945; inserted by G.S.R. 663(E) dated 10.08.2010): Guidelines for issue of licence with respect to Ayurveda, Siddha or Unani drugs.
+
+Category structure under Rule 158-B:
+(A) Classical drugs under section 3(a) of the Act - medicines manufactured exclusively in accordance with the formulae described in the authoritative books of Ayurveda, Siddha and Unani Tibb system specified in the First Schedule. For these, proof of reference to the First Schedule book is required; evidence of effectiveness is satisfied by published literature of the text; full safety study is NOT required.
+(B) Patent or Proprietary (P&P) medicines under section 3(h) - products whose official or pharmacopoeial formulae are not disclosed in the First Schedule books and/or which substitute the classical ingredient composition while bearing a new name. These require documented safety data and evidence/experience of effectiveness as specified in the Rule 158-B table (columns 5 and 6), plus GMP compliance.
+
+Schedule T (See Rule 157): Good Manufacturing Practices for Ayurvedic, Siddha and Unani medicines. Part I states general requirements for manufacturing premises, personnel, raw material authenticity, water, sanitation, machinery and quality control; it requires each licensee to document the manufacturing methodology in a manual kept for inspection. Exemption: registered Vaidyas, Siddhas and Hakeems (IMCC Act 1970) who prepare medicines for their own patients and do not sell them in the market are exempt from GMP. A revised Schedule T was published for comments on 14 February 2025 via G.S.R. 140(E).
+
+Pharmacopoeia linkage: manufacturers must comply with quality standards given in the respective pharmacopoeia (Ayurvedic Pharmacopoeia of India etc.) besides GMP per Schedule T and Schedule M-I.
+
+Schedule E-1: Lists poisonous substances under the Ayurvedic (including Siddha) system; herbs in E-1 are excluded from the FSSAI Ayurveda Aahara category and are subject to special handling as ASu drugs.
+
+Modernisation: Ministry of AYUSH operates the Ayush Suraksha platform to document suspected Adverse Drug Reactions (ADRs) and objectionable/misleading advertisements (OAs/MLAs) concerning ASU products.
+
+Sources:
+- Drugs and Cosmetics Rules, 1945 (CDSCO consolidated PDF): https://cdsco.gov.in/opencms/resources/UploadCDSCOWeb/2022/drug_rules/Drugs%20Rules,%201945.pdf
+- Schedule T GMP PDF (AYUSH): https://uaoa.gov.in/sites/default/files/2025-08/good%20manufacturing%20practices%20for%20ayurvedic%20siddha%20and%20unani_0.pdf
+- indiankanoon Rule 158-B: https://indiankanoon.org/doc/2678839/
+- PIB PRID 1847448.

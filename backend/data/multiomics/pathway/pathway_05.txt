@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PATHWAY-05
+TITLE: PI3K-Akt-mTOR survival pathway
+OMICS_TYPE: pathway
+ORGANISM: Homo sapiens
+COMPOUND: Resveratrol / curcumin
+GENE: PIK3CA; AKT1; MTOR
+PROTEIN: PI3K; AKT1; mTOR
+UNIPROT: P31749
+NCBI_GENE_ID: 207
+PUBCHEM_CID: 
+PATHWAY: PI3K-Akt-mTOR signalling
+ASSAY_TYPE: Phospho-AKT Western blot
+PMID: 
+SOURCE_URL: https://www.wikipathways.org/pathways/WP2843.html
+AUTHORITY: WikiPathways / KEGG (Kyoto Encyclopedia)
+JURISDICTION: International
+
+The PI3K/Akt/mTOR pathway (PIK3CA->AKT1->MTOR) couples growth signals to protein synthesis and survival. Polyphenols including curcumin and resveratrol are documented to modulate AKT1 phosphorylation, providing mechanistic rationale for anti-proliferative and longevity claims.

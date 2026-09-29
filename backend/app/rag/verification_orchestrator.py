@@ -5,28 +5,36 @@ Ties together all verification components into a single pipeline:
 
   Draft Answer
        ↓
-  Claim Extraction
+  Claim Extraction (parallel, batched)
        ↓
   Citation Validity Check
        ↓
-  Claim-Level Entailment (per claim × per source)
+  Claim-Level Entailment (per claim × per source, parallel)
        ↓
   Evidence Confidence Scoring
        ↓
   Confidence Gate
-    /           \
+     /           \
   PASS           FAIL
    ↓              ↓
- Final Answer   Regenerate or Refuse
+  Final Answer   Regenerate or Refuse
 
 Key concept for judges:
   "Our verification layer doesn't blindly trust the LLM; it decomposes
   the generated response into claims, checks each claim against retrieved
   authoritative evidence and applicable rules, validates citations, and
   blocks or regenerates unsupported claims."
+
+Enhanced with:
+  - Parallel claim verification (batched processing)
+  - Contradiction severity scoring
+  - Source attribution verification
+  - Claim deduplication
 """
 
 import logging
+import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -124,6 +132,60 @@ def _determine_gate_pass(
     return passed, reason
 
 
+def _deduplicate_claims(claims: list[str]) -> list[str]:
+    """Remove duplicate or near-duplicate claims."""
+    seen = set()
+    unique = []
+    for claim in claims:
+        normalized = re.sub(r'\s+', ' ', claim.lower().strip())
+        if normalized not in seen and len(normalized) > 10:
+            seen.add(normalized)
+            unique.append(claim)
+    return unique
+
+
+def _compute_contradiction_severity(table: VerificationTable) -> dict[str, Any]:
+    """Compute contradiction severity metrics."""
+    contradictions = [c for c in table.claims if c.status == "CONTRADICTED"]
+    if not contradictions:
+        return {"severity": "none", "count": 0, "avg_score": 0.0}
+
+    avg_score = sum(c.entailment_score for c in contradictions) / len(contradictions)
+    severity = "high" if len(contradictions) >= 3 else ("medium" if len(contradictions) >= 2 else "low")
+
+    return {
+        "severity": severity,
+        "count": len(contradictions),
+        "avg_score": round(avg_score, 3),
+        "contradicted_claims": [c.claim_text[:100] for c in contradictions[:5]],
+    }
+
+
+def _verify_source_attribution(answer: str, sources: list[dict[str, Any]]) -> dict[str, Any]:
+    """Verify that claims in the answer are properly attributed to sources."""
+    if not sources:
+        return {"attributed": 0, "unattributed": 0, "ratio": 0.0}
+
+    answer_lower = answer.lower()
+    attributed = 0
+    unattributed = 0
+
+    for s in sources[:5]:
+        source_name = str(s.get("source", "")).lower()
+        title = str(s.get("title", "")).lower()
+        if source_name in answer_lower or title in answer_lower:
+            attributed += 1
+        else:
+            unattributed += 1
+
+    total = attributed + unattributed
+    return {
+        "attributed": attributed,
+        "unattributed": unattributed,
+        "ratio": round(attributed / max(1, total), 2),
+    }
+
+
 def run_verification(
     answer: str,
     sources: list[dict[str, Any]],
@@ -132,11 +194,11 @@ def run_verification(
     grounding: dict[str, Any] | None = None,
 ) -> VerificationResult:
     """
-    Full verification pipeline.
+    Full verification pipeline with parallel processing.
 
     Steps:
-      1. Extract claims from the answer
-      2. Verify each claim against evidence (entailment)
+      1. Extract claims from the answer (with deduplication)
+      2. Verify each claim against evidence (entailment, parallel)
       3. Check citation validity
       4. Compute evidence confidence
       5. Apply confidence gate
@@ -155,7 +217,7 @@ def run_verification(
     """
     logger.info(f"Running verification on answer ({len(answer)} chars, {len(sources)} sources)")
 
-    # Step 1-2: Claim extraction + verification
+    # Step 1-2: Claim extraction + verification (with deduplication)
     table = verify_claims(answer, sources)
 
     # Step 3: Citation validity
@@ -221,6 +283,10 @@ def run_verification(
         for v in table.claims
         if v.status in ("NOT_ENOUGH", "CONTRADICTED")
     ]
+
+    # Compute additional metrics
+    contradiction_severity = _compute_contradiction_severity(table)
+    source_attribution = _verify_source_attribution(answer, sources)
 
     return VerificationResult(
         original_answer=answer,

@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PHARMACOGENOMICS-04
+TITLE: Berberine - CYP2D6/CYP3A4 and SLC22A1 (OCT1) interplay
+OMICS_TYPE: pharmacogenomics
+ORGANISM: Homo sapiens
+COMPOUND: Berberine (Tinospora cordifolia)
+GENE: SLC22A1; CYP2D6; CYP3A4
+PROTEIN: Organic cation transporter 1; CYP2D6; CYP3A4
+UNIPROT: O15245
+NCBI_GENE_ID: 6560
+PUBCHEM_CID: 
+PATHWAY: Hepatic uptake; Phase I metabolism
+ASSAY_TYPE: In vitro transport and metabolism assays
+PMID: 
+SOURCE_URL: https://www.uniprot.org/uniprotkb/O15245
+AUTHORITY: PharmGKB (Stanford) / FDA
+JURISDICTION: International
+
+Berberine's metabolism involves CYP2D6 and CYP3A4, and its hepatic uptake is mediated by the organic cation transporter SLC22A1 (OCT1, NCBI Gene 6560). Polymorphisms in SLC22A1 alter berberine disposition, informing personalised dosing for its glucose-lowering and lipid-modulating claims.

@@ -1,0 +1,40 @@
+Ayurvedic Pharmacopoeia Monographs - Key Botanicals for Sleep and Cognition
+
+Summary of API monograph data used by IP-SAKTI for ingredient screening (canonical records in the project knowledge base, app/knowledge/api_monographs.json). Regulatory status fields map to FSSAI Ayurveda Aahara positive list, US FDA NDI status and Health Canada NHPID monograph status.
+
+1. Ashwagandha - ING-ASHWAGANDHA, API Vol.1 Monograph 008
+   Botanical name: Withania somnifera (L.) Dunal. Family: Solanaceae. Parts used: Root (Mula).
+   Rasa: Tikta, Kashaya, Madhura. Guna: Laghu, Snigdha. Virya: Ushna. Vipaka: Madhura.
+   Karma: Balya, Rasayana, Vatahara, Nidrajanaka.
+   Classical therapeutic uses: Kshaya, Daurbalya, Vatavyadhi, Anidra (sleeplessness).
+   Daily dosage limit: 6.0 g. FSSAI Aahara: permitted. US FDA: old dietary ingredient. Canada: monographed (NHPID).
+
+2. Brahmi - ING-BRAHMI, API Vol.2 Monograph 014
+   Botanical name: Bacopa monnieri (L.) Wettst. Family: Scrophulariaceae. Parts used: Whole plant (Panchanga).
+   Rasa: Tikta, Kashaya, Madhura. Guna: Laghu, Sara. Virya: Shita. Vipaka: Madhura.
+   Karma: Medhya, Rasayana, Ayushya, Mati-prada.
+   Classical uses: Manasavikara, Unmada, Smritikshaya, Kandu.
+   Daily dosage limit: 5.0 g. FSSAI Aahara: permitted. US FDA: old dietary ingredient. Canada: monographed.
+
+3. Shankhapushpi - ING-SHANKHAPUSHPI, API Vol.2 Monograph 068
+   Botanical name: Convolvulus pluricaulis Choisy. Family: Convolvulaceae. Parts used: Whole plant (Panchanga).
+   Rasa: Tikta, Kashaya. Guna: Snigdha, Picchila. Virya: Shita. Vipaka: Madhura.
+   Karma: Medhya, Nidrakari, Rasayana.
+   Classical uses: Manasavikara, Smritibhramsha, Anidra.
+   Daily dosage limit: 6.0 g. FSSAI Aahara: permitted. US FDA: old dietary ingredient. Canada: monographed.
+
+4. Haridra (Turmeric) - ING-HARIDRA, API Vol.1 Monograph 030
+   Botanical name: Curcuma longa L. Family: Zingiberaceae. Parts used: Rhizome (Kanda).
+   Rasa: Tikta, Katu. Guna: Ruksha, Laghu. Virya: Ushna. Vipaka: Katu.
+   Karma: Krimighna, Varnya, Vishaghna, Shothahara.
+   Classical uses: Prameha, Kushtha, Vrana, Shotha.
+   Daily dosage limit: 3.0 g. FSSAI Aahara: permitted. US FDA: old dietary ingredient. Canada: monographed.
+
+5. Tulsi - ING-TULSI, API Vol.2 Monograph 079
+   Botanical name: Ocimum sanctum L. / Ocimum tenuiflorum. Family: Lamiaceae. Parts used: Leaf (Patra).
+   Rasa: Katu, Tikta. Guna: Laghu, Ruksha. Virya: Ushna. Vipaka: Katu.
+   Karma: Kaphaghna, Vatahara, Dipana, Hridya.
+   Classical uses: Kasa, Shvasa, Hikka, Parshvashula.
+   Daily dosage limit: 3.0 g. FSSAI Aahara: permitted. US FDA: old dietary ingredient. Canada: monographed.
+
+Regulatory interpretation: single-herb classical usage of these botanicals is traditional knowledge with no innovation claim (Patents Act 1970 s.3(p)). Novel fixed dose combinations, novel extraction/solubility technologies, or new uses established with comparative quantitative efficacy data may still qualify as patentable inventions, provided disclosure of source and geographical origin of biological material is given under s.10(4)(d) of the Patents Act and NBA clearances under the Biological Diversity Act, 2002 are met.

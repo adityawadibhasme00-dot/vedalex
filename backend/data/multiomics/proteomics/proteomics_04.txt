@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PROTEOMICS-04
+TITLE: PRKAA1 (AMPK alpha-1) - cellular energy sensor
+OMICS_TYPE: proteomics
+ORGANISM: Homo sapiens
+COMPOUND: Berberine (Berberis aristata / Tinospora cordifolia)
+GENE: PRKAA1
+PROTEIN: 5'-AMP-activated protein kinase catalytic subunit alpha-1
+UNIPROT: Q13131
+NCBI_GENE_ID: 5562
+PUBCHEM_CID: 
+PATHWAY: AMPK signalling
+ASSAY_TYPE: Phospho-protein assay (p-AMPK/AMPK)
+PMID: 
+SOURCE_URL: https://www.uniprot.org/uniprotkb/Q13131
+AUTHORITY: UniProt Consortium (EMBL-EBI / SIB / PIR)
+JURISDICTION: International
+
+PRKAA1 encodes the catalytic alpha-1 subunit of AMP-activated protein kinase (AMPK), the central cellular energy sensor. Berberine, an isoquinoline alkaloid from Berberis species, is documented to activate AMPK signalling, a mechanism associated with improved glucose and lipid metabolism. This protein-level evidence supports metabolic and cardiometabolic claims.

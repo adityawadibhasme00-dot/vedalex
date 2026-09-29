@@ -1,0 +1,100 @@
+{
+  "corpus_version_at_harvest": "b3e5fa093b497d1f",
+  "datasets": [
+    {
+      "citation": "GBIF.org contributors, accessed via the GBIF API.",
+      "endpoints": [
+        "https://api.gbif.org/v1/species/match?name={name}",
+        "https://api.gbif.org/v1/species/{usageKey}",
+        "https://api.gbif.org/v1/species/{usageKey}/synonyms?limit=25"
+      ],
+      "file": "taxonomy/documents.json",
+      "homepage": "https://www.gbif.org/",
+      "license": "CC-BY 4.0 / CC0 1.0",
+      "license_url": "https://www.gbif.org/copyright-guidelines",
+      "publisher": "Global Biodiversity Information Facility (GBIF) Secretariat",
+      "records": 9,
+      "sha256": "00fc4951e3028eba026d1f2b448e2eff97c975ca0a34d086ca8ad16e03b86cf8",
+      "source": "gbif"
+    },
+    {
+      "citation": "Kim S. et al. PubChem 2023, Nucleic Acids Res. 51(D1):D1373-D1380.",
+      "endpoints": [
+        "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{name}/cids/JSON",
+        "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{cid}/property/MolecularFormula,MolecularWeight,InChIKey,CanonicalSMILES,IsomericSMILES,IUPACName/JSON"
+      ],
+      "file": "compounds/documents.json",
+      "homepage": "https://pubchem.ncbi.nlm.nih.gov/",
+      "license": "Public domain (US Government work)",
+      "license_url": "https://www.ncbi.nlm.nih.gov/home/about/policies/",
+      "publisher": "National Center for Biotechnology Information (NCBI)",
+      "records": 10,
+      "sha256": "997a5fd7297ec8479e7fcc268a6a82b4879e5924348a5afc9d222fdb02c56fa7",
+      "source": "pubchem"
+    },
+    {
+      "citation": "UniProt Consortium, UniProtKB, accessed via the UniProt REST API.",
+      "endpoints": [
+        "https://rest.uniprot.org/uniprotkb/search?query=gene_exact:{symbol}+AND+organism_id:9606+AND+reviewed:true&format=json&size=1"
+      ],
+      "file": "entries/documents.json",
+      "homepage": "https://www.uniprot.org/",
+      "license": "CC BY 4.0",
+      "license_url": "https://www.uniprot.org/help/license",
+      "publisher": "UniProt Consortium",
+      "records": 6,
+      "sha256": "ecc53fd0964cc2e4333c97ab8cadcc94d6dc856aaf3b41f6230f64b515085f40",
+      "source": "uniprot"
+    },
+    {
+      "citation": "NCBI Gene, accessed via NCBI E-utilities.",
+      "endpoints": [
+        "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gene&term={symbol}[sym]+AND+human[orgn]&retmode=json",
+        "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=gene&id={ids}&retmode=json"
+      ],
+      "file": "genes/documents.json",
+      "homepage": "https://www.ncbi.nlm.nih.gov/gene",
+      "license": "Public domain (US Government work)",
+      "license_url": "https://www.ncbi.nlm.nih.gov/home/about/policies/",
+      "publisher": "National Center for Biotechnology Information (NCBI)",
+      "records": 6,
+      "sha256": "4b5cf3225df376bd3ad9fc008339406c3a4f56fa7bd32e549be221e287438f72",
+      "source": "ncbi_gene"
+    }
+  ],
+  "description": "Bounded snapshot of official, no-registration public datasets used to supply verifiable identifiers for the medicinal plants, marker compounds and protein/gene targets already cited by the curated corpus.",
+  "retrieved_at": "2026-09-27T16:17:43Z",
+  "schema_version": "1.0",
+  "unavailable_sources": [
+    {
+      "reason": "api.pharmgkb.org failed DNS resolution from the build host; no snapshot could be retrieved.",
+      "source": "pharmgkb",
+      "status": "unreachable"
+    },
+    {
+      "reason": "hmdb.ca/unearth returned HTTP 403 to scripted access.",
+      "source": "hmdb",
+      "status": "forbidden"
+    },
+    {
+      "reason": "webservice.wikipathways.org findPathwaysByText returned HTTP 404; the legacy endpoint is no longer served.",
+      "source": "wikipathways",
+      "status": "unavailable"
+    },
+    {
+      "reason": "TKDL access requires a registered user account and per-request approval from the Department of Science and Technology. No open bulk release exists, so permitted TK prior art stays limited to the cited classical texts.",
+      "source": "tkdl",
+      "status": "restricted"
+    },
+    {
+      "reason": "The Ayurvedic Pharmacopoeia of India is a priced publication of the Government of India and has no open machine-readable release. Only the already-cited monograph identifiers are used.",
+      "source": "api_monographs",
+      "status": "restricted"
+    },
+    {
+      "reason": "Google Patents Public Datasets are multi-terabyte; the bulk release is inappropriate for this repository. Retrieval stays on the official India patent and WIPO search interfaces.",
+      "source": "patent_fulltext",
+      "status": "not_bulk_feasible"
+    }
+  ]
+}

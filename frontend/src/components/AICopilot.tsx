@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Sparkles, Loader2, ChevronDown, Copy, Check, Library, Mic, Volume2, VolumeX, AudioLines, Lightbulb, ShieldCheck, ShieldAlert, AlertTriangle, ListChecks, Target, BarChart3, PieChart as PieChartIcon, Radar as RadarIcon, Gauge, GitBranch, MapPin, ShieldQuestion, Table2, Compass, Scale, Hash, UserCheck } from 'lucide-react';
-import { askCopilot, getSuggestedQuestions, getRAGSearchStats, configureRAG, ragSearch, RagArchitecture } from '../lib/api';
+import { getSuggestedQuestions, ragSearch } from '../lib/api';
 import { CopilotResponse, CopilotChart, CopilotSource, CopilotDecisionTrace, CopilotProductClassification } from '../types';
 import { HerbSprig, TulsiLeaf, TurmericRoot, MortarPestle } from './BotanicalDecor';
 import ExpertHandoffModal from './ExpertHandoffModal';
@@ -520,19 +520,6 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
   const [speakingMsgId, setSpeakingMsgId] = useState<number | null>(null);
   const [jurisdiction, setJurisdiction] = useState<'India' | 'International'>('India');
   const [handoffMsgId, setHandoffMsgId] = useState<number | null>(null);
-  const [ragEngine, setRagEngine] = useState<'copilot' | RagArchitecture>(() => {
-    const saved = typeof window !== 'undefined' ? window.localStorage.getItem('ipsakti:rag-engine') : null;
-    return saved === 'hybrid' || saved === 'production' || saved === 'graph' || saved === 'agentic' || saved === 'auto' ? saved : 'copilot';
-  });
-  interface EngineStats {
-    rag_types: string[];
-    default_rag_type: string;
-    config: { default?: string; cache_ttl?: number; rate_limit?: number };
-    per_type: Record<string, { available?: boolean; default?: boolean; cache?: { hits?: number; misses?: number }; rate_limit?: number }>;
-  }
-  const [engineStats, setEngineStats] = useState<EngineStats | null>(null);
-  const [statsNotice, setStatsNotice] = useState('');
-  const [statsReloadKey, setStatsReloadKey] = useState(0);
   const pendingTranscript = useRef('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -543,27 +530,6 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
       if (res?.questions?.length) setSuggestions(res.questions);
     }).catch(() => {});
   }, []);
-
-  useEffect(() => {
-    let alive = true;
-    getRAGSearchStats().then((res) => {
-      if (alive) setEngineStats(res);
-    }).catch(() => {
-      if (alive) setEngineStats(null);
-    });
-    return () => { alive = false; };
-  }, [statsReloadKey]);
-
-  const setEngineAsDefault = async (engine: RagArchitecture) => {
-    try {
-      await configureRAG({ rag_type: engine });
-      setStatsNotice(`Default engine set to ${engine}`);
-      setStatsReloadKey((k) => k + 1);
-    } catch {
-      setStatsNotice('Could not update default engine');
-    }
-    window.setTimeout(() => setStatsNotice(''), 3000);
-  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -600,60 +566,28 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
     setIsLoading(true);
 
     try {
-      if (ragEngine !== 'copilot') {
-        const res = await ragSearch(question, {
-          jurisdiction: jurisdiction === 'International' ? undefined : 'India',
-          top_k: 8,
-          rag_type: ragEngine,
-        });
-        const sources: CopilotSource[] = res.sources || [];
-        const statusLine = res.refusal
-          ? `\n\n⚠️ Request blocked: ${res.refusal.reason}`
-          : '';
-        const routingNote = res.meta?.auto_resolved
-          ? ` — auto routed to ${res.meta.auto_resolved} (${res.meta.auto_reason})`
-          : '';
-        const summary =
-          `**RAG ${res.rag_type}${routingNote}** — ${res.count} source(s) retrieved in ${Math.round(res.latency_ms)}ms\n` +
+      const res = await ragSearch(question, {
+        jurisdiction: jurisdiction === 'International' ? undefined : 'India',
+        top_k: 8,
+        answer: true,
+      });
+      const sources: CopilotSource[] = res.sources || [];
+      const statusLine = res.refusal
+        ? `\n\n⚠️ Request blocked: ${res.refusal.reason}`
+        : '';
+      const engineNote = (res.meta?.engines_used?.length || 0) > 0
+        ? ` (${res.meta.engines_used.join(' + ')})`
+        : '';
+      const content = res.answer && res.answer.trim()
+        ? res.answer + statusLine
+        : `**Unified RAG${engineNote}** — ${res.count} source(s) retrieved in ${Math.round(res.latency_ms)}ms\n` +
           `Confidence: ${Math.round((res.confidence || 0) * 100)}%\n\n` +
           (sources.length ? `Top cited sources:\n${sources.slice(0, 5).map((s: CopilotSource, i: number) => `${i + 1}. ${s.source || 'Source'} — ${s.category || 'Retrieved'}`).join('\n')}` : 'No sources matched.') +
           statusLine;
-        const msg: Message = {
-          role: 'assistant',
-          content: summary,
-          sources: sources,
-          confidence: res.confidence,
-          metrics: {
-            rag_type: res.rag_type,
-            latency_ms: res.latency_ms,
-            count: res.count,
-            architecture: res.meta?.architecture,
-            cache_hit: res.meta?.cache_hit,
-            cost: res.meta?.cost,
-            agents: res.meta?.agents_used,
-          },
-          timestamp: Date.now(),
-        };
-        setMessages((prev) => [...prev, msg]);
-        setPanelSources(
-          sources.slice(0, 6).map((s: CopilotSource) => ({
-            name: s.source || 'Source',
-            category: s.category || 'Retrieved',
-            snippet: s.content ? s.content.replace(/\s+/g, ' ').slice(0, 110) : '',
-          }))
-        );
-        if (voiceOutput && voice.synthSupported) {
-          setSpeakingMsgId(messages.length + 1);
-          voice.speak(summary.replace(/\*\*/g, ''), () => setSpeakingMsgId(null));
-        }
-        setIsLoading(false);
-        return;
-      }
-      const res = await askCopilot(question, passportId, { jurisdiction });
       const msg: Message = {
         role: 'assistant',
-        content: res.answer,
-        sources: res.sources,
+        content,
+        sources,
         confidence: res.confidence,
         charts: res.charts,
         images: res.images,
@@ -670,25 +604,28 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
         verification: res.verification,
         abstained: res.abstained,
         abstentionReason: res.abstention_reason,
+        metrics: {
+          rag_type: res.rag_type,
+          latency_ms: res.latency_ms,
+          count: res.count,
+          architecture: res.meta?.architecture,
+          cache_hit: res.meta?.cache_hit,
+          cost: res.meta?.cost,
+          agents: res.meta?.agents_used || res.meta?.engines_used,
+        },
         timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, msg]);
-      const live: PanelSource[] = (res.sources || [])
-        .map((s: CopilotSource, idx: number) => ({
-          name: s.source || `Source ${idx + 1}`,
+      setPanelSources(
+        sources.slice(0, 6).map((s: CopilotSource) => ({
+          name: s.source || 'Source',
           category: s.category || 'Retrieved',
           snippet: s.content ? s.content.replace(/\s+/g, ' ').slice(0, 110) : '',
         }))
-        .filter((s: PanelSource, i: number, arr: PanelSource[]) => arr.findIndex((x: PanelSource) => x.name === s.name) === i)
-        .slice(0, 6);
-      setPanelSources(
-        live.length
-          ? live
-          : RAG_SOURCES.map((s) => ({ name: s.name, category: s.category, snippet: s.snippet }))
       );
       if (voiceOutput && voice.synthSupported) {
         setSpeakingMsgId(messages.length + 1);
-        voice.speak(res.answer, () => setSpeakingMsgId(null));
+        voice.speak(content.replace(/\*\*/g, ''), () => setSpeakingMsgId(null));
       }
     } catch (err) {
       // Show the actual reason (timeout, HTTP status, network down) rather than
@@ -1112,7 +1049,7 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
                     )}
                     {msg.metrics && typeof msg.metrics.rag_type === 'string' && (
                       <span className="inline-flex items-center gap-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200">
-                        <Gauge className="w-2.5 h-2.5" /> RAG {msg.metrics.rag_type}
+                        <Gauge className="w-2.5 h-2.5" /> Unified RAG
                         {typeof msg.metrics.latency_ms === 'number' && ` · ${Math.round(msg.metrics.latency_ms)}ms`}
                         {typeof msg.metrics.count === 'number' && ` · ${msg.metrics.count} src`}
                         {msg.metrics.cache_hit === true && ' · cached'}
@@ -1192,65 +1129,11 @@ export default function AICopilot({ passportId, lang = 'en' }: AICopilotProps) {
               <button onClick={voice.clearError} className="text-amber-600 hover:text-slate-900">✕</button>
             </div>
           )}
-          <div className="mb-2.5 flex items-center gap-1.5 flex-wrap">
-            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mr-0.5">Engine</span>
-            <button
-              type="button"
-              onClick={() => { setRagEngine('copilot'); window.localStorage.setItem('ipsakti:rag-engine', 'copilot'); }}
-              className={`px-2 py-1 rounded-lg text-[10px] font-semibold border transition ${
-                ragEngine === 'copilot'
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                  : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300 hover:text-blue-600'
-              }`}
-              title="Full AI answer with hallucinations check"
-            >
-              AI Copilot
-            </button>
-            {([['hybrid', 'BM25 + dense + rerank'], ['production', '+ cache · rate-limit'], ['graph', '+ knowledge graph'], ['agentic', 'parallel specialists'], ['auto', 'rule-based routing']] as [RagArchitecture, string][]).map(([id, hint]) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => { setRagEngine(id); window.localStorage.setItem('ipsakti:rag-engine', id); }}
-                className={`px-2 py-1 rounded-lg text-[10px] font-semibold border transition ${
-                  ragEngine === id
-                    ? 'bg-violet-600 text-white border-violet-600 shadow-sm'
-                    : 'bg-white text-slate-500 border-slate-200 hover:border-violet-300 hover:text-violet-600'
-                }`}
-                title={hint}
-              >
-                RAG {id.charAt(0).toUpperCase() + id.slice(1)}
-              </button>
-            ))}
+          <div className="mb-2.5 flex items-center gap-1.5 flex-wrap text-[10px] text-slate-400">
+            <Sparkles className="w-3 h-3 text-violet-500" />
+            <span className="font-semibold text-slate-600">Unified RAG</span>
+            <span>— all retrieval engines combined into one answer</span>
           </div>
-          {engineStats && (
-            <div className="mb-2.5 flex items-center gap-1.5 flex-wrap text-[9px] text-slate-400">
-              <span className="font-bold uppercase tracking-wider">Engines:</span>
-              {engineStats.rag_types.map((id: string) => {
-                const st = engineStats.per_type?.[id];
-                const ok = st?.available !== false;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setEngineAsDefault(id as RagArchitecture)}
-                    title={`${id === engineStats.default_rag_type ? 'Default engine — ' : ''}Click to set ${id} as the default engine`}
-                    className={`px-1.5 py-0.5 rounded border ${
-                      id === engineStats.default_rag_type
-                        ? 'border-emerald-300 bg-emerald-50 text-emerald-600'
-                        : 'border-slate-200 bg-white text-slate-500 hover:border-emerald-300'
-                    }`}
-                  >
-                    {ok ? '●' : '○'} {id}
-                    {id === engineStats.default_rag_type && ' ★'}
-                  </button>
-                );
-              })}
-              <span>
-                default: {engineStats.default_rag_type} · TTL {engineStats.config?.cache_ttl ?? '?'}s
-              </span>
-              {statsNotice && <span className="text-blue-600 font-semibold">· {statsNotice}</span>}
-            </div>
-          )}
           <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
             <button
               type="button"

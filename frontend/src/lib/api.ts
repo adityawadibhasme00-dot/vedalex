@@ -578,7 +578,7 @@ export async function reindexKnowledgeBase() {
 }
 
 // ─── Unified RAG Search (Hybrid / Production / Graph / Agentic) ─────────────
-export type RagArchitecture = 'hybrid' | 'production' | 'graph' | 'agentic' | 'auto';
+export type RagArchitecture = 'hybrid' | 'production' | 'graph' | 'agentic' | 'auto' | 'combined';
 
 export interface RagSearchOptions {
   jurisdiction?: string;
@@ -587,6 +587,7 @@ export interface RagSearchOptions {
   rag_type?: RagArchitecture;
   filters?: Record<string, any>;
   user_key?: string;
+  answer?: boolean;
 }
 
 export async function ragSearch(query: string, options?: RagSearchOptions) {

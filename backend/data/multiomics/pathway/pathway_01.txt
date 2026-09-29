@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PATHWAY-01
+TITLE: Nrf2-ARE antioxidant response pathway
+OMICS_TYPE: pathway
+ORGANISM: Homo sapiens
+COMPOUND: Withaferin A / Curcumin
+GENE: NFE2L2; KEAP1; HMOX1; NQO1
+PROTEIN: Nrf2; Keap1; HMOX1; NQO1
+UNIPROT: Q16236
+NCBI_GENE_ID: 4780
+PUBCHEM_CID: 
+PATHWAY: Nrf2-ARE antioxidant response
+ASSAY_TYPE: Pathway reporter assays
+PMID: 
+SOURCE_URL: https://www.wikipathways.org/pathways/WP5239.html
+AUTHORITY: WikiPathways / KEGG (Kyoto Encyclopedia)
+JURISDICTION: International
+
+The Nrf2-ARE pathway (NFE2L2 -> KEAP1 -> ARE) is the canonical cellular antioxidant response axis. Bioactives including withaferin A and curcumin are documented to liberate Nrf2 from KEAP1, driving transcription of HMOX1, NQO1 and phase-II enzymes. Reference: WikiPathways WP5239-aligned redox pathway components.

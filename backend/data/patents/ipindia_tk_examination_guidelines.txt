@@ -1,0 +1,17 @@
+Indian Patent Office - Guidelines for Examination of TK and Biological Material Applications
+
+The Controller General of Patents, Designs and Trade Marks (CGPDTM) administers the "Guidelines for Processing of Patent Applications relating to Traditional Knowledge and Biological Materials" (revised 2002) and the Guidelines for Scientific Evidence / Examination of proposals in the field of TK. Their purpose is to ensure TK-based and biologically-derived inventions are properly examined against Section 3(p), 3(d), 3(e) and to protect India's biological resources.
+
+Key examination requirements for TK/bio-material claims:
+1. Mandatory TK prior-art search: examiners must carry out prior-art searches in TK databases, including the Traditional Knowledge Digital Library (TKDL), when the application relates to traditional knowledge or to biological material. TKDL evidence is treated as prior art, so claims copying classical Ayurvedic formulations fail on novelty and s.3(p) grounds.
+2. Disclosure of source and geographical origin: the complete specification must disclose the source and geographical origin of any biological material used in the invention (Patents Act, 1970, s.10(4)(d)(ii)(D)). Non-disclosure attracts a requirement to remedy before grant and can ground opposition.
+3. NBA clearance under the Biological Diversity Act, 2002 (s.6): before the patent is sealed/sealed grant, the applicant must secure NBA approval/registration (Form 7 prior approval for s.3(2) applicants under the BD Rules 2024; Form 8 registration for s.7 applicants). The IPO does not grant in the absence of NBA compliance.
+4. Anti-biopiracy scrutiny: claims to plants, plant parts, extracts, minerals and metals of Indian origin, or processes using them, are examined for whether they are "in effect" traditional knowledge (s.3(p)), a mere admixture (s.3(e)) or merely a new form of a known substance (s.3(d)).
+5. Evidence requirement: where efficacy enhancement or synergy is asserted to escape 3(d)/3(p), comparative quantitative empirical data vs the sum of individual components is required; the demonstration of a surprising synergistic therapeutic effect must be conclusive.
+
+Filing implications for herbal/innovative Ayurvedic products: file the disclosure early, name the source and origin, arrange NBA approval/registration before grant, and prepare quantitative synergism data to preserve patentability of otherwise classical compositions.
+
+Sources:
+- https://www.ipindia.gov.in/writereaddata/Portal/IPOGuidelinesManuals/1_39_1_5-tk-guidelines.pdf
+- Patents Act 1970 s.10(4)(d): https://ipindia.gov.in/frontend/pdf/patents/1_31_1_patent-act-1970-11march2015.pdf
+- Biological Diversity (Amendment) Act 2023 and BD Rules 2024 (G.S.R. 665(E)): https://nbaindia.org

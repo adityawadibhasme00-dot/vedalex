@@ -86,9 +86,9 @@ export function Sidebar({
           <button
             onClick={onHome}
             title={collapsedMode ? 'Home' : undefined}
-            className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors group text-gray-700 hover:bg-gray-100 hover:text-emerald-800"
+            className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors group text-gray-700 hover:bg-gov-wash hover:text-gov-navy"
           >
-            <span className="flex-shrink-0 text-gray-500 group-hover:text-emerald-600"><Home className="w-5 h-5" /></span>
+            <span className="flex-shrink-0 text-gray-500 group-hover:text-gov-blue"><Home className="w-5 h-5" /></span>
             {!collapsedMode && <span className="text-[13px] font-medium">{'Home'}</span>}
           </button>
           {MAIN_NAV.map((item) => (
@@ -124,22 +124,22 @@ export function Sidebar({
       {/* Lab agents quick links */}
       {!collapsedMode && labAgentsLoaded && labAgents.length > 0 && (
         <div>
-          <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-teal-500">Lab Agents</p>
+          <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gov-blue">Lab Agents</p>
           <div className="space-y-0.5">
             {labAgents.slice(0, 6).map((a) => (
               <button
                 key={a.slug}
                 onClick={() => onOpenAgent(a.slug)}
-                className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left text-xs text-gray-600 hover:bg-emerald-50 hover:text-emerald-800 transition group"
+                className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-left text-xs text-gray-600 hover:bg-gov-wash hover:text-gov-navy transition group"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-teal-400 flex-shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-gov-blue flex-shrink-0" />
                 <span className="truncate">{a.label}</span>
               </button>
             ))}
             {labAgents.length > 6 && (
               <button
                 onClick={() => onNavigate('innolab')}
-                className="w-full text-left px-3 py-1 text-[11px] text-teal-600 hover:text-emerald-800"
+                className="w-full text-left px-3 py-1 text-[11px] text-gov-blue hover:text-gov-navy"
               >
                 + {labAgents.length - 6} more in the lab
               </button>
@@ -159,9 +159,9 @@ export function Sidebar({
         <a
           href="mailto:support@ipsakti.gov.in"
           title={collapsedMode ? 'Help & Support' : undefined}
-          className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors group text-gray-700 hover:bg-gray-100 hover:text-emerald-800"
+          className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors group text-gray-700 hover:bg-gov-wash hover:text-gov-navy"
         >
-          <span className="flex-shrink-0 text-gray-500 group-hover:text-emerald-600"><HelpCircle className="w-5 h-5" /></span>
+          <span className="flex-shrink-0 text-gray-500 group-hover:text-gov-blue"><HelpCircle className="w-5 h-5" /></span>
           {!collapsedMode && <span className="text-[13px] font-medium whitespace-nowrap overflow-hidden text-ellipsis">Help &amp; Support</span>}
         </a>
       </div>
@@ -171,13 +171,13 @@ export function Sidebar({
   const footer = (collapsedMode: boolean) => (
     <div className="border-t border-gray-100 p-3 space-y-2">
       {!collapsedMode && (
-        <div className={`flex items-center gap-2 px-2 py-1 text-[11px] ${isOnline ? 'text-emerald-600' : 'text-amber-600'}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+        <div className={`flex items-center gap-2 px-2 py-1 text-[11px] ${isOnline ? 'text-gov-green' : 'text-amber-600'}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-gov-green' : 'bg-amber-500'}`} />
           {isOnline ? 'Online' : `Offline (${offlineDraftCount} drafts)`}
         </div>
       )}
       <div className="flex items-center gap-2.5 px-2">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center flex-shrink-0 text-white font-bold text-xs">
+        <div className="w-8 h-8 rounded-md bg-gov-blue flex items-center justify-center flex-shrink-0 text-white font-bold text-xs">
           {(userName || 'U')?.[0]?.toUpperCase()}
         </div>
         {!collapsedMode && (
@@ -208,11 +208,11 @@ export function Sidebar({
       `}>
         <div className="flex items-center justify-between h-12 px-3 border-b border-gray-100">
           {!collapsed && (
-            <span className="text-[13px] font-semibold text-emerald-800 font-display px-1">Navigation</span>
+            <span className="text-[13px] font-semibold text-gov-navy font-display px-1">Navigation</span>
           )}
           <button
             onClick={onToggleCollapsed}
-            className="p-1.5 rounded-lg text-gray-500 hover:bg-emerald-50 hover:text-emerald-700 transition mx-auto"
+            className="p-1.5 rounded-lg text-gray-500 hover:bg-gov-wash hover:text-gov-blue transition mx-auto"
             title={collapsed ? 'Expand' : 'Collapse'}
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
@@ -226,13 +226,13 @@ export function Sidebar({
       {/* ─── Mobile drawer ───────────────────────────────── */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-[60]" onClick={onCloseMobile}>
-          <div className="absolute inset-0 bg-emerald-900/40 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-gov-navy/50" />
           <div
             className="absolute left-0 top-0 bottom-0 w-64 bg-white border-r border-gray-200 p-3 flex flex-col animate-fade-in-left"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-1 pb-3 border-b border-gray-100">
-              <span className="text-sm font-bold text-emerald-800 font-display">IP-SAKTI Sahayak</span>
+              <span className="text-sm font-bold text-gov-navy font-display">IP-SAKTI Sahayak</span>
               <button onClick={onCloseMobile} className="text-gray-500 hover:text-gray-700">
                 <X className="w-5 h-5" />
               </button>

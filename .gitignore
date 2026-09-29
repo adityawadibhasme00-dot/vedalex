@@ -19,7 +19,18 @@ out/
 npm-debug.log*
 
 # Runtime data
-backend/data/
+#
+# backend/data/ holds the curated corpus: statutory text, patent and
+# multi-omics notes, the blueprint workbook, and the committed snapshot of
+# official external datasets. That is content, not runtime state, and it must be
+# versioned - the corpus manifest hashes it and detects drift between
+# deployments, which is impossible if a fresh clone ships an empty corpus.
+# Only the incremental harvester state and local stores stay ignored.
+!backend/data/
+backend/data/*_state.json
+backend/data/knowledge_graph.json
+backend/data/uploads/
+backend/data/exports/
 backend/uploads/
 backend/exports/
 backend/*.db
@@ -68,3 +79,7 @@ _g9*
 diag*.py
 q1.ps1
 *.err
+
+# Video demo build artefacts (regenerate with: python -m video.build_clips)
+backend/video/out/
+vedalex_demo.mp4

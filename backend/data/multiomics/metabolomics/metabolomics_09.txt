@@ -1,0 +1,18 @@
+DOC_ID: OMICS-METABOLOMICS-09
+TITLE: Ursolic acid - pentacyclic triterpene marker of Tulsi
+OMICS_TYPE: metabolomics
+ORGANISM: Ocimum sanctum
+COMPOUND: Ursolic acid
+GENE: 
+PROTEIN: 
+UNIPROT: 
+NCBI_GENE_ID: 
+PUBCHEM_CID: 64945
+PATHWAY: Triterpenoid biosynthesis
+ASSAY_TYPE: HPLC / GC-MS
+PMID: 
+SOURCE_URL: https://pubchem.ncbi.nlm.nih.gov/compound/64945
+AUTHORITY: PubChem (NCBI) / HMDB / MetaboLights (EMBL-EBI)
+JURISDICTION: International
+
+Ursolic acid is a pentacyclic triterpenoid that is a characteristic marker of Ocimum sanctum (Tulsi/holy basil) leaves and is registered in PubChem (CID 64945). Together with oleanolic acid (CID 10494) and eugenol-derived metabolites, it defines the chemotaxonomic metabolomic profile used in Tulsi QC.

@@ -1,0 +1,21 @@
+Ayurvedic Pharmacopoeia of India (API) - Quality Standards
+
+The Ayurvedic Pharmacopoeia of India is the official government compendium published under the Ministry of AYUSH that prescribes standards for the identity, purity and strength of Ayurvedic drugs. It is the authentic monograph reference used by manufacturers, drug regulators and testing laboratories across India.
+
+Source: Ministry of AYUSH / Pharmacopoeia Commission for Indian Medicine and Homoeopathy (PCIM&H). https://www.pcimh.gov.in/ and https://ayush.gov.in/
+
+Each API monograph (e.g. API Vol.1 Monograph No. 008 for Ashwagandha root) records:
+- Botanical identity and Latin binomial with author citation (e.g. Withania somnifera (L.) Dunal)
+- Family and synonyms
+- Part or parts used (Mula/root, Patra/leaf, Kanda/rhizome, Panchanga/whole plant)
+- Macroscopic and microscopic (histological) characteristics
+- Quantitative standards: loss on drying, total ash, acid-insoluble ash, alcohol-soluble extractive and water-soluble extractive percentages
+- Thin-layer chromatography (TLC) / HPLC fingerprint identification
+- Foreign matter, heavy metal and microbial limits
+- Permitted therapeutic indications
+
+Standardization importance: batch-wise quality control against these monograph standards is mandatory for commercial manufacture of Ayurvedic drugs under Schedule T of the Drugs and Cosmetics Rules, 1945. The same quality parameters inform FSSAI Ayurveda Aahara regulation compliance and export documentation.
+
+The Pharmacopoeia Commission for Indian Medicine & Homoeopathy (PCIM&H), a subordinate office under the Ministry of AYUSH, lays down Pharmacopoeial Standards and Formulary specifications for Ayurveda, Siddha, Unani and Homoeopathy (ASU&H) drugs within the ambit of the Drugs & Cosmetics Act, 1940. PCIM&H also acts as an appellate drug testing laboratory receiving samples from Government agencies for quality ascertainment. (Source: PIB press release "Quality Control of Ayush Drugs", 02 Aug 2022, PRID 1847448. https://www.pib.gov.in/Pressreleaseshare.aspx?PRID=1847448)
+
+Complementary compendia include the National Formulary of Ayurveda, the Ayurvedic Formulary of India, and the WHO monographs on selected medicinal plants used for global harmonization of herbal quality control.

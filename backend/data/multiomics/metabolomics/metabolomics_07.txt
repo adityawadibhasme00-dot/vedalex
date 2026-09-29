@@ -1,0 +1,18 @@
+DOC_ID: OMICS-METABOLOMICS-07
+TITLE: Andrographolide - labdane diterpenoid of Kalmegh / Andrographis
+OMICS_TYPE: metabolomics
+ORGANISM: Andrographis paniculata
+COMPOUND: Andrographolide
+GENE: 
+PROTEIN: 
+UNIPROT: 
+NCBI_GENE_ID: 
+PUBCHEM_CID: 5318517
+PATHWAY: Diterpenoid biosynthesis
+ASSAY_TYPE: HPLC / LC-MS/MS
+PMID: 
+SOURCE_URL: https://pubchem.ncbi.nlm.nih.gov/compound/5318517
+AUTHORITY: PubChem (NCBI) / HMDB / MetaboLights (EMBL-EBI)
+JURISDICTION: International
+
+Andrographolide is the major labdane diterpenoid lactone of Andrographis paniculata (Kalmegh / Bhuinimb) and is registered in PubChem (CID 5318517). It is a standard marker for raw-material identity and is studied for NF-kB-mediated anti-inflammatory effects.

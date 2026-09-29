@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PHARMACOGENOMICS-01
+TITLE: Piperine increases curcumin oral bioavailability ~2000%
+OMICS_TYPE: pharmacogenomics
+ORGANISM: Homo sapiens
+COMPOUND: Piperine + Curcumin
+GENE: CYP3A4; ABCB1; UGT1A1
+PROTEIN: P450 3A4; P-gp; UDP-glucuronosyltransferase
+UNIPROT: P08684
+NCBI_GENE_ID: 1576
+PUBCHEM_CID: 
+PATHWAY: Phase I/II metabolism; efflux
+ASSAY_TYPE: Human pharmacokinetic study
+PMID: 9619120
+SOURCE_URL: https://pubmed.ncbi.nlm.nih.gov/9619120/
+AUTHORITY: PharmGKB (Stanford) / FDA
+JURISDICTION: International
+
+The landmark interaction study documented that co-administration of piperine (20 mg) with curcumin (2 g) increased serum curcumin concentration by 2000% in human volunteers compared with curcumin alone, attributed to inhibition of hepatic and intestinal glucuronidation, CYP3A4 and P-glycoprotein (ABCB1). The underlying gene network spans UGT1A1, CYP3A4 and ABCB1. Direct citation: Shoba et al., Planta Medica 1998;64(4):353-6 (PMID 9619120).

@@ -1,0 +1,18 @@
+DOC_ID: OMICS-METABOLOMICS-06
+TITLE: Glycyrrhizic acid - triterpenoid saponin marker of liquorice
+OMICS_TYPE: metabolomics
+ORGANISM: Glycyrrhiza glabra
+COMPOUND: Glycyrrhizic acid
+GENE: 
+PROTEIN: 
+UNIPROT: 
+NCBI_GENE_ID: 
+PUBCHEM_CID: 14982
+PATHWAY: Triterpenoid saponin biosynthesis
+ASSAY_TYPE: HPLC-UV / LC-MS
+PMID: 
+SOURCE_URL: https://pubchem.ncbi.nlm.nih.gov/compound/14982
+AUTHORITY: PubChem (NCBI) / HMDB / MetaboLights (EMBL-EBI)
+JURISDICTION: International
+
+Glycyrrhizic acid (glycyrrhizin) is the bioactive triterpenoid saponin of Glycyrrhiza glabra (liquorice/yashtimadhu) and is registered in PubChem (CID 14982). It is used as a chemical marker in pharmacopoeial standards and its presence defines the sweet taste and expectorant profile of liquorice extracts.

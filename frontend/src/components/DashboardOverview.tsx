@@ -112,32 +112,32 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
   return (
     <div className="space-y-8 animate-slide-up">
       {/* ─── Welcome Section ───────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 relative overflow-hidden">
-        <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-emerald-500/[0.08] blur-3xl" />
-        <div className="absolute -bottom-24 -left-16 w-64 h-64 rounded-full bg-amber-500/[0.08] blur-3xl" />
+      <div className="bg-white rounded-xl border border-gov-rule p-6 md:p-8 relative overflow-hidden">
+        <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-gov-blue/[0.06] blur-3xl" />
+        <div className="absolute -bottom-24 -left-16 w-64 h-64 rounded-full bg-amber-500/[0.06] blur-3xl" />
         <div className="relative">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 font-display tracking-tight mb-2">
-            Welcome back, <span className="text-emerald-700">{firstName}!</span>
+          <h1 className="text-2xl md:text-3xl font-bold text-gov-navy font-display tracking-tight mb-2">
+            Welcome back, <span className="text-gov-blue">{firstName}!</span>
           </h1>
           <p className="text-gray-600 mb-4">How can we help you today?</p>
           <div className="flex flex-wrap items-center gap-2 mb-6">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs text-emerald-700">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gov-wash border border-gov-rule text-xs text-gov-green">
               <ShieldCheck className="w-3.5 h-3.5" /> RAG-grounded · Source-cited · DPDP compliant
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-xs text-blue-700">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-xs text-gov-blue">
               <Sparkles className="w-3.5 h-3.5" /> Multilingual AI · 10 Indian languages
             </span>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => onNavigateTab('passport')}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-semibold rounded-xl shadow-lg shadow-emerald-700/20 transition-transform active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gov-blue hover:bg-gov-navy text-white text-sm font-semibold rounded-md border border-gov-blueDk transition-colors"
             >
               <Plus className="w-4 h-4" /> {t('create_passport', lang)}
             </button>
             <button
               onClick={() => onNavigateTab('ipreg')}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white hover:bg-emerald-50 text-gray-700 border border-emerald-200 text-sm font-semibold rounded-xl transition-transform active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white hover:bg-gov-wash text-gray-700 border border-gov-rule text-sm font-semibold rounded-md transition-colors"
             >
               <ArrowRight className="w-4 h-4" /> Continue Analysis
             </button>
@@ -179,7 +179,7 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
 
       {/* ─── Quick Actions ─────────────────────────────── */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 font-display mb-4">Quick Actions</h2>
+        <h2 className="text-xl font-semibold text-gov-navy font-display mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <ActionCard
             icon={<Bot className="w-6 h-6" />}
@@ -207,8 +207,8 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
 
       {/* ─── Recent Activity ───────────────────────────── */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 font-display mb-4">Recent Activity</h2>
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+        <h2 className="text-xl font-semibold text-gov-navy font-display mb-4">Recent Activity</h2>
+        <div className="bg-white rounded-xl border border-gov-rule overflow-hidden">
           {passport ? (
             <>
               <ActivityItem
@@ -264,7 +264,7 @@ export default function DashboardOverview({ passport, onNavigateTab }: Dashboard
       {/* ─── Recent Projects ───────────────────────────── */}
       {recentProjects.length > 0 && (
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 font-display mb-4">
+          <h2 className="text-xl font-semibold text-gov-navy font-display mb-4">
             Recent Projects
             <span className="ml-3 text-sm font-medium text-gray-500">Running in the Innovation AI Lab</span>
           </h2>

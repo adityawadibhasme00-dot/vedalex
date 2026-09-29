@@ -1,0 +1,46 @@
+# The corpus manifest stores a SHA-256 of every knowledge artifact, so the byte
+# content of those files must be identical on every platform. With
+# core.autocrlf=true and no rules here, a Windows checkout turned some artifacts
+# into CRLF while a Linux checkout left them LF, and the recorded hashes no
+# longer matched the files - silently defeating drift detection.
+#
+# Pin every hashed artifact to LF in both the index and the working tree.
+
+# Curated corpus, downloaded external snapshot, harvester state
+backend/data/** text eol=lf
+
+# Knowledge JSON datasets and the corpus manifest itself
+backend/app/knowledge/** text eol=lf
+
+# Deterministic rule packs
+backend/app/rules/** text eol=lf
+
+# Retrieved statutory documents
+backend/kb/** text eol=lf
+
+# Source keeps LF so hashes stay reproducible across platforms
+*.py text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.txt text eol=lf
+*.css text eol=lf
+*.sh text eol=lf
+*.ps1 text eol=crlf
+
+# Never normalize binaries
+*.xlsx binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.faiss binary
+*.pkl binary
+*.npy binary
+*.parquet binary
+*.gz binary
+*.zip binary

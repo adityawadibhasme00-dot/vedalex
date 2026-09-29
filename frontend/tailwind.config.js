@@ -36,10 +36,37 @@ module.exports = {
           ink:    '#1b1f24',
           mute:   '#5b6472',
         },
+        // Neutral government-gray scale (no blue undertone). Every
+        // text-slate-* and text-gray-* resolves to this, matching portal
+        // body copy hues exactly.
+        slate: {
+          50:  '#f2f5f9',
+          100: '#e8ecf1',
+          200: '#d9dee5',
+          300: '#b7bdc6',
+          400: '#8a93a1',
+          500: '#6b7482',
+          600: '#5b6472',
+          700: '#424a56',
+          800: '#2c333c',
+          900: '#1b1f24',
+        },
+        gray: {
+          50:  '#f2f5f9',
+          100: '#e8ecf1',
+          200: '#d9dee5',
+          300: '#b7bdc6',
+          400: '#8a93a1',
+          500: '#6b7482',
+          600: '#5b6472',
+          700: '#424a56',
+          800: '#2c333c',
+          900: '#1b1f24',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        display: ['Outfit', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Lora', 'Georgia', 'serif'],
       },
       borderRadius: {
         '2xl': '16px',

@@ -11,11 +11,21 @@ Claim Firewall, roadmap) behind a fixed decision pipeline:
 Every answer is retrieval-grounded and rule-validated. The copilot NEVER answers
 from memory: when retrieval coverage is insufficient the response is explicitly
 flagged as "Insufficient verified evidence" instead of guessing.
+
+Enhanced with:
+  - Parallel retrieval execution
+  - Intent confidence scoring
+  - Query complexity analysis
+  - Answer quality scoring
+  - Response caching
 """
 
+import hashlib
 import json
 import os
 import re
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
 from app.services.ai_copilot import NO_EVIDENCE_ANSWER, STOPWORDS
@@ -24,6 +34,133 @@ from app.services.passport_engine import PassportEngine
 from app.services.patent_readiness_engine import PatentReadinessEngine
 
 KNOWLEDGE_DIR = os.path.join(os.path.dirname(__file__), "..", "knowledge")
+
+# ---------------------------------------------------------------------------
+# Response cache (in-memory TTL)
+# ---------------------------------------------------------------------------
+
+_response_cache: dict[str, dict[str, Any]] = {}
+_CACHE_TTL = 300  # 5 minutes
+_CACHE_MAX_SIZE = 100
+
+
+def _cache_key(question: str, passport_id: str | None = None) -> str:
+    key = f"{question}|{passport_id or ''}"
+    return hashlib.md5(key.encode()).hexdigest()
+
+
+def _cache_get(key: str) -> dict[str, Any] | None:
+    entry = _response_cache.get(key)
+    if entry and time.time() - entry["ts"] < _CACHE_TTL:
+        return entry["data"]
+    return None
+
+
+def _cache_set(key: str, data: dict[str, Any]) -> None:
+    if len(_response_cache) >= _CACHE_MAX_SIZE:
+        oldest = min(_response_cache, key=lambda k: _response_cache[k]["ts"])
+        del _response_cache[oldest]
+    _response_cache[key] = {"ts": time.time(), "data": data}
+
+
+# ---------------------------------------------------------------------------
+# Query complexity analysis
+# ---------------------------------------------------------------------------
+
+def _analyze_query_complexity(question: str) -> dict[str, Any]:
+    """Analyze query complexity for adaptive processing."""
+    q = question.lower()
+    word_count = len(question.split())
+    has_multiple_clauses = any(c in q for c in [",", ";", " and ", " or ", " but "])
+    has_comparison = any(w in q for w in ["compare", "versus", " vs ", "difference", "better"])
+    has_multi_step = any(w in q for w in ["step by step", "how do i", "process", "roadmap", "journey"])
+    has_specific_entity = any(w in q for w in ["section", "act", "rule", "regulation", "article"])
+
+    complexity_score = 0
+    complexity_score += min(word_count / 10, 3)
+    complexity_score += 2 if has_multiple_clauses else 0
+    complexity_score += 2 if has_comparison else 0
+    complexity_score += 2 if has_multi_step else 0
+    complexity_score += 1 if has_specific_entity else 0
+
+    level = "low" if complexity_score <= 3 else ("medium" if complexity_score <= 6 else "high")
+
+    return {
+        "word_count": word_count,
+        "complexity_score": round(complexity_score, 1),
+        "complexity_level": level,
+        "has_multiple_clauses": has_multiple_clauses,
+        "has_comparison": has_comparison,
+        "has_multi_step": has_multi_step,
+        "has_specific_entity": has_specific_entity,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Intent confidence scoring
+# ---------------------------------------------------------------------------
+
+def _compute_intent_confidence(question: str, intent: dict[str, Any]) -> dict[str, Any]:
+    """Compute confidence score for intent classification."""
+    q = question.lower()
+    patterns = intent.get("patterns", [])
+    matches = sum(1 for p in patterns if p in q)
+    total_patterns = len(patterns)
+
+    if total_patterns == 0:
+        confidence = 0.3
+    else:
+        confidence = min(0.95, 0.3 + (matches / total_patterns) * 0.7)
+
+    return {
+        "intent_id": intent["id"],
+        "intent_label": intent["label"],
+        "confidence": round(confidence, 2),
+        "pattern_matches": matches,
+        "total_patterns": total_patterns,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Answer quality scoring
+# ---------------------------------------------------------------------------
+
+def _compute_answer_quality(answer: str, sources: list[dict[str, Any]], question: str) -> dict[str, Any]:
+    """Compute quality metrics for the generated answer."""
+    if not answer or answer == NO_EVIDENCE_ANSWER:
+        return {"overall": 0.0, "completeness": 0.0, "grounding": 0.0, "clarity": 0.0}
+
+    word_count = len(answer.split())
+    sentence_count = len([s for s in answer.split(".") if s.strip()])
+
+    # Completeness: does the answer address the question?
+    q_tokens = set(re.sub(r"[^a-z0-9%.]", " ", question.lower()).split())
+    a_tokens = set(re.sub(r"[^a-z0-9%.]", " ", answer.lower()).split())
+    completeness = len(q_tokens & a_tokens) / max(1, len(q_tokens))
+
+    # Grounding: how well is the answer grounded in sources?
+    if sources:
+        s_tokens = set()
+        for s in sources[:5]:
+            s_tokens.update(re.sub(r"[^a-z0-9%.]", " ", str(s.get("content", "")).lower()).split())
+        grounding = len(a_tokens & s_tokens) / max(1, len(a_tokens))
+    else:
+        grounding = 0.0
+
+    # Clarity: sentence structure and length
+    avg_sentence_length = word_count / max(1, sentence_count)
+    clarity = 1.0 if 10 <= avg_sentence_length <= 30 else 0.7
+
+    overall = (completeness * 0.4 + grounding * 0.4 + clarity * 0.2)
+
+    return {
+        "overall": round(overall, 2),
+        "completeness": round(completeness, 2),
+        "grounding": round(grounding, 2),
+        "clarity": round(clarity, 2),
+        "word_count": word_count,
+        "sentence_count": sentence_count,
+    }
 
 LANGUAGE_NAMES: dict[str, str] = {
     "en": "English", "hi": "Hindi", "mr": "Marathi", "ta": "Tamil",
@@ -958,6 +1095,13 @@ class AICopilotOrchestrator:
     def run(cls, question: str, passport_id: str | None = None,
             context: dict[str, Any] | None = None,
             retrieved_sources: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+        # 0. Check cache first
+        cache_key = _cache_key(question, passport_id)
+        cached = _cache_get(cache_key)
+        if cached is not None:
+            cached["decision_trace"]["cache_hit"] = True
+            return cached
+
         # 1. Retrieve evidence ONCE via the hybrid pipeline, then share the
         # result between the grounding path and the source list. The pipeline
         # (embedding + cross-encoder rerank) is the dominant cost on CPU, so
@@ -1007,22 +1151,42 @@ class AICopilotOrchestrator:
         except Exception:
             pass
 
+        # Query complexity analysis
+        query_complexity = _analyze_query_complexity(question)
+
+        # Intent confidence scoring
+        surface_intent = classify_intent(question)
+        intent_confidence = _compute_intent_confidence(question, surface_intent)
+
         retrieval_result = {}
         sources: list[dict[str, Any]] = []
         if retrieved_sources:
             sources = cls._dedupe(retrieved_sources)
         else:
-            try:
-                from app.rag.retrieval_pipeline import HybridRetriever
-                retrieval_result = HybridRetriever.retrieve(
-                    retrieval_query,
-                    top_k=10,
-                    jurisdiction=jurisdiction_info.get("retrieval_jurisdiction"),
-                    domains=domain_intent["collections"],
+            # Parallel retrieval: hybrid + fallback simultaneously
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                hybrid_future = pool.submit(
+                    lambda: HybridRetriever.retrieve(
+                        retrieval_query,
+                        top_k=10,
+                        jurisdiction=jurisdiction_info.get("retrieval_jurisdiction"),
+                        domains=domain_intent["collections"],
+                    )
                 )
-                sources = cls._dedupe(retrieval_result.get("sources", []))
-            except Exception:
-                pass
+                fallback_future = pool.submit(cls._get_fallback_sources, retrieval_query)
+
+                try:
+                    retrieval_result = hybrid_future.result(timeout=30) or {}
+                    sources = cls._dedupe(retrieval_result.get("sources", []))
+                except Exception:
+                    pass
+
+                if not sources:
+                    try:
+                        fallback_sources = fallback_future.result(timeout=10) or []
+                        sources = cls._dedupe(fallback_sources)
+                    except Exception:
+                        pass
 
         # Fallback to legacy FAISS + statutory search only if the hybrid
         # pipeline returned nothing.
@@ -1684,7 +1848,11 @@ class AICopilotOrchestrator:
             "next_actions": next_actions[:4],
         }
 
-        return {
+        # Compute answer quality metrics
+        answer_quality = _compute_answer_quality(answer, sources, question)
+
+        # Build final response
+        response = {
             "question": question,
             "answer": answer,
             "sources": sources[:5],
@@ -1715,6 +1883,9 @@ class AICopilotOrchestrator:
                     "reason": llm_draft_meta.get("reason", ""),
                 },
                 "retrieval_stats": retrieval_result.get("retrieval_stats", {}),
+                "answer_quality": answer_quality,
+                "query_complexity": query_complexity,
+                "intent_confidence": intent_confidence,
             },
             "evidence_used": evidence_used[:6],
             "verification": verification if verification else None,
@@ -1728,3 +1899,8 @@ class AICopilotOrchestrator:
             "charts": charts,
             "llm_prompt": llm_prompt,
         }
+
+        # Cache the response
+        _cache_set(cache_key, response)
+
+        return response

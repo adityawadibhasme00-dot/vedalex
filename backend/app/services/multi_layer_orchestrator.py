@@ -35,11 +35,23 @@ Enforced production rules:
   - At least two supporting official sources are required for High Confidence.
   - Safe abstention (NO_EVIDENCE_ANSWER) when verified evidence cannot be
     established — not a guess dressed as an answer.
+
+Enhanced with:
+  - Early exit optimization (skip unnecessary layers)
+  - Response caching (in-memory TTL)
+  - Query complexity analysis
+  - Intent confidence scoring
+  - Answer quality metrics
+  - Layer-level latency tracking
 """
 
+import copy
+import hashlib
+import json
 import logging
 import os
 import re
+import time
 from typing import Any
 
 from app.services import copilot_orchestrator as co
@@ -48,6 +60,8 @@ from app.services.copilot_orchestrator import (
     DISCLAIMER,
     HINGLISH_MARKERS,
     LANGUAGE_NAMES,
+    _analyze_query_complexity,
+    _compute_intent_confidence,
     _claim_firewall,
     _compliance_gauge,
     _compute_confidence,
@@ -83,6 +97,53 @@ from app.services.jurisdiction_router import (
 from app.services.multilingual_nlp import MultilingualNLPEngine
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Response cache (in-memory TTL)
+# ---------------------------------------------------------------------------
+
+_response_cache: dict[str, dict[str, Any]] = {}
+_CACHE_TTL = 300  # 5 minutes
+_CACHE_MAX_SIZE = 100
+
+
+def _cache_key(
+    question: str,
+    passport_id: str | None = None,
+    context: dict[str, Any] | None = None,
+) -> str:
+    """Key the cached answer by everything that can change it.
+
+    The jurisdiction toggle is part of the answer, not metadata: the same
+    question must not be answered from Indian law for one caller and US law
+    for the next. Keying on the question alone silently served the first
+    caller's regime to everyone else, which is a cross-request leak of
+    jurisdiction-scoped legal advice.
+    """
+    try:
+        ctx = json.dumps(context or {}, sort_keys=True, default=str)
+    except Exception:
+        ctx = repr(sorted((context or {}).keys()))
+    key = f"{question}|{passport_id or ''}|{ctx}"
+    return hashlib.md5(key.encode()).hexdigest()
+
+
+def _cache_get(key: str) -> dict[str, Any] | None:
+    entry = _response_cache.get(key)
+    if entry and time.time() - entry["ts"] < _CACHE_TTL:
+        # Deep copy: callers mutate what they get back (e.g. stamping
+        # decision_trace["cache_hit"]), and a shared reference would let one
+        # caller rewrite the stored entry for every later reader.
+        return copy.deepcopy(entry["data"])
+    return None
+
+
+def _cache_set(key: str, data: dict[str, Any]) -> None:
+    if len(_response_cache) >= _CACHE_MAX_SIZE:
+        oldest = min(_response_cache, key=lambda k: _response_cache[k]["ts"])
+        del _response_cache[oldest]
+    _response_cache[key] = {"ts": time.time(), "data": copy.deepcopy(data)}
+
 
 # ---------------------------------------------------------------------------
 # Layer gates / thresholds
@@ -643,10 +704,26 @@ class MultiLayerOrchestrator:
     def run(cls, question: str, passport_id: str | None = None,
             context: dict[str, Any] | None = None,
             retrieved_sources: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+        # 0. Check cache first.
+        #
+        # Answers assembled from caller-supplied evidence are never cached and
+        # never served from cache. That evidence is the caller's choice, so
+        # reusing or storing it would let one caller's citations become another
+        # caller's answer.
+        cacheable = not retrieved_sources
+        cache_key = _cache_key(question, passport_id, context)
+        cached = _cache_get(cache_key) if cacheable else None
+        if cached is not None:
+            cached["decision_trace"]["cache_hit"] = True
+            return cached
+
         flow: list[dict[str, Any]] = []
         charts: list[dict[str, Any]] = []
+        layer_latencies: dict[str, float] = {}
+        overall_start = time.time()
 
         # ----------------------- LAYER 1 · INTENT ROUTER -----------------------
+        layer_start = time.time()
         domain_intent = classify_domain_intent(question)
         surface_intent = classify_intent(question)
         intent_id = surface_intent["id"]
@@ -663,6 +740,11 @@ class MultiLayerOrchestrator:
                     language_label = "Hinglish (Romanised)"
         except Exception:
             pass
+
+        # Query complexity + intent confidence
+        query_complexity = _analyze_query_complexity(question)
+        intent_confidence = _compute_intent_confidence(question, surface_intent)
+        layer_latencies["layer_1_intent"] = round(time.time() - layer_start, 3)
 
         # ----- Jurisdiction Router (golden rule: never mix legal frameworks) ----
         # The toggle/`context.jurisdiction` wins. When no toggle and no keyword
@@ -1402,7 +1484,11 @@ class MultiLayerOrchestrator:
         except Exception:
             pass
 
-        return {
+        # Compute total latency
+        total_latency = round(time.time() - overall_start, 3)
+        layer_latencies["total"] = total_latency
+
+        response = {
             "question": question,
             "answer": answer,
             "sources": sources[:5],
@@ -1443,6 +1529,9 @@ class MultiLayerOrchestrator:
                     "reason": llm_draft_meta.get("reason", ""),
                 },
                 "retrieval_stats": retrieval_result.get("retrieval_stats", {}),
+                "query_complexity": query_complexity,
+                "intent_confidence": intent_confidence,
+                "layer_latencies": layer_latencies,
             },
             "evidence_used": evidence_used[:6],
             "verification": verification if verification else None,
@@ -1452,3 +1541,9 @@ class MultiLayerOrchestrator:
             "charts": charts,
             "llm_prompt": llm_prompt,
         }
+
+        # Cache the response
+        if cacheable:
+            _cache_set(cache_key, response)
+
+        return response

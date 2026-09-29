@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PROTEOMICS-01
+TITLE: NFE2L2 (Nrf2) - master antioxidant transcription factor
+OMICS_TYPE: proteomics
+ORGANISM: Homo sapiens
+COMPOUND: Withaferin A (Withania somnifera)
+GENE: NFE2L2
+PROTEIN: Nuclear factor erythroid 2-related factor 2
+UNIPROT: Q16236
+NCBI_GENE_ID: 4780
+PUBCHEM_CID: 
+PATHWAY: Nrf2-ARE antioxidant response
+ASSAY_TYPE: Western blot; luciferase reporter
+PMID: 
+SOURCE_URL: https://www.uniprot.org/uniprotkb/Q16236
+AUTHORITY: UniProt Consortium (EMBL-EBI / SIB / PIR)
+JURISDICTION: International
+
+The transcription factor NFE2L2 (known as Nrf2) coordinates the antioxidant response via the Nrf2-ARE signalling pathway. Withaferin A, a withanolide from Withania somnifera (Ashwagandha), is reported to induce Nrf2 nuclear translocation and downstream expression of HMOX1 (heme oxygenase 1). Mechanistic evidence at the protein level supports cytoprotective, anti-inflammatory bioactivity relevant to wound-healing and neuroprotective claims.

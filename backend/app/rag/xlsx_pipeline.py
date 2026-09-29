@@ -130,13 +130,21 @@ def _g(record: dict[str, Any], *names: str) -> str:
 def _persist_json(name: str, data: Any) -> None:
     knowledge_dir = os.path.join(BACKEND_ROOT, "app", "knowledge")
     os.makedirs(knowledge_dir, exist_ok=True)
-    with open(os.path.join(knowledge_dir, name), "w", encoding="utf-8") as f:
+    # newline="\n" is required: the default text mode writes CRLF on Windows, which
+    # silently invalidates the SHA-256 the corpus manifest records for this file.
+    with open(os.path.join(knowledge_dir, name), "w", encoding="utf-8", newline="\n") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def load_blueprint_documents() -> list[dict[str, Any]]:
+def load_blueprint_documents(persist: bool = False) -> list[dict[str, Any]]:
     """Read evidence passages + source inventory from the blueprint and return
-    vector-ready documents with full RAG metadata (doc_id, authority, URL...)."""
+    vector-ready documents with full RAG metadata (doc_id, authority, URL...).
+
+    ``persist`` is off by default. This is called on the read path (KB load, and
+    therefore on ordinary searches and GETs), and writing app/knowledge/*.json
+    from a read used to dirty the corpus on every query - mutating hashed input
+    and perturbing corpus_version. Only an explicit regeneration should write.
+    """
     path = blueprint_path()
     if not path:
         return []
@@ -296,23 +304,34 @@ def load_blueprint_documents() -> list[dict[str, Any]]:
         rules = [{**{_normalize(k): v for k, v in r.items()}, **{"_renamed": _renamed(r)}} for r in _rows_to_dicts(ws_rules)]
 
     # Persist derived registries so the retrieval + rules engine share them.
-    if sources:
-        _persist_json("blueprint_sources.json", sources)
-    if rules:
-        _persist_json("blueprint_rules.json", [
-            {
-                "condition": r.get("_renamed", {}).get("condition") or r.get("condition", ""),
-                "outcome": r.get("_renamed", {}).get("outcome") or r.get("outcome", ""),
-                "rule_name": r.get("_renamed", {}).get("rule_name") or r.get("rule_name", ""),
-                "authority": r.get("_renamed", {}).get("authority") or "",
-                "jurisdiction": r.get("_renamed", {}).get("jurisdiction") or "",
-            }
-            for r in rules
-            if r
-        ])
+    # Explicit regeneration only - see load_blueprint_documents(persist=...).
+    if persist:
+        if sources:
+            _persist_json("blueprint_sources.json", sources)
+        if rules:
+            _persist_json("blueprint_rules.json", [
+                {
+                    "condition": r.get("_renamed", {}).get("condition") or r.get("condition", ""),
+                    "outcome": r.get("_renamed", {}).get("outcome") or r.get("outcome", ""),
+                    "rule_name": r.get("_renamed", {}).get("rule_name") or r.get("rule_name", ""),
+                    "authority": r.get("_renamed", {}).get("authority") or "",
+                    "jurisdiction": r.get("_renamed", {}).get("jurisdiction") or "",
+                }
+                for r in rules
+                if r
+            ])
 
     wb.close()
     return documents
+
+
+def regenerate_blueprint_registries() -> list[dict[str, Any]]:
+    """Rewrite app/knowledge/blueprint_*.json from the workbook.
+
+    The supported way to refresh the derived registries; the reindex job calls
+    this. Reading the blueprint never writes.
+    """
+    return load_blueprint_documents(persist=True)
 
 
 def load_blueprint_registry() -> dict[str, Any]:

@@ -1,0 +1,25 @@
+The Patents Act, 1970 - Section 3 Exclusions and Traditional Knowledge (verified statutory text)
+
+Chapter II of the Patents Act, 1970 (as amended) lists what are NOT inventions. Verified text (ipindia.gov.in consolidated act and indiankanoon):
+
+3(d): "the mere discovery of a new form of a known substance which does not result in the enhancement of the known efficacy of that substance or the mere discovery of any new property or new use for a known substance or of the mere use of a known process, machine or apparatus unless such known process results in a new product or employs at least one new reactant. Explanation: For the purposes of this clause, salts, esters, ethers, polymorphs, metabolites, pure form, particle size, isomers, mixtures of isomers, complexes, combinations and other derivatives of known substance shall be considered to be the same substance, unless they differ significantly in properties with regard to efficacy."
+
+3(e): "a substance obtained by a mere admixture resulting only in the aggregation of the properties of the components thereof or a process for producing such substance"
+
+3(p): "an invention which, in effect, is traditional knowledge or which is an aggregation or duplication of known properties of traditionally known component or components."
+
+Interpretation guidance:
+- Clause 3(p) was inserted by the Patents (Amendment) Act, 2002 on the recommendation of the Joint Parliamentary Committee Report on the Patents (Second Amendment) Bill, 1999, with the stated object "A new clause (p) has been added to protect the country's traditional knowledge from being patented".
+- There is no statutory definition of "traditional knowledge" (TK) in the Act; the Delhi High Court (Zero Brand Zone case, OA/32/2020/PT/CHN vs Controller of Patents, order 5 July 2024) adopted the WIPO/UNESCO understanding of TK as knowledge derived from centuries of lived experience, generally passed on generationally and commonly owned by the community.
+- The court held that s.3(p) provides DEFENSIVE protection of TK by excluding inventions "in effect" TK from patent eligibility; the words "in effect" prevent circumvention by concealing the use of traditionally known components or their known properties.
+- Patentability is NOT barred outright: an invention based on TK may be patentable if the applicant establishes that the product or process can no longer be described as, in effect, TK - e.g. an aggregation of UNKNOWN (newly discovered) properties of traditionally known components demonstrated with data.
+- A composition of known Ayurvedic botanicals is non-patentable unless a surprising synergistic therapeutic effect is conclusively demonstrated by comparative quantitative empirical data.
+
+Practical test for herbal formulations: if every ingredient and its claimed property (sleep, cognition, immunity) is documented in classical texts, the combination is "in effect" TK under 3(p), OR a "mere admixture" under 3(e), OR obvious to a person skilled in the art. Differentiation must come from novel extraction, novel fixed ratios with synergistic data, or new uses.
+
+Sources:
+- https://ipindia.gov.in/frontend/pdf/patents/1_31_1_patent-act-1970-11march2015.pdf
+- https://indiankanoon.org/doc/874310/ (Section 3)
+- https://www.wipo.int/wipolex/en/text.jsp?file_id=128116
+- Delhi High Court OA/32/2020/PT/CHN (5 July 2024): https://indiankanoon.org/doc/147461851/
+- IPO Guidelines for Examination: https://www.ipindia.gov.in/writereaddata/Portal/IPOGuidelinesManuals/1_39_1_5-tk-guidelines.pdf

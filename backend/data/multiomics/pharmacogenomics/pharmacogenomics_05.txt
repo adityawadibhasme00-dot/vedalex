@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PHARMACOGENOMICS-05
+TITLE: Flavonoid SLC-family transporter interactions
+OMICS_TYPE: pharmacogenomics
+ORGANISM: Homo sapiens
+COMPOUND: Ginkgo/Panax-derived scutellarein
+GENE: SLCO1B1; ABCB1
+PROTEIN: OATP1B1; P-glycoprotein
+UNIPROT: Q9Y6L6
+NCBI_GENE_ID: 10599
+PUBCHEM_CID: 
+PATHWAY: Hepatic sinusoidal uptake; efflux
+ASSAY_TYPE: OATP/IVIVC transporter assays
+PMID: 
+SOURCE_URL: https://www.uniprot.org/uniprotkb/Q9Y6L6
+AUTHORITY: PharmGKB (Stanford) / FDA
+JURISDICTION: International
+
+Plant flavonoids (incl. baicalein, PubChem CID 5281605 and apigenin) are documented as substrates/inhibitors of the organic anion-transporting polypeptide (OATP) and multidrug resistance transporters, informing interaction flags for co-administered statins (simvastatin) and antihypertensives. The relevant pharmacogenes include SLCO1B1 and ABCB1.

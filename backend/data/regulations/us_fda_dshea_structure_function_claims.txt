@@ -1,0 +1,23 @@
+United States - DSHEA 1994, Structure/Function Claims and NDI Notification
+
+Regulatory framework for botanical dietary supplements marketed in the United States.
+
+DSHEA (Dietary Supplement Health and Education Act of 1994):
+- A dietary supplement is a product intended to supplement the diet containing a vitamin, mineral, herb or other botanical, amino acid, or a concentrate, metabolite, constituent, extract or combination of these.
+- Botanical products consumed as food with a structure/function statement are regulated as dietary supplements, NOT as drugs, provided they make no disease claim.
+
+Structure/function vs disease claims:
+- Allowed structure/function statements describe the general role of a nutrient or botanical in maintaining bodily function, or general well-being (e.g. "supports restful sleep"). Legal basis: 21 U.S.C. 343(r)(6) and implementing rule 21 CFR 101.93.
+- Required disclaimer on any structure/function claim: "This statement has not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease."
+- Disease claims (diagnosis, cure, mitigation, treatment or prevention of disease) convert the product into a DRUG under the FD&C Act (21 U.S.C. 321(g)(1)), requiring an approved New Drug Application (NDA) and Investigational New Drug (IND) pathway (21 U.S.C. 355). Selling a botanical with disease-treatment claims without an approved NDA constitutes distribution of an unapproved new drug in interstate commerce.
+
+New Dietary Ingredient (NDI) notification:
+- Under 21 U.S.C. 350b, a dietary supplement containing a New Dietary Ingredient (an ingredient not marketed in the US as a dietary ingredient before 15 October 1994) must be the subject of a notification submitted to FDA at least 75 days before the first time the product is marketed.
+- Botanicals with a history of US marketing prior to 1994 (e.g. Ashwagandha, Brahmi, Turmeric, Tulsi) are treated as OLD dietary ingredients and do not require an NDI notification, though current good manufacturing practices (21 CFR Part 111) and adverse event reporting (21 CFR Part 111.760) still apply.
+
+Good Manufacturing Practice: manufacture, packaging, labelling and holding of dietary supplements must comply with 21 CFR Part 111 (cGMP).
+
+Sources:
+- 21 U.S.C. 343(r)(6), 21 U.S.C. 321(g)(1), 21 U.S.C. 350b, 21 U.S.C. 355
+- 21 CFR 101.93, 21 CFR Part 111
+- FDA Dietary Supplements hub: https://www.fda.gov/food/dietary-supplements

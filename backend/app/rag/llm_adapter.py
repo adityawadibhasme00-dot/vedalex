@@ -228,31 +228,51 @@ def generate_draft(
         }
 
     api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("OPENAI_API_KEY") or ""
-    try:
-        if provider == "gemini":
-            if not os.environ.get("GEMINI_API_KEY"):
-                return {"generated": False, "text": None, "provider": provider,
-                        "model": model,
-                        "reason": "GEMINI_API_KEY is not set"}
-            result = _call_gemini(system_prompt, user_prompt, api_key, model)
-        elif provider == "openai":
-            if not os.environ.get("OPENAI_API_KEY"):
-                return {"generated": False, "text": None, "provider": provider,
-                        "model": model,
-                        "reason": "OPENAI_API_KEY is not set"}
-            result = _call_openai(system_prompt, user_prompt, api_key, model)
-        else:
-            return {"generated": False, "text": None, "provider": provider,
-                    "model": model, "reason": f"Unsupported provider: {provider}"}
-    except Exception as e:
-        logger.warning(f"LLM generation failed ({provider}): {e}")
-        return {
-            "generated": False,
-            "text": None,
-            "provider": provider,
-            "model": model,
-            "reason": str(e)[:300],
-        }
 
-    result.update({"provider": provider, "model": model, "reason": ""})
+    # Retry logic: try up to 2 times on failure
+    max_retries = 2
+    last_error = ""
+
+    for attempt in range(max_retries):
+        try:
+            if provider == "gemini":
+                if not os.environ.get("GEMINI_API_KEY"):
+                    return {"generated": False, "text": None, "provider": provider,
+                            "model": model,
+                            "reason": "GEMINI_API_KEY is not set"}
+                result = _call_gemini(system_prompt, user_prompt, api_key, model)
+            elif provider == "openai":
+                if not os.environ.get("OPENAI_API_KEY"):
+                    return {"generated": False, "text": None, "provider": provider,
+                            "model": model,
+                            "reason": "OPENAI_API_KEY is not set"}
+                result = _call_openai(system_prompt, user_prompt, api_key, model)
+            else:
+                return {"generated": False, "text": None, "provider": provider,
+                        "model": model, "reason": f"Unsupported provider: {provider}"}
+
+            if result.get("generated"):
+                result.update({"provider": provider, "model": model, "reason": ""})
+                return result
+
+            last_error = result.get("reason", "Unknown error")
+            if attempt < max_retries - 1:
+                logger.warning(f"LLM attempt {attempt + 1} failed ({provider}): {last_error}. Retrying...")
+                import time
+                time.sleep(1)
+
+        except Exception as e:
+            last_error = str(e)[:300]
+            logger.warning(f"LLM generation failed ({provider}) attempt {attempt + 1}: {e}")
+            if attempt < max_retries - 1:
+                import time
+                time.sleep(1)
+
+    return {
+        "generated": False,
+        "text": None,
+        "provider": provider,
+        "model": model,
+        "reason": last_error or "All retry attempts failed",
+    }
     return result

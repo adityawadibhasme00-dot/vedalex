@@ -1,19 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Lora:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --bg-main: #F4F7F4;
+  --bg-main: #F6F8FB;
   --card-bg: #FFFFFF;
-  --card-glass: rgba(255, 255, 255, 0.78);
-  --border-glass: rgba(16, 185, 129, 0.18);
-  --primary: #059669;
-  --accent: #7C3AED;
-  --success: #16A34A;
+  --card-glass: #FFFFFF;
+  --border-glass: rgba(13, 59, 143, 0.18);
+  --primary: #0d3b8f;
+  --accent: #0a1f44;
+  --success: #138808;
   --warning: #D97706;
   --danger: #DC2626;
+  --gov-ink: #1b1f24;
 }
 
 html { scroll-behavior: smooth; }
@@ -26,54 +27,56 @@ html { scroll-behavior: smooth; }
 
 body {
   background-color: var(--bg-main);
-  color: #1e293b;
+  color: var(--gov-ink);
   font-family: 'Inter', sans-serif;
-  background-image:
-    radial-gradient(at 18% 0%, rgba(5, 150, 105, 0.08) 0px, transparent 55%),
-    radial-gradient(at 82% 8%, rgba(124, 58, 237, 0.06) 0px, transparent 55%),
-    radial-gradient(at 50% 100%, rgba(245, 158, 11, 0.05) 0px, transparent 50%);
+  background-image: none;
   background-attachment: fixed;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
-.font-display { font-family: 'Outfit', sans-serif; }
+.font-display { font-family: 'Lora', 'Georgia', serif; }
+.font-sans { font-family: 'Inter', 'system-ui', sans-serif; }
 
-/* ─── Glassmorphism cards (light) ─────────────────────── */
+/* Tricolor institutional strip (saffron · white · green) */
+.gov-strip {
+  height: 4px;
+  background: linear-gradient(to right, #ff9933 0%, #ff9933 33.33%, #ffffff 33.33%, #ffffff 66.66%, #138808 66.66%, #138808 100%);
+}
+
+/* Hairline official rule */
+.gov-rule {
+  border-color: #d4d7dd;
+}
+
+/* ─── Institutional cards (flat, high-contrast) ─────────── */
 .glass {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(5, 150, 105, 0.14);
-  box-shadow: 0 8px 32px rgba(2, 44, 34, 0.08);
+  background: #ffffff;
+  border: 1px solid rgba(13, 59, 143, 0.16);
+  box-shadow: 0 1px 3px rgba(26, 42, 78, 0.08);
 }
 
 .glass-interactive {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(5, 150, 105, 0.14);
-  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  background: #ffffff;
+  border: 1px solid rgba(13, 59, 143, 0.16);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .glass-interactive:hover {
-  border-color: rgba(5, 150, 105, 0.45);
-  transform: translateY(-2px);
-  box-shadow: 0 16px 40px rgba(2, 44, 34, 0.12), 0 0 0 1px rgba(5, 150, 105, 0.08);
+  border-color: rgba(13, 59, 143, 0.45);
+  box-shadow: 0 10px 24px rgba(26, 42, 78, 0.1);
 }
 
 /* Glass panel used across feature components */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(5, 150, 105, 0.14);
-  box-shadow: 0 10px 34px rgba(2, 44, 34, 0.09);
+  background: #ffffff;
+  border: 1px solid rgba(13, 59, 143, 0.16);
+  box-shadow: 0 1px 3px rgba(26, 42, 78, 0.08);
 }
 
 /* ─── Text gradient ───────────────────────────────────── */
 .text-gradient {
-  background: linear-gradient(135deg, #B45309 0%, #065F46 100%);
+  background: linear-gradient(135deg, #0a1f44 0%, #0d3b8f 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -87,9 +90,9 @@ body {
 
 /* ─── Scrollbar ──────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: rgba(5, 150, 105, 0.06); }
-::-webkit-scrollbar-thumb { background: rgba(5, 150, 105, 0.25); border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(5, 150, 105, 0.5); }
+::-webkit-scrollbar-track { background: rgba(13, 59, 143, 0.06); }
+::-webkit-scrollbar-thumb { background: rgba(13, 59, 143, 0.25); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(13, 59, 143, 0.45); }
 
 /* ─── Animations ─────────────────────────────────────── */
 @keyframes shimmer {
@@ -174,14 +177,14 @@ body {
 .skeleton {
   position: relative;
   overflow: hidden;
-  background: rgba(5, 150, 105, 0.08);
+  background: rgba(13, 59, 143, 0.08);
   border-radius: 12px;
 }
 .skeleton::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(5, 150, 105, 0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgba(13, 59, 143, 0.12), transparent);
   animation: shimmer 1.4s infinite;
 }
 
@@ -332,20 +335,6 @@ html.high-contrast .text-gradient {
   50%      { transform: perspective(600px) rotateY(8deg) translateY(-5px); }
 }
 .animate-step-3d { animation: step-3d-bob 3.5s ease-in-out infinite; }
-
-/* Wind-blown leaves — 3D flight across the page */
-.leaf-wind {
-  -webkit-animation: leaf-wind linear infinite;
-  animation: leaf-wind linear infinite;
-  will-change: transform, opacity;
-}
-@keyframes leaf-wind {
-  0%     { transform: perspective(900px) translate3d(0, -12vh, 0) rotateZ(0deg) rotateX(0deg) rotateY(0deg); opacity: 0; }
-  4%     { opacity: var(--leaf-opacity, 0.7); }
-  35%    { transform: perspective(900px) translate3d(var(--drift, 50%), 24vh, -20px) rotateZ(150deg) rotateX(40deg) rotateY(20deg); opacity: var(--leaf-opacity, 0.7); }
-  70%    { transform: perspective(900px) translate3d(calc(var(--drift, 50%) * 0.5), 62vh, 12px) rotateZ(300deg) rotateX(-35deg) rotateY(-15deg); opacity: var(--leaf-opacity, 0.7); }
-  100%   { transform: perspective(900px) translate3d(calc(var(--drift, 50%) * 0.8), 112vh, -40px) rotateZ(460deg) rotateX(25deg) rotateY(30deg); opacity: 0; }
-}
 
 /* Reduce Motion Mode */
 html.reduce-motion *,

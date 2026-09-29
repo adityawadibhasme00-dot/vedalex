@@ -11,19 +11,19 @@ interface BadgeProps {
 
 export function Badge({ children, variant = 'info', dot = false, className }: BadgeProps) {
   const styles = {
-    success: 'bg-emerald-100 text-emerald-700 border border-emerald-300',
-    warning: 'bg-amber-100 text-amber-700 border border-amber-300',
-    danger:  'bg-red-100 text-red-700 border border-red-300',
-    info:    'bg-blue-100 text-blue-700 border border-blue-300',
-    neutral: 'bg-white text-slate-600 border border-slate-200',
+    success: 'bg-green-50 text-gov-green border border-green-300',
+    warning: 'bg-amber-50 text-amber-700 border border-amber-300',
+    danger:  'bg-red-50 text-red-700 border border-red-300',
+    info:    'bg-blue-50 text-gov-blue border border-blue-300',
+    neutral: 'bg-white text-slate-600 border border-slate-300',
   };
   const dotColors = {
-    success: 'bg-emerald-500', warning: 'bg-amber-500', danger: 'bg-red-500',
-    info: 'bg-blue-500', neutral: 'bg-slate-400',
+    success: 'bg-gov-green', warning: 'bg-amber-500', danger: 'bg-red-500',
+    info: 'bg-gov-blue', neutral: 'bg-slate-400',
   };
   return (
     <span className={clsx(
-      'inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-lg',
+      'inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-md',
       styles[variant], className,
     )}>
       {dot && <span className={clsx('w-1.5 h-1.5 rounded-full', dotColors[variant])} />}

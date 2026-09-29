@@ -1,0 +1,18 @@
+DOC_ID: OMICS-METABOLOMICS-03
+TITLE: Piperine - pungent alkaloid of black pepper
+OMICS_TYPE: metabolomics
+ORGANISM: Piper nigrum
+COMPOUND: Piperine
+GENE: 
+PROTEIN: 
+UNIPROT: 
+NCBI_GENE_ID: 
+PUBCHEM_CID: 638024
+PATHWAY: Alkaloid biosynthesis
+ASSAY_TYPE: HPLC / UPLC-MS
+PMID: 
+SOURCE_URL: https://pubchem.ncbi.nlm.nih.gov/compound/638024
+AUTHORITY: PubChem (NCBI) / HMDB / MetaboLights (EMBL-EBI)
+JURISDICTION: International
+
+Piperine is the pungent piperidine-alkaloid responsible for the taste of Piper nigrum (black pepper) and is registered in PubChem (CID 638024). Beyond its sensory role it is documented as a bioenhancer that inhibits CYP3A4 and P-glycoprotein, increasing the oral bioavailability of co-administered phytochemicals such as curcumin.

@@ -31,7 +31,7 @@ os.environ.update(
         "IPSAKTI_WEB_MAX_FETCHES": "0",
         "IPSAKTI_LLM_PROVIDER": "mock",
         "IPSAKTI_INGESTION_SCHEDULER": "0",
-        "IPSAKTI_RAG_DEFAULT": "hybrid",
+        "IPSAKTI_RAG_DEFAULT": "combined",
         "IPSAKTI_RAG_CACHE_TTL": "3600",
         "IPSAKTI_RAG_RATE_LIMIT": "1000",
         "QDRANT_URL": _TEST_QDRANT_URL or "http://127.0.0.1:56333",

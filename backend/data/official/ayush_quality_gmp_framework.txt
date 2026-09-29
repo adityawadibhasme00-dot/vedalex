@@ -1,0 +1,20 @@
+TITLE: Ministry of AYUSH — quality, GMP and pharmacovigilance framework for ASU products
+AUTHORITY: Ministry of AYUSH, Government of India
+JURISDICTION: India
+SOURCE: https://ayush.gov.in/
+EFFECTIVE: 2003-onwards
+
+Quality control of Ayush drugs
+The Ministry of AYUSH oversees quality control of Ayurveda, Siddha and Unani (ASU) drugs through the Ayurvedic, Siddha and Unani Drugs Technical Advisory Board (ASUDTAB) and the Pharmacopoeia Commission for Indian Medicine and Homoeopathy (PCIM&H), which publishes the Ayurvedic Pharmacopoeia of India (API). API monographs prescribe identity, purity and assay standards (foreign matter, total ash, acid-insoluble ash, extractives, heavy metals, microbial limits and pesticide residue) for raw botanicals and finished products.
+
+General manufacturing practice — Schedule T
+Schedule T of the Drugs and Cosmetics Rules, 1945 prescribes Good Manufacturing Practice (GMP) requirements for ASU drugs: qualified personnel, hygienic premises, validated processes, quality control laboratory testing of raw material and finished goods, documented batch records, and stability testing. Compliance with Schedule T is a precondition for a State AYUSH drug manufacturing licence under ASU Rule 158-B.
+
+Pharmacovigilance and adverse event monitoring
+The National AYUSH Morbidity and Pharmacovigilance Programme (NA-MPP) and the AYUSH Surveillance System monitor adverse events and track safety signals for ASU drugs, feeding signal assessments back to the ASUDTAB for regulatory action.
+
+Relevance for an Innovation Passport
+For food status under FSSAI's Ayurveda Aahara Regulations 2022, quality submissions include heavy metal, pesticide residue and microbiological purity reports. For drug status, Schedule T GMP, API monograph compliance, and pharmacovigilance enrolment are expected. Demonstrating both strengthens evidence and readiness across the IN/US/CA regulatory map.
+
+Sources: https://ayush.gov.in/
+Sources: https://www.pcimh.gov.in/

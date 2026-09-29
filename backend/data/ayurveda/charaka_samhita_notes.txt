@@ -1,0 +1,17 @@
+Charaka Samhita - Foundational Ayurvedic Text
+
+The Charaka Samhita is one of the three foundational classical texts (Brihattrayi) of Ayurveda, along with the Sushruta Samhita and Ashtanga Hridaya. Attributed to Acharya Charaka and redacted by Drdhabala, it is the principal text of the Brihattrayi covering internal medicine (Kayachikitsa). It remains authoritative for both classical drug licensing and traditional food regulation in India.
+
+Role in Indian regulation:
+- The Charaka Samhita is among the authoritative books recognised in the First Schedule to the Drugs and Cosmetics Act, 1940, which defines Ayurvedic, Siddha and Unani drugs. Formulations described in First Schedule books are treated as classical; their proprietors require proof of reference rather than full trial evidence for licensing under Rule 158-B of the Drugs and Cosmetics Rules, 1945.
+- The Charaka Samhita also appears among the authoritative Ayurvedic texts listed under Schedule A of the Food Safety and Standards (Ayurveda Aahara) Regulations, 2022, so food (Aahara) prepared strictly according to its recipes qualifies for the "Ayurveda Aahara" category with FSSAI licensing.
+- The text is structured in eight Sthanas (sections): Sutra, Nidana, Vimana, Sharira, Indriya, Chikitsa, Kalpa and Siddha.
+
+Content relevant to IP-SAKTI screening:
+- Ashwagandha (Withania somnifera) is described as a Rasayana (rejuvenative) with Balya (strength-promoting) and Vatahara properties; its classical use for sleep and nervous debility is well documented.
+- Brahmi (Bacopa monnieri) is described as a Medhya Rasayana - a cognitive enhancer supporting intelligence, memory and mental clarity.
+- Aahara and Pathya: the text emphasises that diet (Aahara) is the foremost pillar of health among the three Upastambhas (Aahara, Nidra, Brahmacharya) and prescribes Pathya (wholesome diet and regimen) for health promotion and disease management, a principle codified in the FSSAI Ayurveda Aahara framework.
+
+Patent relevance: because such classical references are published, traditional knowledge, any composition that is, in effect, an aggregation of the known properties of these traditionally known components is excluded from patent eligibility under Section 3(p) of the Patents Act, 1970. A claim reciting the known sedative property of Ashwagandha plus the known memory-enhancing property of Brahmi is therefore, per se, traditional knowledge unless a surprising synergistic therapeutic effect is demonstrated by comparative quantitative empirical data.
+
+Source: Drugs and Cosmetics Act, 1940 First Schedule; FSSAI Ayurveda Aahara Regulations, 2022 Schedule A; https://ayush.gov.in/

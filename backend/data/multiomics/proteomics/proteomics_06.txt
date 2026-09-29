@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PROTEOMICS-06
+TITLE: TP53 (p53) - tumour suppressor and apoptosis regulator
+OMICS_TYPE: proteomics
+ORGANISM: Homo sapiens
+COMPOUND: Curcumin (Curcuma longa)
+GENE: TP53
+PROTEIN: Cellular tumour antigen p53
+UNIPROT: P04637
+NCBI_GENE_ID: 7157
+PUBCHEM_CID: 
+PATHWAY: p53 signalling; apoptosis
+ASSAY_TYPE: Western blot; flow cytometry
+PMID: 
+SOURCE_URL: https://www.uniprot.org/uniprotkb/P04637
+AUTHORITY: UniProt Consortium (EMBL-EBI / SIB / PIR)
+JURISDICTION: International
+
+TP53 encodes the p53 tumour suppressor that regulates DNA repair, cell-cycle arrest and apoptosis. Curcumin is documented to modulate p53 pathway activity and to influence downstream apoptosis regulators such as CASP3 (caspase-3). Protein-level modulation of the p53 axis is frequently cited in mechanistic rationales for curcumin-based chemopreventive claims.

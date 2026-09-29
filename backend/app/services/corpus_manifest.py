@@ -16,22 +16,34 @@ import time
 from typing import Any
 
 APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))          # app/
+BACKEND_DIR = os.path.dirname(APP_DIR)                                          # backend/
 RULES_DIR = os.path.join(APP_DIR, "rules")
 KNOWLEDGE_DIR = os.path.join(APP_DIR, "knowledge")
 KB_DIR = os.path.join(APP_DIR, "..", "..", "kb")
-DATA_DIR = os.path.join(APP_DIR, "..", "..", "data")
+# The curated corpus lives in backend/data, not <repo>/data. Pointing this at the
+# repo root made all 21 curated files invisible to drift detection.
+DATA_DIR = os.path.join(BACKEND_DIR, "data")
 
 MANIFEST_PATH = os.path.join(KNOWLEDGE_DIR, "corpus_manifest.json")
 
-MANIFEST_SCOPE = (
-    "rule_pack_rules_yaml",
-    "knowledge_json",
-    "curated_text_data",
-    "kb_documents",
-    "treaties_metadata",
-    "legal_glossary",
-    "cites_appendices",
-)
+# Files that get a dedicated group below; they are excluded from knowledge_json so
+# a single file is not hashed twice under two different keys.
+DEDICATED_GROUPS = {
+    "treaties_metadata": "treaties_metadata.json",
+    "cites_appendices": "cites.json",
+}
+
+# backend/data also holds mutable runtime state, which must not be fingerprinted:
+# the harvester ledgers (*_state.json) and the knowledge-graph TTL cache change
+# on every run, so hashing them would make corpus_version churn for no reason
+# and destroy the drift signal the manifest exists to provide.
+DATA_EXCLUDED_NAMES = frozenset({
+    "ingestion_state.json",
+    "indiacode_state.json",
+    "curated_corpus_state.json",
+    "knowledge_graph.json",
+})
+DATA_EXCLUDED_DIRS = ("uploads", "exports", "__pycache__")
 
 
 def _chunk_hash(path: str) -> str | None:
@@ -42,14 +54,13 @@ def _chunk_hash(path: str) -> str | None:
         return None
 
 
-def _group_hashes(files: list[str], root: str) -> dict[str, str]:
-    result: dict[str, str] = {}
-    for f in sorted(files):
-        rel = os.path.relpath(f, root)
-        h = _chunk_hash(f)
-        if h:
-            result[rel] = h
-    return result
+def _rel_key(path: str, root: str) -> str:
+    """Manifest key for a file, always with forward slashes.
+
+    os.path.relpath returns backslashes on Windows, so the same corpus hashed on
+    two platforms produced two different corpus_version values.
+    """
+    return os.path.relpath(path, root).replace(os.sep, "/")
 
 
 def collect_artifacts() -> dict[str, dict[str, str]]:
@@ -61,32 +72,38 @@ def collect_artifacts() -> dict[str, dict[str, str]]:
         "treaties_metadata": {},
         "cites_appendices": {},
     }
+    dedicated_names = set(DEDICATED_GROUPS.values())
 
     for f in sorted(glob.glob(os.path.join(RULES_DIR, "*.yaml"))):
         artifacts["rule_pack_rules_yaml"][os.path.basename(f)] = _chunk_hash(f) or ""
 
     for f in sorted(glob.glob(os.path.join(KNOWLEDGE_DIR, "*.json"))):
-        if os.path.basename(f) == "corpus_manifest.json":
+        name = os.path.basename(f)
+        if name == "corpus_manifest.json" or name in dedicated_names:
             continue
-        artifacts["knowledge_json"][os.path.basename(f)] = _chunk_hash(f) or ""
+        artifacts["knowledge_json"][name] = _chunk_hash(f) or ""
 
-    for sub in ("patents", "regulations", "pharmacopoeia", "official", "who",
-                "ayurveda", "pubmed"):
-        for f in sorted(glob.glob(os.path.join(DATA_DIR, sub, "*"))):
-            if os.path.isfile(f):
-                artifacts["curated_text_data"][os.path.relpath(f, DATA_DIR)] = _chunk_hash(f) or ""
+    # Scan every curated subdirectory rather than a hardcoded list. The list had
+    # fallen behind the corpus: backend/data/multiomics alone holds 31 files and
+    # was not tracked at all. Runtime state and caches are excluded.
+    for f in sorted(glob.glob(os.path.join(DATA_DIR, "**", "*.*"), recursive=True)):
+        if not os.path.isfile(f):
+            continue
+        rel = _rel_key(f, DATA_DIR)
+        if os.path.basename(f) in DATA_EXCLUDED_NAMES:
+            continue
+        if any(part in DATA_EXCLUDED_DIRS for part in rel.split("/")):
+            continue
+        artifacts["curated_text_data"][rel] = _chunk_hash(f) or ""
 
     for f in sorted(glob.glob(os.path.join(KB_DIR, "**", "*.*"), recursive=True)):
         if os.path.isfile(f):
-            artifacts["kb_documents"][os.path.relpath(f, KB_DIR)] = _chunk_hash(f) or ""
+            artifacts["kb_documents"][_rel_key(f, KB_DIR)] = _chunk_hash(f) or ""
 
-    treaties_path = os.path.join(KNOWLEDGE_DIR, "treaties_metadata.json")
-    if os.path.exists(treaties_path):
-        artifacts["treaties_metadata"][os.path.basename(treaties_path)] = _chunk_hash(treaties_path) or ""
-
-    cites_path = os.path.join(KNOWLEDGE_DIR, "cites.json")
-    if os.path.exists(cites_path):
-        artifacts["cites_appendices"][os.path.basename(cites_path)] = _chunk_hash(cites_path) or ""
+    for group, name in DEDICATED_GROUPS.items():
+        path = os.path.join(KNOWLEDGE_DIR, name)
+        if os.path.exists(path):
+            artifacts[group][name] = _chunk_hash(path) or ""
 
     return artifacts
 
@@ -104,7 +121,9 @@ def build_manifest() -> dict[str, Any]:
         "corpus_version": version,
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "industry_signals": "IP-SAKTI Sahayak curated corpus",
-        "scope": MANIFEST_SCOPE,
+        # Derived from what was actually collected, so scope can never advertise
+        # a group that artifact_counts does not have.
+        "scope": list(artifacts),
         "file_hashes": artifacts,
         "artifact_counts": {k: len(v) for k, v in artifacts.items()},
     }

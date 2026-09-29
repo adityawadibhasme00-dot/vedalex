@@ -14,16 +14,16 @@ interface ProjectCardProps {
 }
 
 const statusLabel: Record<ProjectStatus, { badge: string; text: string }> = {
-  completed: { badge: 'bg-emerald-100 text-emerald-700', text: 'Completed' },
-  in_progress: { badge: 'bg-blue-100 text-blue-700', text: 'In Progress' },
-  queued: { badge: 'bg-amber-100 text-amber-700', text: 'Ready to Run' },
+  completed: { badge: 'bg-green-50 text-gov-green', text: 'Completed' },
+  in_progress: { badge: 'bg-blue-50 text-gov-blue', text: 'In Progress' },
+  queued: { badge: 'bg-amber-50 text-amber-700', text: 'Ready to Run' },
 };
 
 export function ProjectCard({ title, agent, status, progress, date, href }: ProjectCardProps) {
   const card = (
     <div
       className={clsx(
-        'block bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all group',
+        'block bg-white rounded-xl border border-gov-rule p-6 hover:shadow-md transition-shadow group',
         href && 'cursor-pointer',
       )}
     >
@@ -45,9 +45,9 @@ export function ProjectCard({ title, agent, status, progress, date, href }: Proj
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
           <div
             className={clsx(
-              'h-full bg-emerald-600 rounded-full transition-all duration-700',
-              status === 'completed' && 'bg-emerald-600',
-              status === 'in_progress' && 'bg-blue-600',
+              'h-full rounded-full transition-all duration-700',
+              status === 'completed' && 'bg-gov-green',
+              status === 'in_progress' && 'bg-gov-blue',
               status === 'queued' && 'bg-amber-500',
             )}
             style={{ width: `${Math.min(Math.max(progress, 0), 100)}%` }}

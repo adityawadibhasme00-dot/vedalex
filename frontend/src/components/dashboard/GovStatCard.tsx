@@ -12,14 +12,14 @@ interface GovStatCardProps {
 
 export function GovStatCard({ icon, label, value, change, trend }: GovStatCardProps) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+    <div className="bg-white rounded-xl border border-gov-rule p-6 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-3 mb-4">
-        <div className="h-12 w-12 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0">
-          <span className="text-emerald-600">{icon}</span>
+        <div className="h-12 w-12 bg-gov-wash border border-gov-rule rounded-lg flex items-center justify-center flex-shrink-0">
+          <span className="text-gov-blue">{icon}</span>
         </div>
         <span className={clsx(
           'text-xs font-medium text-right',
-          trend === 'up' ? 'text-emerald-600' : 'text-red-600',
+          trend === 'up' ? 'text-gov-green' : 'text-red-600',
         )}>
           {change}
         </span>

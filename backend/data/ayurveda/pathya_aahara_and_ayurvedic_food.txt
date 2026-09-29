@@ -1,0 +1,20 @@
+Ayurveda Aahara and Pathya - Traditional Food Regulatory Framework
+
+Ayurveda regards Aahara (food) as one of the three pillars (Upastambha) sustaining life, together with Nidra (sleep) and Brahmacharya. Pathya means a wholesome diet and regimen recommended for health promotion and during and after disease; Apthya is the reverse. The classical concept of Pathya is codified in the Food Safety and Standards (Ayurveda Aahara) Regulations, 2022.
+
+Key points from the FSSAI Ayurveda Aahara regulatory framework:
+- "Ayurveda Aahara" means food prepared in accordance with the recipes or ingredients or processes described in the authoritative books of Ayurveda listed in Schedule A of the regulations (these include classical texts such as Charaka Samhita, Ashtanga Hridaya and Bhavaprakasha).
+- Covered foods: recipes and ingredients for promoting health, specific physiological needs, and foods specified for consumption during or after specific diseases and disorders (Pathya foods).
+- Exclusions: Ayurvedic drugs, proprietary Ayurvedic medicines, medicinal products, cosmetics, narcotic or psychotropic substances, and herbs listed in Schedule E-1 of the Drugs and Cosmetics Act, 1940 and Rules, 1945.
+- Ayurveda Aahara is not recommended for children below the age of 2 years.
+- Special FSSAI licensing/approval is required before an Ayurveda Aahara product can be marketed; a dedicated "Ayurveda Aahara" logo has been created for identification.
+- Health claims and disease risk reduction claims must be approved in accordance with the regulations; the product must NOT be labelled or advertised as treating, curing or preventing any human disease (Regulation 8).
+- Products not listed under an approved Category require a formal inclusion request to FSSAI with references from classical Ayurvedic texts, evaluated by an Expert Committee constituted with representatives of FSSAI and the Ministry of AYUSH.
+- Prior approval for Ayurveda Aahara is obtained per the Food Safety and Standards (Approval for Non-Specific Food and Food Ingredients) Regulation, 2017 (Regulation 10).
+- On 25 July 2025, FSSAI issued an Order clarifying the list of Category A Ayurveda Aahara products covered under the 2022 Regulations for registration/licensing on the FoSCoS portal.
+
+Sources:
+- https://stg-old.fssai.gov.in/upload/notifications/2022/05/62789a20b54bdGazette_Notification_Ayurveda_Aahara_09_05_2022.pdf
+- PIB Release PRID 1824783, 12 May 2022 (FSSAI & Ministry of AYUSH formulate regulations for Ayurveda Aahara): https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=1824783
+- FAO/FAOLEX summary: http://faolex.fao.org/docs/pdf/IND221232.pdf
+- FSSAI Order dated 25.07.2025 enclosing Ayurveda Aahara Category A list.

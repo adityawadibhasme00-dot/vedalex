@@ -1,0 +1,18 @@
+DOC_ID: OMICS-METABOLOMICS-08
+TITLE: Amla (Emblica officinalis) polyphenol profile
+OMICS_TYPE: metabolomics
+ORGANISM: Emblica officinalis / Phyllanthus
+COMPOUND: Quercetin and gallic acid
+GENE: 
+PROTEIN: 
+UNIPROT: 
+NCBI_GENE_ID: 
+PUBCHEM_CID: 5280343
+PATHWAY: Phenylpropanoid / tannin biosynthesis
+ASSAY_TYPE: RP-HPLC / UHPLC-QTOF
+PMID: 
+SOURCE_URL: https://pubchem.ncbi.nlm.nih.gov/compound/5280343
+AUTHORITY: PubChem (NCBI) / HMDB / MetaboLights (EMBL-EBI)
+JURISDICTION: International
+
+Emblica officinalis (Amla/Indian gooseberry) is characterised by a polyphenol metabolome dominated by hydrolysable tannins, flavonoids such as quercetin (PubChem CID 5280343) and phenolic acids including gallic acid (PubChem CID 370). These markers underpin its antioxidant and immunomodulatory monograph requirements.

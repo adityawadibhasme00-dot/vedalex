@@ -1,0 +1,18 @@
+DOC_ID: OMICS-METABOLOMICS-01
+TITLE: Withaferin A - steroidal lactone marker of Ashwagandha
+OMICS_TYPE: metabolomics
+ORGANISM: Withania somnifera
+COMPOUND: Withaferin A
+GENE: 
+PROTEIN: 
+UNIPROT: 
+NCBI_GENE_ID: 
+PUBCHEM_CID: 265237
+PATHWAY: Withanolide biosynthesis
+ASSAY_TYPE: HPLC-PDA / LC-MS
+PMID: 
+SOURCE_URL: https://pubchem.ncbi.nlm.nih.gov/compound/265237
+AUTHORITY: PubChem (NCBI) / HMDB / MetaboLights (EMBL-EBI)
+JURISDICTION: International
+
+Withaferin A is a C28 steroidal lactone typically considered a characteristic phytoconstituent of Withania somnifera (Ashwagandha) roots and leaves. It is the most-studied withanolide and is registered in PubChem (CID 265237). Its identity as a withanolide marker is routinely used in quality control and metabolomic profiling of Ashwagandha raw material and extracts.

@@ -1,0 +1,25 @@
+Traditional Knowledge Digital Library (TKDL) - Defensive Protection of Indian TK
+
+What it is: The TKDL is a pioneering Indian initiative established in 2001 as a joint collaboration of the Council of Scientific and Industrial Research (CSIR) and the Ministry of AYUSH to prevent misappropriation of Indian traditional knowledge at patent offices worldwide. It was created after India's successful revocations of the turmeric patent (USPTO) and neem patent (EPO) and the basmati challenge, which showed the need for proactive TK protection.
+
+Content: TKDL documents publicly available traditional knowledge from the classical texts of Ayurveda, Siddha, Unani, Sowa Rigpa and Yoga, converting ancient content written in Sanskrit, Hindi, Arabic, Persian, Urdu, Tamil, Bhoti and other languages into a digitized, searchable format that patent examiners can understand.
+
+Scale (verified figures vary by reporting date):
+- Over 34 million formatted pages (WIPO Magazine; WIPO 2011); 2.26 million medicinal formulations in multiple languages (WIPO Magazine).
+- As of March 2022 (PIB), 418,885 formulations transcribed: 119,269 Ayurveda, 236,399 Unani, 54,689 Siddha, 4,151 Yoga, 4,377 Sowa Rigpa.
+- 5 languages: English, German, French, Japanese, Spanish.
+- By 2022, 265 patent applications had been withdrawn, deemed withdrawn, amended or set aside based on TKDL evidence.
+- CSIR reported >200 applications withdrawn/rejected by 2011 and a 44% decline in Indian traditional medicine patent filings at the EPO attributed, in part, to the TKDL deterrent.
+
+Classification: The Traditional Knowledge Resource Classification (TKRC), modelled on the WIPO International Patent Classification (IPC), classifies Indian traditional medicine into 25,000-27,000 subgroups; TKRC prompted reform of IPC subgroup A61K 36/00 for medicinal plants.
+
+How it protects: TKDL evidence enables patent examiner prior-art rejection at the pre-grant office action stage (weeks) instead of post-grant opposition at court (years, USD 0.2-0.6 million per challenge). Access to the full TKDL database is granted to international patent offices only under the TKDL Access Agreement with non-disclosure commitments. CSIR-TKDL also files third-party observations and pre-grant oppositions based on TKDL evidence.
+
+Regulatory interface: under the IPO Guidelines for Examination of Patent Applications in the Field of Traditional Knowledge, examiners are required to search TK databases including the TKDL when claims relate to biological material or TK, alongside mandatory disclosure of source and geographical origin (Patents Act s.10(4)(d)).
+
+Sources:
+- CSIR TKDL Unit: https://www.csir.res.in/en/documents/tkdl
+- WIPO "About the TKDL": https://www.wipo.int/meetings/en/2011/wipo_tkdl_del_11/about_tkdl.html
+- WIPO Magazine "Protecting India's Traditional Knowledge": https://www.wipo.int/en/web/wipo-magazine/articles/protecting-indias-traditional-knowledge-37721
+- PIB Factsheet Sep 2022: https://static.pib.gov.in/WriteReadData/specificdocs/documents/2022/sep/doc20229199001.pdf
+- TKDL portal: https://www.tkdl.res.in/

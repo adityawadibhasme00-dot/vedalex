@@ -1,0 +1,33 @@
+Regulatory Data Sources Index for IP-SAKTI
+
+This metadata index catalogs the primary regulatory sources used by IP-SAKTI for citation-grounded assessment. Each curated data file in this knowledge base carries an embedded Source line for RAG citation.
+
+INDIA - AYUSH LICENSING & QUALITY:
+- Drugs and Cosmetics Act, 1940 & Rules, 1945 - Rule 158-B (G.S.R. 663(E) 2010), Schedule T (Rule 157 GMP), Schedule M-I, Schedule E-1 - CDSCO / Ministry of AYUSH / State Drug Controllers
+  https://cdsco.gov.in/opencms/resources/UploadCDSCOWeb/2022/drug_rules/Drugs%20Rules,%201945.pdf
+  https://indiankanoon.org/doc/2678839/ (Rule 158-B)
+- Ayurvedic Pharmacopoeia of India (API) - PCIM&H - https://www.pcimh.gov.in/
+- PIB "Quality Control of Ayush Drugs" (02 Aug 2022) PRID 1847448 - https://www.pib.gov.in/Pressreleaseshare.aspx?PRID=1847448
+
+INDIA - FOOD:
+- Food Safety and Standards (Ayurveda Aahara) Regulations, 2022 - gazette 09 May 2022, Schedules A-E, Regulation 8 (no disease claims), Regulation 10 (prior approval), FSSAI Order 25.07.2025 (Category A list)
+  https://stg-old.fssai.gov.in/upload/notifications/2022/05/62789a20b54bdGazette_Notification_Ayurveda_Aahara_09_05_2022.pdf
+  PIB PRID 1824783: https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=1824783
+
+INDIA - IP:
+- Patents Act, 1970 (amended 2005) - Sections 3(d), 3(e), 3(p); s.10(4)(d)(ii)(D) source disclosure - CGPDTM/Indian Patent Office
+  https://ipindia.gov.in/frontend/pdf/patents/1_31_1_patent-act-1970-11march2015.pdf
+- IPO Guidelines for TK/Bio-material examination - https://www.ipindia.gov.in/writereaddata/Portal/IPOGuidelinesManuals/1_39_1_5-tk-guidelines.pdf
+- TKDL (CSIR + Ministry of AYUSH, 2001) - https://www.tkdl.res.in/ | CSIR TKDL unit: https://www.csir.res.in/en/documents/tkdl
+- Biological Diversity Act, 2002 (amended 2023) - s.3(2)/s.6/s.7, NBA Forms 7/8/9, BD Rules 2024 (G.S.R. 665(E)) - https://www.indiacode.nic.in/bitstream/123456789/21545/1/the_biological_diversity_act,_2002.pdf | https://nbaindia.org
+
+UNITED STATES:
+- DSHEA 1994 - 21 U.S.C. 343(r)(6), 21 CFR 101.93 (structure/function claims + disclaimer); FD&C drug definition 21 U.S.C. 321(g); NDI notification 21 U.S.C. 350b (75 days pre-market); cGMP 21 CFR Part 111 - https://www.fda.gov/food/dietary-supplements
+
+CANADA:
+- Natural Health Products Regulations SOR/2003-196 - NPN product licensing, Class I-IV assessment, NHPID monographs, site licensing/GMP, ADR reporting - https://www.canada.ca/en/health-canada/services/drugs-health-products/natural-non-prescription.html
+
+WHO:
+- WHO Traditional Medicine Strategy 2014-2023 (ISBN 9789241506090); WHA62.13 (2009); WHA67.18 (2014); EB152/37 (2022); WHO monographs on herbal quality - https://www.who.int/publications/i/item/9789241506096
+
+Last updated: 08 Sep 2026. All URLs were verified reachable during curation.

@@ -1,0 +1,18 @@
+DOC_ID: OMICS-PROTEOMICS-03
+TITLE: ALOX5 (5-lipoxygenase) - leukotriene biosynthesis
+OMICS_TYPE: proteomics
+ORGANISM: Homo sapiens
+COMPOUND: Boswellic acid (AKBA) (Boswellia serrata)
+GENE: ALOX5
+PROTEIN: Arachidonate 5-lipoxygenase
+UNIPROT: P09917
+NCBI_GENE_ID: 240
+PUBCHEM_CID: 
+PATHWAY: Arachidonic acid metabolism; leukotriene synthesis
+ASSAY_TYPE: Enzyme activity assay
+PMID: 
+SOURCE_URL: https://www.uniprot.org/uniprotkb/P09917
+AUTHORITY: UniProt Consortium (EMBL-EBI / SIB / PIR)
+JURISDICTION: International
+
+ALOX5 (5-lipoxygenase) initiates leukotriene biosynthesis from arachidonic acid. 3-O-acetyl-11-keto-beta-boswellic acid (AKBA) from Boswellia serrata gum resin is documented as a direct inhibitor of 5-lipoxygenase, a protein-level mechanism that distinguishes boswellic acids from classical COX inhibitors in the treatment of inflammatory and autoimmune conditions.
