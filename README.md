@@ -142,6 +142,22 @@ curl -X POST http://localhost:8000/api/v1/rag/reindex
 
 ---
 
+## ☁️ Deploy on a Free Tier
+
+`render.yaml` deploys both services — the FastAPI API and the Next.js frontend — on Render's free tier. No server of your own, no billing card.
+
+**Deploy:** <https://render.com> → **New** → **Blueprint** → pick this repo. Render reads `render.yaml` and provisions both services; each gets an `https://*.onrender.com` URL.
+
+**Why the API runs in "lite" mode.** The full stack needs ~10.7 GB of model weights (`BAAI/bge-m3` plus the reranker) and `torch`, which no free tier can host. So the deploy installs `backend/requirements-slim.txt` — the same dependencies minus that ML stack — and sets `IPSAKTI_USE_BGE_M3=0` / `IPSAKTI_USE_RERANKER=0`, which keeps the app on its local hashing embedder (192-dim) + BM25 path. Everything works; semantic answer quality is a little lower than a local run with the real models.
+
+Measured for this configuration: **183 MB peak RAM** (free tier allows 512 MB), a **4 s** index build, and a **~6 s** cold start.
+
+**The index rebuilds itself.** Free-tier disks are wiped on every restart, so `backend/scripts/serve.py` builds the index in-process *before* the server accepts requests, and skips the rebuild when the store already has data. It runs in the same process as the API on purpose: the embedded Qdrant client locks its storage folder, so splitting the build into a separate step makes the API silently fall back to an in-memory store.
+
+**Two things to know about the free tier.** Instances sleep after ~15 minutes idle, so the first request after a pause takes 30–60 s while the service wakes — open the links a minute before a demo. And `BACKEND_API_KEY_SECRET` is generated for you, which is what keeps sessions valid across restarts.
+
+---
+
 ## 🔐 Environment Variables
 
 ### Backend (`backend/.env`)

@@ -1,0 +1,73 @@
+# Render Blueprint — free-tier deployment (backend API + Next.js frontend).
+#
+# Why "lite" mode: the full stack needs ~10.7 GB of model weights
+# (BAAI/bge-m3 + bge-reranker) plus torch, which no free tier can host.
+# requirements-slim.txt drops that stack entirely and the two
+# IPSAKTI_USE_* flags below keep the app on the local hashing embedder
+# (192-dim) + BM25 path. Measured locally: 183 MB peak RAM and a 4 s index
+# build, versus the 512 MB / 0.5 GB a Render free instance gets.
+#
+# Deploy:  https://render.com  ->  New -> Blueprint -> pick this repo
+# Both services are public; each gets an https://*.onrender.com URL.
+# Free instances sleep after ~15 min idle, so the first request after a
+# pause takes roughly 30-60 s while the service wakes and rebuilds its
+# vector index. Hit the links once shortly before a demo to warm them.
+
+services:
+  # ----------------------------------------------------------------- API
+  - type: web
+    name: vedalex-api
+    env: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install --no-cache-dir -r requirements-slim.txt
+    # One process, one Qdrant client: the embedded client locks its storage
+    # folder, so a chained "ensure_index.py && uvicorn" made the API fall back
+    # to an in-memory store. serve.py builds the index in-process first, then
+    # runs uvicorn, and only rebuilds when the store is empty (every cold start
+    # on an ephemeral disk). It never blocks the boot.
+    startCommand: python scripts/serve.py
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      # Keep the multi-GB ML stack out of the picture.
+      - key: IPSAKTI_USE_BGE_M3
+        value: "0"
+      - key: IPSAKTI_USE_RERANKER
+        "value": "0"
+      # Signs JWTs and gates /admin/*. If unset the app generates a random
+      # secret per process, so every restart would log everyone out.
+      - key: BACKEND_API_KEY_SECRET
+        generateValue: true
+      # Render gives a service the URL https://<name>.onrender.com, so the
+      # frontend origin is known up front. Change this if you rename the
+      # frontend service below.
+      - key: CORS_ORIGINS
+        value: '["https://vedalex-web.onrender.com"]'
+      # Local embedded Qdrant inside the instance. Free disks reset on every
+      # restart, which is what ensure_index.py exists to handle.
+      - key: QDRANT_LOCAL_PATH
+        value: /tmp/qdrant
+
+  # ------------------------------------------------------------ Frontend
+  - type: web
+    name: vedalex-web
+    env: node
+    plan: free
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    startCommand: npx next start -p $PORT
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Server-side only. next.config.js rewrites /api/v1/* to this URL, so
+      # the browser stays same-origin and NEXT_PUBLIC_API_BASE_URL is left
+      # unset (the app falls back to the relative '/api/v1').
+      - key: BACKEND_URL
+        fromService:
+          type: web
+          name: vedalex-api
