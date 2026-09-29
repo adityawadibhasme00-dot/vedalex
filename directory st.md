@@ -78,7 +78,6 @@ SIH Final/
 │   │   ├── test_what_if.py
 │   │   ├── test_sandboxing.py
 │   │   ├── test_ingredient_resolver.py
-│   │   └── test_sih_demo_script.py      # Automated verification of Section 18 SIH script
 │   ├── requirements.txt
 │   ├── Dockerfile
 │   └── .env.example
