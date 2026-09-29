@@ -36,7 +36,7 @@ services:
       - key: IPSAKTI_USE_BGE_M3
         value: "0"
       - key: IPSAKTI_USE_RERANKER
-        "value": "0"
+        value: "0"
       # Signs JWTs and gates /admin/*. If unset the app generates a random
       # secret per process, so every restart would log everyone out.
       - key: BACKEND_API_KEY_SECRET
@@ -67,7 +67,13 @@ services:
       # Server-side only. next.config.js rewrites /api/v1/* to this URL, so
       # the browser stays same-origin and NEXT_PUBLIC_API_BASE_URL is left
       # unset (the app falls back to the relative '/api/v1').
+      #
+      # Hardcoded rather than fromService: the Blueprint spec exposes no public
+      # URL property for a web service (only host/port/hostport, which are
+      # private-network values), and envVarKey: RENDER_EXTERNAL_HOSTNAME yields
+      # a bare hostname with no scheme, which next.config.js cannot use as a
+      # rewrite destination. The service name is fixed above, so the URL is
+      # deterministic. This service is suspended once the frontend moves to
+      # Vercel, so the value is informational.
       - key: BACKEND_URL
-        fromService:
-          type: web
-          name: vedalex-api
+        value: https://vedalex-api.onrender.com
