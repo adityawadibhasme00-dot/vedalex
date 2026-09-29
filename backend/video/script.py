@@ -1,9 +1,21 @@
 """Demo video script: full English narration, scene by scene.
 
+Pure website walkthrough - no title, problem or architecture slides. Every
+scene captures the live product, and the interactive scenes record real motion
+(opening an agent, switching dashboard tabs, typing into the copilot) instead
+of a static shell.
+
 Each scene carries the narration text plus the visual it is spoken over. The
-build pipeline renders the slide, synthesises the audio, measures the real audio
-duration, then sets the clip length from that measurement - so narration and
-visuals cannot drift apart.
+build pipeline captures the visual, synthesises the audio, measures the real
+audio duration, then sets the clip length from that measurement - so narration
+and visuals cannot drift apart.
+
+Visual kinds the builder understands:
+  page     -> live Playwright screenshot of a real frontend route
+  zoom     -> magnified crop of a page capture
+  video    -> live Playwright screencast of real clicks and typing
+
+All may carry optional "steps" that run before the capture.
 
 Voice: en-GB-RyanNeural, male, measured 128 Hz against the 133 Hz reference
 recording supplied in xyz/.
@@ -11,238 +23,315 @@ recording supplied in xyz/.
 
 from __future__ import annotations
 
-# Visual kinds the builder understands:
-#   slide    -> rendered from HTML by the deck builder
-#   page     -> live Playwright capture of a real frontend route
-#   zoom     -> magnified crop of the previous page capture
-# en-GB-RyanNeural measured 128 Hz against the 133 Hz reference in xyz/, the
-# closest of the sampled male English voices.
 VOICE = "en-GB-RyanNeural"
 VOICE_PITCH = "+4Hz"
 
+COPILOT_Q = (
+    "Is an Ashwagandha and Brahmi composition for healthy sleep patentable? "
+    "Cite the law."
+)
+
 SCENES: list[dict] = [
-    # ----------------------------------------------------------------- intro
     {
-        "id": "01_title",
-        "visual": {"kind": "slide", "template": "title"},
-        "text": (
-            "Vedalex. A research and compliance workspace for Indian traditional "
-            "knowledge. This video covers the problem it solves, the architecture "
-            "behind it, and a walkthrough of the live product."
-        ),
-    },
-    # --------------------------------------------------------------- problem
-    {
-        "id": "02_problem_headline",
-        "visual": {"kind": "slide", "template": "problem_headline"},
-        "text": (
-            "Let us start with the problem. A formulation scientist in India can "
-            "often tell you that a formulation works, because it has been handed "
-            "down for generations. What that person usually cannot tell you is "
-            "whether the same idea has already been claimed by somebody else."
-        ),
-    },
-    {
-        "id": "03_problem_diagram",
-        "visual": {"kind": "slide", "template": "problem_diagram"},
-        "text": (
-            "Four failures happen at the same time. Traditional knowledge is "
-            "oral, so it is undocumented and therefore hard to search. Commercial "
-            "prior art lives inside paywalled patent databases. The legal tests "
-            "that decide whether you can even patent something are spread across "
-            "many separate statutes. And manual search is slow, expensive, and "
-            "quietly incomplete, because nobody reads every relevant document. "
-            "The result is that good work gets blocked, or worse, gets "
-            "accidentally patented by somebody else."
-        ),
-    },
-    {
-        "id": "04_problem_tkdl",
-        "visual": {"kind": "slide", "template": "problem_tkdl"},
-        "text": (
-            "This is not theoretical. Defensive publications by India in the "
-            "Traditional Knowledge Digital Library have been cited against Indian "
-            "companies in patent offices abroad. And under Section Three of the "
-            "Patents Act, a patent cannot be granted on matter that is already in "
-            "the public domain, including plant matter, unless disclosed to the "
-            "public. Get that wrong, and you lose the filing, the money, and the "
-            "date."
-        ),
-    },
-    {
-        "id": "05_problem_llm",
-        "visual": {"kind": "slide", "template": "problem_llm"},
-        "text": (
-            "The obvious answer, a general purpose language model, makes it worse. "
-            "Ask one whether an Ayurvedic formulation is novel and it will "
-            "confidently invent a citation, quote a statute that does not say what "
-            "was claimed, and give you a patent number that does not exist. In a "
-            "compliance context, a fluent wrong answer is more expensive than no "
-            "answer at all."
-        ),
-    },
-    # --------------------------------------------------------------- solution
-    {
-        "id": "06_solution_headline",
-        "visual": {"kind": "slide", "template": "solution_headline"},
-        "text": (
-            "Vedalex is built around one rule: never assert anything that cannot be "
-            "traced to a source. The system is three layers, and the language "
-            "model is only the top one."
-        ),
-    },
-    {
-        "id": "07_solution_diagram",
-        "visual": {"kind": "slide", "template": "solution_diagram"},
-        "text": (
-            "The bottom layer is the law. Deterministic rule packs encode the actual "
-            "tests, starting with Section Three of the Patents Act, Section Five on "
-            "inventive step, the Biodiversity Act, the Traditional Knowledge "
-            "Digital Library examination guidelines, the Food Safety Standards "
-            "regulations, Schedule T of the Drugs and Cosmetics Rules, and the "
-            "United States and Canadian natural health frameworks. These are "
-            "reviewable code, so the same input always produces the same verdict. "
-            "The middle layer is retrieval, grounded in a curated corpus and hybrid "
-            "semantic and keyword search. The top layer explains the result in "
-            "plain language. If the bottom layer has no answer, the top layer is "
-            "told to say so."
-        ),
-    },
-    {
-        "id": "08_solution_guard",
-        "visual": {"kind": "slide", "template": "solution_guard"},
-        "text": (
-            "Every finding carries a resolvable identifier, never a plausible "
-            "guess. A taxon is a Global Biodiversity Information Facility usage "
-            "key. A compound is a PubChem compound identifier with its InChIKey. A "
-            "protein is a reviewed UniProt accession. A gene is an N C B I gene "
-            "identifier. A statute is its actual section. The guard checks these "
-            "identifiers, and an ungrounded statement is suppressed instead of "
-            "being shown."
-        ),
-    },
-    {
-        "id": "09_solution_agents",
-        "visual": {"kind": "slide", "template": "solution_agents"},
-        "text": (
-            "On top of that sit thirty nine specialist agents, each doing one real "
-            "task rather than pretending to do everything. There are agents for "
-            "novelty search, freedom to operate, prior art mapping, patent "
-            "drafting, office action responses, essentiality claim charts, life "
-            "cycle assessment for small molecules and biologics, structure and "
-            "activity relationship extraction, formulation review, markush "
-            "drafting, regulatory mapping, labelling checks, and white space "
-            "analysis. Each returns cited findings, not prose."
-        ),
-    },
-    # ------------------------------------------------------------ live demo
-    {
-        "id": "10_demo_home",
+        "id": "01_demo_home",
         "visual": {"kind": "page", "route": "/"},
         "text": (
-            "This is the live product. The landing page is a research portal, and "
-            "it is deliberately clear that this is an independent research project "
-            "and not a Government of India website."
+            "This is the live website, starting with the public portal. It is "
+            "a calm government style portal, in English and Hindi, built "
+            "around the national colors. The portal is fast, clear and honest "
+            "about what it does. Everything on the home page leads somewhere "
+            "useful."
         ),
     },
     {
-        "id": "11_demo_home_zoom",
-        "visual": {
-            "kind": "zoom",
-            "route": "/",
-            "selector": "#services",
-            "label": "Services and platform modules",
-        },
+        "id": "02_demo_home_zoom",
+        "visual": {"kind": "zoom", "route": "/", "selector": "#features"},
         "text": (
-            "The services block is the whole surface area in one view: the patent "
-            "and prior art modules, the regulatory base, evidence and compliance, "
-            "and the market modules. Every one of them is backed by a curated corpus "
-            "rather than a prompt."
+            "Scrolling through the portal, you see the complete feature map. "
+            "The Innovation Lab for inventors, the IP shield for patents, the "
+            "food safety register, the biodiversity register and the policy "
+            "dashboard. Each module opens with one click, and every one of "
+            "these opens the real tool, not a mockup, with live data behind "
+            "it."
         ),
     },
     {
-        "id": "12_demo_lab",
+        "id": "03_demo_lab",
         "visual": {"kind": "page", "route": "/innovation-lab"},
         "text": (
-            "The Innovation Lab is the working surface. Agents are grouped by domain "
-            "rather than listed alphabetically, so a formulation scientist and a "
-            "patent examiner each see the tools that are relevant to them."
+            "Next, the Innovation Lab, the heart of the platform. Nine "
+            "specialist agents are registered here, each built around Indian "
+            "IP law and the traditional knowledge toolkit. Every agent does "
+            "one clear job, and every result can be checked."
         ),
     },
     {
-        "id": "13_demo_lab_zoom",
+        "id": "04_demo_lab_zoom",
+        "visual": {"kind": "zoom", "route": "/innovation-lab", "selector": "main"},
+        "text": (
+            "The agent library lists every specialist with its name, status "
+            "and task. Each one is a real workflow with its own inputs and "
+            "outputs, judged against official rules rather than free chat. You "
+            "can launch any of them in one click, and even the small quick "
+            "links jump straight into an agent."
+        ),
+    },
+    {
+        "id": "05_demo_open_agent",
         "visual": {
-            "kind": "zoom",
+            "kind": "video",
             "route": "/innovation-lab",
-            "selector": "main",
-            "label": "Agent library",
+            "steps": [
+                {"action": "wait", "ms": 2500},
+                {"action": "click", "locator": 'text="Novelty Search"'},
+                {"action": "wait", "ms": 5000},
+            ],
         },
         "text": (
-            "Thirty nine agents are registered across engineering, intellectual "
-            "property, life sciences and materials, and each one is a real workflow "
-            "with its own inputs and its own decision, not a chat prompt."
+            "Let me open one of these agents live, just like a founder would. "
+            "I will click the novelty search card, and the agent's working "
+            "surface opens, ready for a real filing. You can see the quick "
+            "start buttons and the disclaimer that this is research support, "
+            "not legal advice."
         ),
     },
     {
-        "id": "14_demo_agent",
-        "visual": {"kind": "page", "route": "/innovation-lab/agents/novelty_search"},
-        "text": (
-            "Opening a single agent shows the inputs it needs and the workflow it "
-            "will run. This is the novelty search agent."
-        ),
-    },
-    {
-        "id": "15_demo_agent_zoom",
+        "id": "06_demo_agent_zoom",
         "visual": {
             "kind": "zoom",
             "route": "/innovation-lab/agents/novelty_search",
             "selector": "main",
-            "label": "Novelty analysis",
         },
         "text": (
-            "The result is always structured. Section Three exposure, inventive "
-            "step, evidence strength, and a list of citations that can be opened and "
-            "checked. Every field traces back to either a statute or a retrievable "
-            "document, and if the evidence is not there, the field says so."
+            "This is the novelty search agent. It asks for the raw materials, "
+            "the extraction method and the target countries, and then it runs "
+            "a structured search with a citation behind every source."
         ),
     },
     {
-        "id": "16_demo_dashboard",
-        "visual": {"kind": "page", "route": "/dashboard"},
+        "id": "07_demo_dashboard",
+        "visual": {"kind": "video", "route": "/dashboard",
+                   "steps": [{"action": "wait", "ms": 9000}]},
         "text": (
-            "Passports tie the work together. One passport is the subject, and every "
-            "agent, analysis and document attaches to it, so the assessment is "
-            "reproducible later instead of living in somebody's inbox."
+            "This is the entrepreneur dashboard, the founder's working area "
+            "after signing in. The system has already created an example "
+            "product: Ashwagandha and Brahmi tablets, with a claim that they "
+            "support healthy sleep. Everything here runs against the real rule "
+            "engine."
         ),
     },
     {
-        "id": "17_demo_dashboard_zoom",
+        "id": "08_demo_dashboard_zoom",
+        "visual": {"kind": "zoom", "route": "/dashboard", "selector": "main"},
+        "text": (
+            "This is the command center of the whole platform. In one glance "
+            "you see the innovation passport status, the evidence matrix, the "
+            "red flags, and quick action buttons for every module, from legal "
+            "analysis to export planning."
+        ),
+    },
+    {
+        "id": "09_demo_passport",
+        "visual": {
+            "kind": "video",
+            "route": "/dashboard",
+            "steps": [
+                {"action": "wait", "ms": 2500},
+                {"action": "click", "locator": "aside button:has-text('Innovation Passport')"},
+                {"action": "wait", "ms": 6000},
+            ],
+        },
+        "text": (
+            "Let me open the innovation passport by clicking it in the menu. "
+            "It captures the complete product story: the raw materials, the "
+            "extraction method and the manufacturing process, accepted in "
+            "several Indian languages."
+        ),
+    },
+    {
+        "id": "10_demo_ipreg",
+        "visual": {
+            "kind": "video",
+            "route": "/dashboard",
+            "steps": [
+                {"action": "wait", "ms": 2500},
+                {"action": "click", "locator": "aside button:has-text('IP & Regulatory Base')"},
+                {"action": "wait", "ms": 6000},
+            ],
+        },
+        "text": (
+            "Now the IP and regulatory base. It checks every protection "
+            "route: patentability, novelty, prior art, inventive step and "
+            "freedom to operate, and it produces a clear go or no go filing "
+            "roadmap for India and abroad. The roadmap tells you the order, "
+            "the cost and the risk of each step, so nothing is filed blind."
+        ),
+    },
+    {
+        "id": "11_demo_evidence",
+        "visual": {
+            "kind": "video",
+            "route": "/dashboard",
+            "steps": [
+                {"action": "wait", "ms": 2500},
+                {"action": "click", "locator": "aside button:has-text('Evidence & Compliance')"},
+                {"action": "wait", "ms": 6000},
+            ],
+        },
+        "text": (
+            "Next, evidence and compliance. The matrix maps every claim to "
+            "its supporting research. A claim without evidence is flagged in "
+            "red, with the exact gap and source shown, so you know what to "
+            "strengthen. The file you submit is never weaker than the evidence "
+            "behind it."
+        ),
+    },
+    {
+        "id": "12_demo_biores",
+        "visual": {
+            "kind": "video",
+            "route": "/dashboard",
+            "steps": [
+                {"action": "wait", "ms": 2500},
+                {"action": "click", "locator": "aside button:has-text('Bio-Resource Intelligence')"},
+                {"action": "wait", "ms": 6000},
+            ],
+        },
+        "text": (
+            "The bio resource intelligence view tracks the raw materials "
+            "against the Biological Diversity Act. Each plant is matched to "
+            "its scientific name, its access obligations and its benefit "
+            "sharing position."
+        ),
+    },
+    {
+        "id": "13_demo_classify",
+        "visual": {
+            "kind": "video",
+            "route": "/dashboard",
+            "steps": [
+                {"action": "wait", "ms": 2500},
+                {"action": "click", "locator": "aside button:has-text('Product Classifier')"},
+                {"action": "wait", "ms": 6000},
+            ],
+        },
+        "text": (
+            "The product classifier reads the claim on the label and splits "
+            "it into compliance parts. Health claims, disease claims and "
+            "therapeutic claims each take a separate legal route."
+        ),
+    },
+    {
+        "id": "14_demo_market",
+        "visual": {
+            "kind": "video",
+            "route": "/dashboard",
+            "steps": [
+                {"action": "wait", "ms": 2500},
+                {"action": "click", "locator": "aside button:has-text('Market Readiness')"},
+                {"action": "wait", "ms": 6000},
+            ],
+        },
+        "text": (
+            "The market readiness module tests the product country by country, "
+            "India, the United States or Canada. It compares the labeling and "
+            "regulation differences before you spend money on an export."
+        ),
+    },
+    {
+        "id": "15_demo_copilot",
+        "visual": {
+            "kind": "video",
+            "route": "/dashboard",
+            "steps": [
+                {"action": "wait", "ms": 2500},
+                {"action": "click", "locator": "aside button:has-text('AI Assistant')"},
+                {"action": "wait", "ms": 2500},
+                {"action": "click", "locator": "input[placeholder*='Type or speak']"},
+                {"action": "type", "locator": "input[placeholder*='Type or speak']",
+                 "value": COPILOT_Q, "delay": 30},
+                {"action": "press", "locator": "input[placeholder*='Type or speak']", "key": "Enter"},
+                {"action": "wait", "ms": 12000},
+            ],
+        },
+        "text": (
+            "Now the most asked about feature, the AI copilot. Watch me ask it "
+            "a real question. I will type: is this Ashwagandha and Brahmi "
+            "composition patentable, and cite the law. And here is the live "
+            "answer, because the search is real."
+        ),
+    },
+    {
+        "id": "16_demo_copilot_zoom",
         "visual": {
             "kind": "zoom",
-            "route": "/dashboard",
+            "route": "/dashboard#copilot",
             "selector": "main",
-            "label": "Passport workspace",
+            "steps": [
+                {"action": "wait", "ms": 3000},
+                {"action": "eval", "script": (
+                    "window.dispatchEvent(new CustomEvent('ipsakti:copilot-question',"
+                    "{detail:'Is an Ashwagandha and Brahmi composition for healthy "
+                    "sleep patentable? Cite the law.'}))"
+                )},
+                {"action": "wait", "ms": 15000},
+            ],
         },
         "text": (
-            "From the same passport you can reach the regulatory roadmap, the "
-            "freedom to operate map, the claim firewall, and the disclosure "
-            "sentinel. One subject, one evidence base, every module."
+            "Notice everything the copilot shows. First the answer text, then "
+            "a confidence score, the retrieval engines used, and a sources "
+            "panel with every document behind the answer. No invented "
+            "citations, every claim traceable. This is exactly what a founder "
+            "needs before making any decision."
         ),
     },
-    # -------------------------------------------------------------- closing
     {
-        "id": "19_closing",
-        "visual": {"kind": "slide", "template": "closing"},
+        "id": "17_demo_whatif",
+        "visual": {
+            "kind": "video",
+            "route": "/dashboard",
+            "steps": [
+                {"action": "wait", "ms": 2500},
+                {"action": "click", "locator": "aside button:has-text('What-If Simulator')"},
+                {"action": "wait", "ms": 6000},
+            ],
+        },
         "text": (
-            "The point is not that a model can talk about Ayurveda. The point is "
-            "that when it does, every sentence can be checked. Deterministic rules "
-            "for the law, grounded retrieval for the facts, verifiable identifiers "
-            "for every citation, and a system that says I do not know when it "
-            "genuinely does not know. Thank you."
+            "The what if simulator shows what happens if you change a raw "
+            "material, a dosage or a claim. The same rule engine recalculates "
+            "the whole verdict on the spot, so an idea can be tested without "
+            "touching a lawyer or spending money."
+        ),
+    },
+    {
+        "id": "18_demo_dossier",
+        "visual": {
+            "kind": "video",
+            "route": "/dashboard",
+            "steps": [
+                {"action": "wait", "ms": 2500},
+                {"action": "click", "locator": "aside button:has-text('Dossier Export')"},
+                {"action": "wait", "ms": 6000},
+            ],
+        },
+        "text": (
+            "Finally the dossier. The system assembles everything into one "
+            "clean report: claims, evidence, citations and a legal summary, "
+            "ready to hand to an attorney or an investor."
+        ),
+    },
+    {
+        "id": "19_demo_settings",
+        "visual": {"kind": "page", "route": "/dashboard#settings"},
+        "text": (
+            "And in settings you control the terminology and the language of "
+            "the whole platform, keeping external communication in English and "
+            "Hindi as needed, and everything stays consistent in one workspace. "
+            "That is the complete walkthrough. Thank you for watching."
         ),
     },
 ]
 
 # Scene types that capture the live application rather than a rendered slide.
-LIVE_SCENES = [s for s in SCENES if s["visual"]["kind"] in ("page", "zoom")]
+LIVE_SCENES = [s for s in SCENES if s["visual"]["kind"] in ("page", "zoom", "video")]
 SLIDE_SCENES = [s for s in SCENES if s["visual"]["kind"] == "slide"]

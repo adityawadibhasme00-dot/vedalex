@@ -1,4 +1,4 @@
-"""Slide templates for the Vedalex demo deck.
+"""Slide templates for the IP-SAKTI demo deck.
 
 Rendered as HTML at 1920x1080 and captured with Playwright, so the typography and
 layout are the browser's, not a drawing library's.
@@ -61,7 +61,7 @@ def _shell(body: str, *, eyebrow: str, page: int, total: int) -> str:
   <div class="eyebrow">{eyebrow}</div>
   {body}
 </div>
-<div class="foot">VEDALEX &middot; Traditional Knowledge IP &amp; Compliance</div>
+<div class="foot">IP-SAKTI &middot; Traditional Knowledge IP &amp; Compliance</div>
 <div class="pagenum">{page} / {total}</div>
 </body></html>"""
 
@@ -71,14 +71,14 @@ def render(template: str, page: int, total: int) -> str:
 
     if t == "title":
         body = f"""
-        <h1 style="font-size:104px;max-width:1560px">Vedalex</h1>
+        <h1 style="font-size:104px;max-width:1560px">IP-SAKTI</h1>
         <div class="rule"></div>
         <p class="lede" style="font-size:37px;max-width:1420px;margin-top:34px">
           A research and compliance workspace for Indian traditional knowledge.
           Deterministic statutory rules, grounded retrieval, and a verifiable
           citation for every claim.</p>
         <div class="pillrow" style="margin-top:56px">
-          <span class="pill">39 specialist agents</span>
+          <span class="pill">9 specialist agents</span>
           <span class="pill">Deterministic rule engine</span>
           <span class="pill">Hybrid RAG retrieval</span>
           <span class="pill">Zero-hallucination guard</span>
@@ -208,33 +208,19 @@ def render(template: str, page: int, total: int) -> str:
 
     if t == "solution_agents":
         body = """
-        <h2 style="font-size:50px">Thirty nine specialists, one task each</h2>
+        <h2 style="font-size:50px">Nine specialists, one task each</h2>
         <p class="lede" style="font-size:27px;margin-top:16px">Each returns cited
         findings, not prose.</p>
         <div class="pillrow" style="width:1680px;margin-top:30px">
+          <span class="pill">triz</span>
+          <span class="pill">quick_research</span>
           <span class="pill">novelty_search</span>
           <span class="pill">fto_search</span>
-          <span class="pill">prior_art_mapping</span>
           <span class="pill">patent_drafting</span>
-          <span class="pill">office_action_response</span>
-          <span class="pill">inventive_step</span>
-          <span class="pill">essentiality_claim_chart</span>
           <span class="pill">invention_disclosure</span>
-          <span class="pill">markush_drafting</span>
-          <span class="pill">lca_small_molecule</span>
-          <span class="pill">lca_biotherapeutic</span>
-          <span class="pill">sar_data_extraction</span>
+          <span class="pill">essentiality_claim_chart</span>
           <span class="pill">formulation</span>
-          <span class="pill">labeling_check</span>
-          <span class="pill">regulatory_map</span>
-          <span class="pill">approval_gate</span>
-          <span class="pill">claim_scope</span>
-          <span class="pill">white_space</span>
-          <span class="pill">evidence_quality</span>
-          <span class="pill">proof_auditor</span>
-          <span class="pill">risk_guard</span>
-          <span class="pill">export_pathfinder</span>
-          <span class="pill">compliance_officer</span>
+          <span class="pill">materials_find_solutions</span>
         </div>
         <div class="card good" style="margin-top:44px;width:1680px">
           <h3>Deterministic by construction</h3>

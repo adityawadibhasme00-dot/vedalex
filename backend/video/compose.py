@@ -41,8 +41,10 @@ def visual_for(scene: dict, index: int) -> Path:
     v = scene["visual"]
     if v["kind"] == "slide":
         return OUT / f"slide_{scene['id']}.png"
+    if v["kind"] == "video":
+        return OUT / "video_clips" / f"{scene['id']}.webm"
     route = v["route"]
-    slug = route.strip("/").replace("/", "_") or "home"
+    slug = route.strip("/").replace("/", "_").replace("#", "_") or "home"
     return OUT / (f"page_{slug}.png" if v["kind"] == "page" else f"zoom_{slug}.png")
 
 
@@ -68,16 +70,30 @@ def build_scene(scene: dict, index: int, duration: float) -> tuple[Path, Path]:
     aout = SEG / f"{index:02d}_{scene['id']}_a.m4a"
     frames = int(round(duration * FPS))
 
-    run([FFMPEG, "-y", "-loop", "1", "-i", str(src),
-         "-t", f"{duration:.3f}",
-         "-vf",
-         f"scale={W*2}:{H*2}:flags=lanczos,"
-         f"zoompan=z='{zoom_expr(index, frames)}':d=1:"
-         f"x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s={W}x{H}:fps={FPS},"
-         f"fade=t=in:st=0:d={FADE},fade=t=out:st={duration-FADE:.3f}:d={FADE},"
-         f"format=yuv420p",
-         "-r", str(FPS), "-c:v", "libx264", "-preset", "medium", "-crf", "20",
-         "-an", str(vout)])
+    if scene["visual"]["kind"] == "video":
+        # Real interaction clip: skip the initial blank-loading flash, play the
+        # remaining clip (looped if shorter than the narration), trimmed to the
+        # measured audio length with edge fades.
+        SKIP = 0.8
+        run([FFMPEG, "-y", "-ss", f"{SKIP}", "-stream_loop", "-1", "-i", str(src),
+             "-t", f"{duration:.3f}",
+             "-vf",
+             f"scale={W}:{H}:flags=lanczos,fps={FPS},"
+             f"fade=t=in:st=0:d={FADE},fade=t=out:st={duration-FADE:.3f}:d={FADE},"
+             f"format=yuv420p",
+             "-c:v", "libx264", "-preset", "medium", "-crf", "20",
+             "-an", str(vout)])
+    else:
+        run([FFMPEG, "-y", "-loop", "1", "-i", str(src),
+             "-t", f"{duration:.3f}",
+             "-vf",
+             f"scale={W*2}:{H*2}:flags=lanczos,"
+             f"zoompan=z='{zoom_expr(index, frames)}':d=1:"
+             f"x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s={W}x{H}:fps={FPS},"
+             f"fade=t=in:st=0:d={FADE},fade=t=out:st={duration-FADE:.3f}:d={FADE},"
+             f"format=yuv420p",
+             "-r", str(FPS), "-c:v", "libx264", "-preset", "medium", "-crf", "20",
+             "-an", str(vout)])
 
     run([FFMPEG, "-y", "-i", str(OUT / f"{scene['id']}.mp3"),
          "-af", f"apad=pad_dur={TAIL}", "-t", f"{duration:.3f}",

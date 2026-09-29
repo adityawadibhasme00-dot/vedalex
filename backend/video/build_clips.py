@@ -22,6 +22,14 @@ OUT = HERE / "out"
 FRONTEND = "http://localhost:3000"
 FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
 
+
+def scene_slug(route: str) -> str:
+    """Unique, filesystem-safe name for a route (hashes included).
+
+    /dashboard#passport -> dashboard_passport; / -> home.
+    """
+    return route.strip("/").replace("/", "_").replace("#", "_") or "home"
+
 sys.path.insert(0, str(HERE.parent))
 from video.script import SCENES, VOICE, VOICE_PITCH  # noqa: E402
 from video.slides import render  # noqa: E402
@@ -103,6 +111,33 @@ async def _login(page) -> bool:
     return ok
 
 
+async def _steps(page, route: str, steps: list) -> None:
+    """Run scripted interactions (typing, searches, clicks) before a capture."""
+    for step in steps:
+        action = step.get("action")
+        try:
+            if action == "wait":
+                await page.wait_for_timeout(int(step["ms"]))
+            elif action == "eval":
+                await page.evaluate(step["script"])
+                await page.wait_for_timeout(600)
+            elif action == "fill":
+                await page.locator(step["locator"]).fill(step["value"])
+            elif action == "click":
+                await page.locator(step["locator"]).first.click()
+            elif action == "type":
+                await page.locator(step["locator"]).first.click()
+                await page.keyboard.type(step["value"], delay=int(step.get("delay", 30)))
+            elif action == "press":
+                await page.locator(step["locator"]).first.press(step["key"])
+            else:
+                print(f"    WARN unknown step action {action!r} on {route}")
+                continue
+            print(f"    step  {action} on {route}")
+        except Exception as exc:  # noqa: BLE001
+            print(f"    WARN step {action!r} failed on {route}: {exc}")
+
+
 async def capture_pages(routes: dict, viewport: dict) -> None:
     """Full-viewport and magnified captures for each live route."""
     from playwright.async_api import async_playwright
@@ -117,13 +152,24 @@ async def capture_pages(routes: dict, viewport: dict) -> None:
         await _login(page)
 
         for route, spec in routes.items():
-            selector = spec.get("selector") if isinstance(spec, dict) else spec
-            slug = route.strip("/").replace("/", "_") or "home"
+            selector = spec.get("selector")
+            slug = scene_slug(route)
             try:
                 await page.goto(f"{FRONTEND}{route}", wait_until="networkidle", timeout=45000)
             except Exception:
                 await page.goto(f"{FRONTEND}{route}", wait_until="load", timeout=45000)
+
+            # A route that only differs by fragment is a same-document navigation,
+            # so the dashboard's mount-time hash read would not fire. Force a real
+            # reload so the active tab always matches the requested hash.
+            if "#" in route:
+                try:
+                    await page.reload(wait_until="networkidle", timeout=45000)
+                except Exception:
+                    await page.reload(wait_until="load", timeout=45000)
+
             await page.wait_for_timeout(2800)
+            await _steps(page, route, spec.get("steps") or [])
 
             full = OUT / f"page_{slug}.png"
             await page.screenshot(path=str(full), full_page=False)
@@ -167,8 +213,84 @@ async def capture_pages(routes: dict, viewport: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
-# main
+# interactive video clips
 # ---------------------------------------------------------------------------
+
+async def capture_videos(scenes: list[dict], durations: dict[str, float]) -> None:
+    """Record a real-interaction screencast (.webm) per 'video' scene.
+
+    Unlike a still screenshot, the clip shows the actual motion: clicking an
+    agent card, switching dashboard tabs, or typing into the copilot. Each clip
+    is padded to outlast its narration, so the composer never has to loop it.
+    """
+    from playwright.async_api import async_playwright
+
+    VID = OUT / "video_clips"
+    VID.mkdir(parents=True, exist_ok=True)
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(args=["--force-color-profile=srgb"])
+
+        # Log in once, then reuse the auth cookies so each clip starts clean.
+        login_ctx = await browser.new_context(viewport={"width": 1920, "height": 1080})
+        login_page = await login_ctx.new_page()
+        await _login(login_page)
+        await login_page.goto(f"{FRONTEND}/dashboard", wait_until="load", timeout=45000)
+        await login_page.wait_for_timeout(800)
+        state = await login_ctx.storage_state()
+        await login_ctx.close()
+
+        for i, scene in enumerate(scenes, 1):
+            v = scene["visual"]
+            target = VID / f"{scene['id']}.webm"
+            target.unlink(missing_ok=True)
+            narration = durations[scene["id"]]
+
+            ctx = await browser.new_context(
+                viewport={"width": 1920, "height": 1080},
+                storage_state=state,
+                record_video_dir=str(VID / scene["id"]),
+                record_video_size={"width": 1920, "height": 1080},
+            )
+            page = await ctx.new_page()
+            t0 = time.monotonic()
+            try:
+                await page.goto(f"{FRONTEND}{v['route']}", wait_until="networkidle", timeout=45000)
+            except Exception:
+                await page.goto(f"{FRONTEND}{v['route']}", wait_until="load", timeout=45000)
+            if "#" in v["route"]:
+                try:
+                    await page.reload(wait_until="networkidle", timeout=45000)
+                except Exception:
+                    await page.reload(wait_until="load", timeout=45000)
+            await page.wait_for_timeout(1200)
+            await _steps(page, v["route"], v.get("steps") or [])
+            elapsed = time.monotonic() - t0
+            needed = narration + 1.5  # tail + a beat of quiet after the action
+            rest = max(0.5, needed - elapsed)
+            await page.wait_for_timeout(rest * 1000)
+            await ctx.close()
+
+            await _save_video(page, target, VID / scene["id"])
+
+            sz = target.stat().st_size if target.exists() else 0
+            print(f"  [{i:>2}/{len(scenes)}] video {scene['id']:<24} {sz/1024:.0f} KiB")
+
+        await browser.close()
+
+
+async def _save_video(page, target: Path, dir: Path) -> None:
+    """Persist the recorded clip; the raw webm lives in `dir` until the context
+    is closed, so fall back to copying it if save_as is unavailable."""
+    try:
+        await page.video.save_as(str(target))
+        return
+    except Exception as exc:  # noqa: BLE001
+        print(f"    WARN save_as failed ({exc}); copying raw webm")
+    import shutil
+    files = sorted(dir.rglob("*.webm"), key=lambda f: f.stat().st_size)
+    if files:
+        shutil.copyfile(files[-1], target)
 
 async def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
@@ -196,11 +318,18 @@ async def main() -> int:
     routes: dict[str, dict] = {}
     for scene in SCENES:
         v = scene["visual"]
-        if v["kind"] == "page":
-            routes.setdefault(v["route"], {"selector": None})
-        elif v["kind"] == "zoom":
-            routes[v["route"]] = {"selector": v.get("selector")}
+        if v["kind"] in ("page", "zoom"):
+            entry = routes.setdefault(v["route"], {"selector": None, "steps": []})
+            if v["kind"] == "zoom":
+                entry["selector"] = v.get("selector")
+            entry["steps"].extend(v.get("steps") or [])
     await capture_pages(routes, {"width": 1920, "height": 1080})
+
+    print("capturing interactive clips ...")
+    video_scenes = [s for s in SCENES if s["visual"]["kind"] == "video"]
+    if video_scenes:
+        durations = {c["id"]: c["duration"] for c in clips}
+        await capture_videos(video_scenes, durations)
 
     manifest = {
         "voice": VOICE,
@@ -211,6 +340,7 @@ async def main() -> int:
         "slides": [s["id"] for s in SCENES if s["visual"]["kind"] == "slide"],
         "pages": [s["id"] for s in SCENES if s["visual"]["kind"] == "page"],
         "zooms": [s["id"] for s in SCENES if s["visual"]["kind"] == "zoom"],
+        "videos": [s["id"] for s in SCENES if s["visual"]["kind"] == "video"],
         "routes": sorted(routes),
     }
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
