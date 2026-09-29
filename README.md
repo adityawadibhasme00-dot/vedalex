@@ -144,9 +144,39 @@ curl -X POST http://localhost:8000/api/v1/rag/reindex
 
 ## ☁️ Deploy on a Free Tier
 
-`render.yaml` deploys both services — the FastAPI API and the Next.js frontend — on Render's free tier. No server of your own, no billing card.
+No server of your own, no billing card. The two halves need different hosts, because the backend cannot run as a serverless function.
 
-**Deploy:** <https://render.com> → **New** → **Blueprint** → pick this repo. Render reads `render.yaml` and provisions both services; each gets an `https://*.onrender.com` URL.
+### Frontend → Vercel
+
+**Deploy:** <https://vercel.com> → **Add New** → **Project** → import this repo. Then set:
+
+| Setting | Value |
+|---|---|
+| Framework preset | Next.js (auto-detected) |
+| **Root Directory** | `frontend` |
+| Build command | `npm run build` (default) |
+| Start command | `npx next start` (default) |
+
+Then add one environment variable, **Settings → Environment Variables**:
+
+```
+BACKEND_URL = https://vedalex-api.onrender.com
+```
+
+That is all it needs. The app calls the API through the relative path `/api/v1`, which `next.config.js` proxies server-side to `BACKEND_URL`. Because the proxy happens on Vercel's servers, the browser only ever talks to the Vercel origin — there is no CORS to configure and the backend URL is never exposed to the client.
+
+### Backend → Render
+
+`render.yaml` is a Render Blueprint, so the API is one click: <https://render.com> → **New** → **Blueprint** → pick this repo. It reads the blueprint and provisions `vedalex-api` (and `vedalex-web`, which you can ignore if you are serving the frontend from Vercel).
+
+Add the LLM key by hand, because secrets do not belong in a repo: **vedalex-api → Environment → Add**, then
+
+```
+GEMINI_API_KEY    = <your key>
+IPSAKTI_LLM_MODEL = gemini-3.5-flash
+```
+
+`GEMINI_API_KEY` is read from the process environment, **not** from a `.env` file, so setting it in `backend/.env` has no effect.
 
 **Why the API runs in "lite" mode.** The full stack needs ~10.7 GB of model weights (`BAAI/bge-m3` plus the reranker) and `torch`, which no free tier can host. So the deploy installs `backend/requirements-slim.txt` — the same dependencies minus that ML stack — and sets `IPSAKTI_USE_BGE_M3=0` / `IPSAKTI_USE_RERANKER=0`, which keeps the app on its local hashing embedder (192-dim) + BM25 path. Everything works; semantic answer quality is a little lower than a local run with the real models.
 
@@ -154,7 +184,7 @@ Measured for this configuration: **183 MB peak RAM** (free tier allows 512 MB), 
 
 **The index rebuilds itself.** Free-tier disks are wiped on every restart, so `backend/scripts/serve.py` builds the index in-process *before* the server accepts requests, and skips the rebuild when the store already has data. It runs in the same process as the API on purpose: the embedded Qdrant client locks its storage folder, so splitting the build into a separate step makes the API silently fall back to an in-memory store.
 
-**Two things to know about the free tier.** Instances sleep after ~15 minutes idle, so the first request after a pause takes 30–60 s while the service wakes — open the links a minute before a demo. And `BACKEND_API_KEY_SECRET` is generated for you, which is what keeps sessions valid across restarts.
+**What "free" costs you here.** The Vercel frontend is always live and instant. The Render *backend* sleeps after ~15 minutes idle, so the first API call after a pause takes 30–60 s while it wakes — the page itself still loads instantly from Vercel. Open the site a minute before a demo so the backend is already awake. `BACKEND_API_KEY_SECRET` is generated for you, which is what keeps sessions valid across restarts.
 
 ---
 
